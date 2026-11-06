@@ -50,6 +50,14 @@ Security:
 - The settings warn when the address is plain HTTP outside the local network.
 - Known limitation: flutter_downloader keeps the request headers of a download task (including the token) in its local task database inside the app sandbox.
 
+## Automatic backups
+
+Settings → Backup and Restore → **Automatic backup**. iOS gives apps no reliable background time, so the backup runs when the app starts or returns to the foreground and the last automatic backup is older than the chosen interval (daily/weekly). Files are named `boorusphere_autobackup_<time>.zip` in `Documents/Boorusphere/backups`; only the newest N (1/3/5/10) are kept, manual backups (`boorusphere_backup_…`) are never deleted. API tokens are not part of any backup.
+
+## Random order
+
+The search option bar has a **random** toggle next to the rating filter. It applies from the next search and is translated per engine: `order:random` (Danbooru, Moebooru, e621, Shimmie), `sort:random` (Gelbooru, Safebooru, Szurubooru), `sf=random` (Philomena), and `sort=random&seed=…` for Monbooru, whose seed keeps paging free of repeats. On the other engines later pages are drawn independently, so already loaded posts are skipped.
+
 ## Send to Monbooru
 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.

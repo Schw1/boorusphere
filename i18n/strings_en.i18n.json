@@ -248,6 +248,17 @@
       "invalid": "Invalid backup file",
       "warning": "Warning! this action will overwrite any existing data.\nAre you sure you want to continue ?",
       "loading": "Restoring data..."
+    },
+    "auto": {
+      "title": "Automatic backup",
+      "desc": "Backs up all data when the app is opened and the last automatic backup is older than the chosen interval. Older automatic backups are deleted; manual backups are kept.",
+      "interval": "Frequency",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "keep": "Keep",
+      "keep_value": "Last ${count}",
+      "last": "Last automatic backup: ${time}",
+      "never": "No automatic backup yet"
     }
   },
   "monbooru": {
@@ -272,5 +283,10 @@
       "api_disabled": "monloader API is disabled",
       "http": "Error ${code}"
     }
+  },
+  "random_order": {
+    "label": "random",
+    "on": "on",
+    "off": "off"
   }
 }

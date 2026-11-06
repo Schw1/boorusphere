@@ -16,6 +16,7 @@ class ServerSettingState extends _$ServerSettingState {
       lastActiveId: repo.get(Setting.serverLastActiveId, or: ''),
       postLimit: repo.get(Setting.serverPostLimit, or: PageOption.defaultLimit),
       searchRating: repo.get(Setting.searchRating, or: BooruRating.safe),
+      searchRandom: repo.get(Setting.searchRandom, or: false),
     );
   }
 
@@ -35,5 +36,11 @@ class ServerSettingState extends _$ServerSettingState {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(searchRating: value);
     await repo.put(Setting.searchRating, value);
+  }
+
+  Future<void> setRandom(bool value) async {
+    final repo = ref.read(settingsRepoProvider);
+    state = state.copyWith(searchRandom: value);
+    await repo.put(Setting.searchRandom, value);
   }
 }

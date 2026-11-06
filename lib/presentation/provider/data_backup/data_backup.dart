@@ -20,6 +20,7 @@ import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' show Ref;
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -32,6 +33,65 @@ typedef BackupItem = MapEntry<String, Object>;
 
 enum DataBackupType { backup, restore }
 
+/// Folder of all backups (manual and automatic), visible in the Files app.
+Future<Directory> backupDirectory(Ref ref) async {
+  final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
+  await sharedStorageHandle.init();
+  return sharedStorageHandle.createSubDir('backups');
+}
+
+/// Writes a backup zip into [backupDirectory] and returns its path.
+/// [kind] becomes part of the file name (`boorusphere_<kind>_<time>.zip`).
+Future<String> writeBackupFile(
+  Ref ref,
+  BackupOption option, {
+  String kind = 'backup',
+}) async {
+  final versionRepo = ref.read(versionRepoProvider);
+  final entries = [
+    Future.value(BackupItem(DataBackupState.appId,
+        {'version': '${versionRepo.current}'})),
+    if (option.server) ref.read(serverRepoProvider).export(),
+    if (option.blockedTags) ref.read(tagsBlockerRepoProvider).export(),
+    if (option.favoritePost) ref.read(favoritePostRepoProvider).export(),
+    if (option.setting) ref.read(settingsRepoProvider).export(),
+    if (option.searchHistory) ref.read(searchHistoryRepoProvider).export(),
+  ];
+
+  // Own temp folder per run, so a manual and an automatic backup can't clash.
+  final basedir = await getTemporaryDirectory();
+  final temp = Directory(path.join(basedir.path,
+      '.backup.tmp-${DateTime.now().microsecondsSinceEpoch}'));
+  temp.createSync(recursive: true);
+  try {
+    final encoder = ZipFileEncoder();
+    encoder.create('${temp.path}/data.zip');
+    await Future.wait(entries.map((entry) async {
+      final item = await entry;
+      final data = item.value;
+      if (data is List && data.isEmpty) return;
+
+      final file = File('${temp.path}/${item.key}.json');
+      await file.writeAsString(jsonEncode(data));
+      return encoder.addFile(file);
+    }));
+    await encoder.close();
+
+    final dir = await backupDirectory(ref);
+    final time = DateFormat('yyyy-MM-dd-HH-mm-ss').format(DateTime.now());
+    final name = '${DataBackupState.appId}_${kind}_$time.zip';
+    final zip = File(path.join(dir.path, name));
+    if (zip.existsSync()) {
+      zip.deleteSync();
+    }
+    await File(encoder.zipPath).copy(zip.path);
+    await ref.read(sharedStorageHandleProvider).rescan();
+    return zip.path;
+  } finally {
+    if (temp.existsSync()) temp.deleteSync(recursive: true);
+  }
+}
+
 @riverpod
 class DataBackupState extends _$DataBackupState {
   @override
@@ -39,26 +99,7 @@ class DataBackupState extends _$DataBackupState {
     return const BackupResult.idle();
   }
 
-  Future<Directory> _tempDir() async {
-    final basedir = await getTemporaryDirectory();
-    final temp = Directory(path.join(basedir.path, '.backup.tmp'));
-    if (temp.existsSync()) {
-      temp.deleteSync(recursive: true);
-    }
-    temp.createSync();
-    return temp;
-  }
-
-  Future<Directory> _backupDir() async {
-    final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
-    await sharedStorageHandle.init();
-    return sharedStorageHandle.createSubDir('backups');
-  }
-
-  Future<BackupItem> _metadata() async {
-    final versionRepo = ref.read(versionRepoProvider);
-    return BackupItem(appId, {'version': '${versionRepo.current}'});
-  }
+  Future<Directory> _backupDir() => backupDirectory(ref);
 
   void _invalidateProviders() {
     ref.invalidate(serverStateProvider);
@@ -139,48 +180,8 @@ class DataBackupState extends _$DataBackupState {
     if (!option.isValid()) return;
 
     state = const BackupResult.loading(DataBackupType.backup);
-    final server = ref.read(serverRepoProvider).export();
-    final blockedTags = ref.read(tagsBlockerRepoProvider).export();
-    final favoritePost = ref.read(favoritePostRepoProvider).export();
-    final setting = ref.read(settingsRepoProvider).export();
-    final searchHistory = ref.read(searchHistoryRepoProvider).export();
-    final temp = await _tempDir();
-    final encoder = ZipFileEncoder();
-    encoder.create('${temp.path}/data.zip');
-
-    final entries = [
-      _metadata(),
-      if (option.server) server,
-      if (option.blockedTags) blockedTags,
-      if (option.favoritePost) favoritePost,
-      if (option.setting) setting,
-      if (option.searchHistory) searchHistory,
-    ];
-
-    await Future.wait(entries.map((entry) async {
-      final item = await entry;
-      final data = item.value;
-      if (data is List && data.isEmpty) return;
-
-      final file = File('${temp.path}/${item.key}.json');
-      await file.writeAsString(jsonEncode(data));
-      return encoder.addFile(file);
-    }));
-
-    await encoder.close();
-
-    final dir = await _backupDir();
-    final time = DateFormat('yyyy-MM-dd-HH-mm-ss').format(DateTime.now());
-    final name = '${appId}_backup_$time.zip';
-    final zip = File(path.join(dir.path, name));
-    if (zip.existsSync()) {
-      zip.deleteSync();
-    }
-
-    await File(encoder.zipPath).copy(zip.path);
-    temp.deleteSync(recursive: true);
-    await ref.read(sharedStorageHandleProvider).rescan();
-    state = BackupResult.exported(zip.path);
+    final zip = await writeBackupFile(ref, option);
+    state = BackupResult.exported(zip);
   }
 
   static const appId = 'boorusphere';

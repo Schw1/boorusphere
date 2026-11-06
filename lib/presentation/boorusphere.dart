@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:boorusphere/data/provider.dart';
@@ -5,6 +6,7 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
+import 'package:boorusphere/presentation/provider/data_backup/auto_backup.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/download/flutter_downloader_handle.dart';
 import 'package:boorusphere/presentation/provider/photos_saver.dart';
@@ -39,6 +41,7 @@ class Boorusphere extends HookConsumerWidget {
     }
 
     onCompleted();
+    unawaited(ref.read(autoBackupProvider).runIfDue());
   }
 
   @override
@@ -58,6 +61,12 @@ class Boorusphere extends HookConsumerWidget {
         initialized.value = true;
       });
     }, []);
+
+    useOnAppLifecycleStateChange((previous, current) {
+      if (current == AppLifecycleState.resumed && initialized.value) {
+        unawaited(ref.read(autoBackupProvider).runIfDue());
+      }
+    });
 
     if (!initialized.value) {
       return const SizedBox.shrink();

@@ -10,6 +10,7 @@ class ServerSetting with _$ServerSetting {
     @Default('') String lastActiveId,
     @Default(PageOption.defaultLimit) int postLimit,
     @Default(BooruRating.safe) BooruRating searchRating,
+    @Default(false) bool searchRandom,
   }) = _ServerSetting;
   const ServerSetting._();
 }
