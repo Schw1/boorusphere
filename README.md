@@ -1,46 +1,55 @@
 <div align="center">
     <div><img src="assets/icons/exported/legacy-circle.png" alt="boorusphere icon" height="92"></div>
-    <div><h1 align="center">Boorusphere</h1></div>
-    <div>Simple, content-focused booru viewer for Android</div>
+    <div><h1 align="center">Boorusphere for iOS</h1></div>
+    <div>Unofficial iOS port of Boorusphere, a simple, content-focused booru viewer</div>
     <br/>
     <div>
-        <a href="https://github.com/Kropatz/boorusphere/stargazers">
-            <img alt="Stargazers" src="https://img.shields.io/github/stars/Kropatz/boorusphere?style=for-the-badge&logo=apachespark&logoColor=ebebf0&color=ff89b5&labelColor=23232F"/>
+        <a href="https://github.com/Schw1/boorusphere-ios/releases/latest">
+            <img alt="Latest release" src="https://img.shields.io/github/v/release/Schw1/boorusphere-ios?style=for-the-badge&logo=pkgsrc&logoColor=ebebf0&labelColor=23232F&color=95b6ff">
         </a>
-        <a href="https://github.com/Kropatz/boorusphere/releases/latest">
-            <img alt="Latest release" src="https://img.shields.io/github/v/release/Kropatz/boorusphere?style=for-the-badge&logo=pkgsrc&logoColor=ebebf0&labelColor=23232F&color=95b6ff">
+        <a href="https://github.com/Schw1/boorusphere-ios/actions">
+            <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Schw1/boorusphere-ios/build-ios.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=iOS%20build">
         </a>
-        <a href="https://github.com/Kropatz/boorusphere/actions">
-            <img alt="Workflow status" src="https://img.shields.io/github/actions/workflow/status/Kropatz/boorusphere/ci.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=CI">
+        <a href="LICENSE.md">
+            <img alt="License" src="https://img.shields.io/github/license/Schw1/boorusphere-ios?style=for-the-badge&logo=gitbook&logoColor=ebebf0&color=b0a8f7&labelColor=23232F"/>
         </a>
-        <a href="https://github.com/Kropatz/boorusphere/blob/main/LICENSE.md">
-            <img alt="License" src="https://img.shields.io/github/license/Kropatz/boorusphere?style=for-the-badge&logo=gitbook&logoColor=ebebf0&color=b0a8f7&labelColor=23232F"/>
-        </a>
-    </div>
-    <br/>
-    <div>
-        <a href="https://github.com/Kropatz/boorusphere/releases">
-            <img src="assets/button-GHReleases.png" alt="GitHub release" width="160">
-        </a>
-        <!--
-        <a href="https://apt.izzysoft.de/fdroid/index/apk/io.chaldeaprjkt.boorusphere">
-            <img src="assets/button-IzzyOnDroid.png" alt="IzzyOnDroid release" width="160">
-        </a>
-        -->
     </div>
 </div>
 
+> [!WARNING]
+> **Please read before using.** Everything this fork adds on top of the original app (the iOS port and all new features below) was written with the help of [Claude](https://claude.ai), an AI assistant by Anthropic. I am not a professional developer. The code has not been reviewed by an experienced iOS or Flutter developer and has only been tested on my own device. Use it with caution and at your own risk; there is no warranty of any kind.
+
+# Thanks
+
+This app is almost entirely the work of the original authors. All credit for the app itself goes to them:
+
+- **[nullxception/boorusphere](https://github.com/nullxception/boorusphere)**, the original Boorusphere for Android
+- **[Kropatz/boorusphere](https://github.com/Kropatz/boorusphere)**, the maintained fork this port is based on
+
+- **[Monbooru](https://github.com/monbooru/monbooru)**, for the self-hosted booru, its API and monloader that the Monbooru features are built on
+
+This fork only adds the iOS port and a few features on top. Please report problems with this port here, not in the original repositories.
+
 # Features
 
+From the original app:
+
 - Simple and intuitive UI
-- Support various booru-based imageboards
-- Support playing videos and animated images (GIF, WEBM)
-- Save favorites content
-- Search with tag suggestion
+- Support for various booru-based imageboards
+- Videos and animated images (GIF, WEBM)
+- Favorites, tag suggestions, tag blocking
 - Download images and videos
-- Block tags from search result
-- Backup and restore data
-- and many more ...
+- Backup and restore
+
+Added in this fork:
+
+- **iOS support**: unsigned IPA built with GitHub Actions, no Mac needed
+- **Native Monbooru support**: browse a [Monbooru](https://github.com/monbooru/monbooru) instance directly through its API (token stored in the iOS Keychain)
+- **Send to Monbooru**: push posts from any booru to Monbooru through monloader
+- **Save to Photos**: optionally add downloads to the iOS Photos app
+- **Automatic backups**: on app start, daily or weekly, keeps the newest backups
+- **Random order**: random sorting toggle for search, for every supported booru type
+- English and German translations for the new features
 
 # Preview
 
@@ -51,93 +60,28 @@
     <img width="24%" src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" />
 </p>
 
-# Building from Source
+<sub>Screenshots from the original Android app.</sub>
 
-- Install Flutter SDK, visit [flutter.dev](https://flutter.dev/) for more information.
+# Installation (iOS)
 
-- Fetch latest source code
+1. Download `boorusphere-unsigned.ipa` from the [latest release](https://github.com/Schw1/boorusphere-ios/releases/latest).
+2. Install it with [Sideloadly](https://sideloadly.io) (Windows/macOS) using your Apple ID, or with AltStore/SideStore.
+3. Enable Developer Mode on the iPhone (Settings → Privacy & Security → Developer Mode).
 
-```bash
-git clone https://github.com/Kropatz/boorusphere.git
-cd boorusphere
-```
+With a free Apple ID the signature expires after 7 days; install the IPA again to renew it. To update, install a newer IPA over the existing app without deleting it first, so your data is kept.
 
-- Sync dependencies
+Releases marked as **pre-release** are test builds of features that are not finished yet.
 
-```bash
-flutter pub get
-```
+# Building
 
-- Run code generator
+The iOS app is built by the [Build iOS workflow](.github/workflows/build-ios.yml) on GitHub Actions. Details about the build, the iOS-specific changes and the new features are in [IOS_PORT.md](IOS_PORT.md).
 
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-If that doesn't work, try 
-```bash
- flutter pub run build_runner build --delete-conflicting-outputs
- ```
+For building the Android app and for general development (code generation, translations), see the [original README](https://github.com/Kropatz/boorusphere#building-from-source).
 
-- Generate translation
+# Security
 
-```bash
-dart run slang
-```
+Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere-ios/issues?q=label%3Asecurity). Please don't store sensitive credentials in server URLs: they end up in plain text in backup files.
 
-- Run the app with your favorite IDE/PDE. or from shell:
+# License
 
-```bash
-flutter run
-```
-
-### Protip:
-
-- Run [build_runner](https://pub.dev/packages/build_runner) after editing some areas that needs a code generator such as entities and routing.
-- Run [slang](https://pub.dev/packages/slang) after editing translation files (\*.i18n.json).
-- [build_runner](https://pub.dev/packages/build_runner) and [slang](https://pub.dev/packages/slang) has some features that will be helpful during development such as auto-rebuild and translation analysis, so it's highly recommended to check the documentations and familiarize yourself with it.
-
-# Translation
-
-### Translating untranslated strings
-
-- Run slang analyzer to check for missing translations
-
-```bash
-dart run slang analyze --outdir=i18n
-```
-
-- Open [i18n/\_missing_translations.json](i18n/_missing_translations.json) and then translate your language of choice.
-
-- After editing the file, you can apply it to the actual json translation file by running:
-
-```bash
-dart run slang apply --outdir=i18n
-
-dart run slang analyze --outdir=i18n # update analyzation result files
-```
-
-### Note
-
-You can leave untranslated strings on [i18n/\_missing_translations.json](i18n/_missing_translations.json).<br/>
-It's perfectly fine and recommended to leave it unchanged rather than adding it on the actual translation json but leaving it untranslated.
-
-### Adding a new language
-
-You can copy [i18n/strings_en.i18n.json](i18n/strings_en.i18n.json) to `i18n/strings_<language-code>.i18n.json`.<br/>
-At this point, feel free to pull request your new language here and we'll take care of adapting to the app code.
-
-Or if you want to build and test yourself, then:
-
-- Run slang to generate the strings.g.dart
-
-```bash
-dart run slang
-```
-
-- Run slang analyzer to check for missing translations
-
-```bash
-dart run slang analyze --outdir=i18n
-```
-
-- Build and run the app as usual
+[BSD 3-Clause](LICENSE.md), same as the original project.

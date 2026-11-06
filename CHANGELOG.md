@@ -1,4 +1,11 @@
 ## 1.5.4
+* iOS port (unofficial): unsigned IPA built with GitHub Actions; videos via media_kit (incl. WebM); downloads and backups in the Files app
+* iOS: native Monbooru support (browse a Monbooru instance with an API token stored in the iOS Keychain)
+* iOS: "Send to Monbooru" button (via monloader) for images and videos
+* iOS: optional "Save to Photos" for downloads
+* iOS: installed version is always shown in the drawer and About page
+* iOS: new features follow the app language (English, German)
+* iOS: fixed app icon and empty server list after restoring a backup
 * Update dependencies
 * perf: move calculating filtered posts to load time
 * Add hint to add API key on 401
