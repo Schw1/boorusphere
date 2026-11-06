@@ -1,0 +1,45 @@
+name: Build iOS (unsigned IPA)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.x' # pubspec: >=3.35.5 <3.42.0
+          channel: stable
+          cache: true
+
+      # Generates ios/ with `flutter create` and patches it (AppDelegate, Info.plist, Podfile, icon)
+      - name: Set up iOS project
+        run: bash tool/ios_setup.sh
+
+      # Not committed in the repo: strings.g.dart (slang) and all *.g.dart / *.freezed.dart.
+      # lib/pigeon/*.pi.dart is committed (Android only; iOS does not use pigeon).
+      - name: Generate code
+        run: |
+          dart run slang
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qry boorusphere-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boorusphere-unsigned-ipa
+          path: boorusphere-unsigned.ipa
+          if-no-files-found: error

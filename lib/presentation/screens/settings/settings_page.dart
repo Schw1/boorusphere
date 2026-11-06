@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
@@ -102,6 +104,8 @@ class _HideMedia extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // .nomedia / media scanning is an Android concept
+    if (!Platform.isAndroid) return const SizedBox.shrink();
     final sharedStorageHandle = ref.watch(sharedStorageHandleProvider);
     final markRebuild = useMarkMayNeedRebuild();
 

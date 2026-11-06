@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/app_state/current_app_state_repo.dart';
 import 'package:boorusphere/data/repository/booru/booru_repo.dart';
@@ -32,6 +34,7 @@ import 'package:boorusphere/pigeon/app_env.pi.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'provider.g.dart';
@@ -42,6 +45,19 @@ EnvRepo envRepo(EnvRepoRef ref) {
 }
 
 Future<EnvRepo> provideEnvRepo() async {
+  if (Platform.isIOS) {
+    // There is no native AppEnv implementation on iOS (pigeon only generates Kotlin),
+    // so read the bundle info instead. sdkVersion is an Android API level; report a
+    // high value so every `sdkVersion < 29` legacy branch is skipped.
+    final info = await PackageInfo.fromPlatform();
+    return CurrentEnvRepo(
+      env: Env(
+        versionName: info.version,
+        versionCode: int.tryParse(info.buildNumber) ?? 0,
+        sdkVersion: 99,
+      ),
+    );
+  }
   return CurrentEnvRepo(env: await AppEnv().get());
 }
 

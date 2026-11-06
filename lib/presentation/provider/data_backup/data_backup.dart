@@ -126,7 +126,10 @@ class DataBackupState extends _$DataBackupState {
 
     _invalidateProviders();
     state = const BackupResult.imported();
-    await Restart.restartApp();
+    // restart_app cannot relaunch the app by itself on iOS
+    if (Platform.isAndroid) {
+      await Restart.restartApp();
+    }
   }
 
   Future<void> backup({BackupOption option = const BackupOption()}) async {

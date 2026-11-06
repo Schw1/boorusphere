@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_progress.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_status.dart';
@@ -64,8 +66,12 @@ class UserDownloadsRepo implements DownloadsRepo {
   static Future<void> prepare() async {
     final entryBox = await Hive.openBox<DownloadEntry>(entryKey);
     final progressBox = await Hive.openBox<DownloadProgress>(progressKey);
-    await _adaptEntryDest(entryBox);
-    await _migrateProgresses(progressBox);
+    // Both are migrations from old Android versions; they rely on the Android-only
+    // StorageUtil and would crash on iOS as soon as the box is non-empty.
+    if (Platform.isAndroid) {
+      await _adaptEntryDest(entryBox);
+      await _migrateProgresses(progressBox);
+    }
     await FlutterDownloader.initialize();
   }
 }

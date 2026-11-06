@@ -10,11 +10,11 @@ import 'package:boorusphere/presentation/screens/post/post_placeholder_image.dar
 import 'package:boorusphere/presentation/screens/post/post_toolbox.dart';
 import 'package:boorusphere/presentation/screens/post/quickbar.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
-import 'package:boorusphere/presentation/utils/hooks/markmayneedrebuild.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:video_player/video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class PostVideo extends StatefulWidget {
@@ -80,11 +80,11 @@ class _PostVideoContent extends HookConsumerWidget {
     final showOverlay = useState(true);
     // don't show pause button on initial load
     final showPauseOverlay = useState(false);
-    final markMayNeedRebuild = useMarkMayNeedRebuild();
     final isPlaying = useState(true);
     final hideTimer = useState(Timer(const Duration(seconds: 2), () {}));
     final source = useVideoPostSource(ref, post: post, active: isActive);
-    final controller = isBlur.value ? null : source.controller;
+    final player = isBlur.value ? null : source.player;
+    final videoController = isBlur.value ? null : source.controller;
 
     onVisibilityChange(bool value) {
       showOverlay.value = value;
@@ -111,20 +111,22 @@ class _PostVideoContent extends HookConsumerWidget {
     }, []);
 
     useEffect(() {
-      controller?.initialize().whenComplete(() async {
-        onFirstFrame() {
-          controller.removeListener(onFirstFrame);
-          markMayNeedRebuild();
-        }
-
-        controller.addListener(onFirstFrame);
-        await controller.setVolume(contentSettings.videoMuted ? 0 : 1);
-        if (isPlaying.value && context.mounted) {
-          await controller.play();
+      if (player == null) return null;
+      var cancelled = false;
+      () async {
+        await source.ready;
+        if (cancelled || !context.mounted) return;
+        // media_kit volume range is 0..100
+        await player.setVolume(contentSettings.videoMuted ? 0 : 100);
+        if (isPlaying.value && context.mounted && !cancelled) {
+          await player.play();
           scheduleHide();
         }
-      });
-    }, [controller]);
+      }();
+      return () {
+        cancelled = true;
+      };
+    }, [player]);
 
     return Stack(
       alignment: Alignment.center,
@@ -144,7 +146,13 @@ class _PostVideoContent extends HookConsumerWidget {
                     headers: headers,
                     shouldBlur: isBlur.value,
                   ),
-                  if (controller != null) VideoPlayer(controller),
+                  if (videoController != null)
+                    Video(
+                      controller: videoController,
+                      controls: NoVideoControls,
+                      fill: Colors.transparent,
+                      fit: BoxFit.contain,
+                    ),
                 ],
               ),
             ),
@@ -169,11 +177,10 @@ class _PostVideoContent extends HookConsumerWidget {
                       child: _PlayPauseOverlay(
                         isPlaying: isPlaying.value,
                         onPressed: () {
-                          if (controller != null) {
-                            isPlaying.value = !controller.value.isPlaying;
-                            controller.value.isPlaying
-                                ? controller.pause()
-                                : controller.play();
+                          if (player != null) {
+                            final playing = player.state.playing;
+                            isPlaying.value = !playing;
+                            playing ? player.pause() : player.play();
                             scheduleHide();
                           } else {
                             isPlaying.value = !isPlaying.value;
@@ -251,7 +258,7 @@ class _ToolboxOverlay extends ConsumerWidget {
                 final mute = await ref
                     .read(contentSettingStateProvider.notifier)
                     .toggleVideoPlayerMute();
-                await source.controller?.setVolume(mute ? 0 : 1);
+                await source.player?.setVolume(mute ? 0 : 100);
               },
               icon: Icon(
                 isMuted ? Icons.volume_mute : Icons.volume_up,
@@ -322,40 +329,104 @@ class _Progress extends StatelessWidget {
     return value > 0 && value < 1;
   }
 
+  Widget _buildLoading() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 16),
+      child: Stack(
+        children: [
+          if (_isDownloading(source))
+            LinearProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Colors.white.withAlpha(100),
+              ),
+              value: _getProgressValue(source),
+              backgroundColor: Colors.transparent,
+            ),
+          LinearProgressIndicator(
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+            backgroundColor: Colors.white.withAlpha(20),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = source.controller;
+    final player = source.player;
+    if (player == null) return _buildLoading();
 
-    if (controller == null || !controller.value.isInitialized) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 16, bottom: 16),
-        child: Stack(
-          children: [
-            if (_isDownloading(source))
-              LinearProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withAlpha(100),
-                ),
-                value: _getProgressValue(source),
-                backgroundColor: Colors.transparent,
-              ),
-            LinearProgressIndicator(
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
-              backgroundColor: Colors.white.withAlpha(20),
-            ),
-          ],
-        ),
-      );
+    return StreamBuilder<Duration>(
+      stream: player.stream.duration,
+      initialData: player.state.duration,
+      builder: (context, snapshot) {
+        final duration = snapshot.data ?? Duration.zero;
+        if (duration <= Duration.zero) return _buildLoading();
+        return _SeekBar(player: player, duration: duration);
+      },
+    );
+  }
+}
+
+class _SeekBar extends StatefulWidget {
+  const _SeekBar({required this.player, required this.duration});
+
+  final Player player;
+  final Duration duration;
+
+  @override
+  State<_SeekBar> createState() => _SeekBarState();
+}
+
+class _SeekBarState extends State<_SeekBar> {
+  double? _dragFraction;
+
+  void _seekTo(double dx, double width, {bool dragging = false}) {
+    if (width <= 0) return;
+    final fraction = (dx / width).clamp(0.0, 1.0).toDouble();
+    if (dragging) {
+      setState(() => _dragFraction = fraction);
     }
+    widget.player.seek(widget.duration * fraction);
+  }
 
-    return VideoProgressIndicator(
-      controller,
-      colors: VideoProgressColors(
-        playedColor: Colors.red,
-        backgroundColor: Colors.white.withAlpha(20),
-      ),
-      allowScrubbing: true,
+  @override
+  Widget build(BuildContext context) {
+    final totalMs = widget.duration.inMilliseconds;
+
+    return Padding(
       padding: const EdgeInsets.only(top: 16, bottom: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (details) => _seekTo(details.localPosition.dx, width),
+            onHorizontalDragUpdate: (details) =>
+                _seekTo(details.localPosition.dx, width, dragging: true),
+            onHorizontalDragEnd: (_) => setState(() => _dragFraction = null),
+            onHorizontalDragCancel: () => setState(() => _dragFraction = null),
+            child: StreamBuilder<Duration>(
+              stream: widget.player.stream.position,
+              initialData: widget.player.state.position,
+              builder: (context, snapshot) {
+                final position = snapshot.data ?? Duration.zero;
+                final fraction = _dragFraction ??
+                    (totalMs <= 0
+                        ? 0.0
+                        : (position.inMilliseconds / totalMs)
+                            .clamp(0.0, 1.0)
+                            .toDouble());
+                return LinearProgressIndicator(
+                  value: fraction,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+                  backgroundColor: Colors.white.withAlpha(20),
+                );
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }

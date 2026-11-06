@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
@@ -5,24 +7,37 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:video_player/video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
+/// Video playback is backed by media_kit (libmpv) instead of video_player,
+/// because iOS' AVPlayer cannot play WebM/VP9, which boorus serve a lot.
 class VideoPostSource {
   VideoPostSource({
     this.progress = const DownloadProgress('', 0, 0),
+    this.player,
     this.controller,
+    this.ready,
   });
 
   final DownloadProgress progress;
-  final VideoPlayerController? controller;
+  final Player? player;
+  final VideoController? controller;
+
+  /// Completes (never throws) once the media has been opened or failed to open.
+  final Future<void>? ready;
 
   VideoPostSource copyWith({
     DownloadProgress? progress,
-    VideoPlayerController? controller,
+    Player? player,
+    VideoController? controller,
+    Future<void>? ready,
   }) {
     return VideoPostSource(
       progress: progress ?? this.progress,
+      player: player ?? this.player,
       controller: controller ?? this.controller,
+      ready: ready ?? this.ready,
     );
   }
 
@@ -30,11 +45,11 @@ class VideoPostSource {
   bool operator ==(covariant VideoPostSource other) {
     if (identical(this, other)) return true;
 
-    return other.progress == progress && other.controller == controller;
+    return other.progress == progress && other.player == player;
   }
 
   @override
-  int get hashCode => progress.hashCode ^ controller.hashCode;
+  int get hashCode => progress.hashCode ^ player.hashCode;
 }
 
 VideoPostSource useVideoPostSource(
@@ -65,56 +80,42 @@ class _VideoPostState extends HookState<VideoPostSource, _VideoPostHook> {
 
   VideoPostSource source = VideoPostSource();
 
-  void onFileStream(FileResponse event) {
-    if (!context.mounted) return;
-
-    if (event is DownloadProgress) {
-      setState(() {
-        source = source.copyWith(progress: event);
-      });
-    } else if (event is FileInfo) {
-      final controller = VideoPlayerController.file(event.file,
-          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))
-        ..setLooping(true);
-      final size = event.file.statSync().size;
-      final prog = DownloadProgress(event.originalUrl, size, size);
-
-      setState(() {
-        source = source.copyWith(controller: controller, progress: prog);
-      });
-    }
-  }
-
   Future<void> createController() async {
     if (!hook.active) return;
 
-    //final cache = hook.ref.read(cacheManagerProvider);
-    //final cookieJar = hook.ref.read(cookieJarProvider);
-    //final cookies =
-    //    await cookieJar.loadForRequest(hook.post.content.url.toUri());
     final headers =
         hook.ref.read(postHeadersFactoryProvider(hook.post, cookies: []));
 
-    final uri = Uri.parse(hook.post.content.url);
-    final controller = VideoPlayerController.networkUrl(uri,
-        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-        httpHeaders: headers)
-      ..setLooping(true);
-    final prog = DownloadProgress(hook.post.content.url, 1, 1);
+    final url = hook.post.content.url;
+    final player = Player();
+    final controller = VideoController(player);
+    final ready = () async {
+      try {
+        await player.setPlaylistMode(PlaylistMode.single); // loop
+        await player.open(Media(url, httpHeaders: headers), play: false);
+        // ignore: avoid_catches_without_on_clauses
+      } catch (_) {
+        // the player may already be disposed, or the media may be unplayable
+      }
+    }();
+    final prog = DownloadProgress(url, 1, 1);
 
     setState(() {
-      source = source.copyWith(controller: controller, progress: prog);
+      source = source.copyWith(
+        player: player,
+        controller: controller,
+        ready: ready,
+        progress: prog,
+      );
     });
-    //cache
-    //    .getFileStream(hook.post.content.url,
-    //        headers: headers, withProgress: true)
-    //    .listen(onFileStream);
   }
 
   void destroyController() {
-    source.controller?.pause();
-    source.controller?.dispose();
+    final player = source.player;
     source = VideoPostSource();
+    if (player != null) {
+      unawaited(player.dispose());
+    }
   }
 
   @override

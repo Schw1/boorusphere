@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
@@ -186,7 +187,9 @@ class AppVersionTile extends ConsumerWidget {
 
     return appVersions.maybeWhen(
       data: (data) {
-        if (!data.latest.isNewerThan(data.current)) return currentTile;
+        if (!kSupportsInAppUpdate || !data.latest.isNewerThan(data.current)) {
+          return currentTile;
+        }
         if (updateProgress.status.isDownloading) {
           return ListTile(
             title: Text(context.t.updater.available(version: '${data.latest}')),

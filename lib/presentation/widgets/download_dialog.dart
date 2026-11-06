@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
@@ -126,6 +127,9 @@ class DownloaderDialog extends ConsumerWidget {
 }
 
 Future<bool> checkNotificationPermission(BuildContext context) async {
+  // The notification permission only matters for Android's download notifications;
+  // on iOS it must not block downloads.
+  if (!Platform.isAndroid) return true;
   final isGranted = await Permission.notification.isGranted;
   if (isGranted) {
     return true;

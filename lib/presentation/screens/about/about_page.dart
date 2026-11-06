@@ -60,6 +60,7 @@ class AboutPage extends ConsumerWidget {
                   orElse: SizedBox.shrink,
                 ),
               ),
+              if (kSupportsInAppUpdate)
               appVersions.when(
                 data: (data) {
                   return data.latest.isNewerThan(data.current)

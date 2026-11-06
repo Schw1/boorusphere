@@ -25,11 +25,13 @@ import 'package:boorusphere/presentation/utils/device_workarounds.dart';
 import 'package:boorusphere/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() async {
   setupLogger();
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   await Hive.initFlutter();
 
   Hive.registerAdapter(ServerAdapter());

@@ -39,6 +39,7 @@ class DeviceWorkarounds {
 
   // ignore: avoid_void_async
   static void apply() async {
+    if (!Platform.isAndroid) return;
     final props = await buildProps;
     if (isOppo(props)) {
       mainLog.i('Forcing highest refresh rate on OPPO Devices');

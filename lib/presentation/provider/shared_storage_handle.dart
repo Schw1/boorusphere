@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:boorusphere/pigeon/storage_util.pi.dart';
 import 'package:media_scanner/media_scanner.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -14,6 +16,12 @@ SharedStorageHandle sharedStorageHandle(SharedStorageHandleRef ref) {
 }
 
 Future<SharedStorageHandle> provideSharedStorageHandle() async {
+  if (Platform.isIOS) {
+    // iOS has no public Downloads directory; use the app's Documents directory
+    // (visible in the Files app when UIFileSharingEnabled is set).
+    final docs = await getApplicationDocumentsDirectory();
+    return SharedStorageHandle(downloadPath: docs.path);
+  }
   final downloadPath = await StorageUtil().getDownloadPath();
   return SharedStorageHandle(downloadPath: downloadPath);
 }
@@ -36,7 +44,9 @@ class SharedStorageHandle {
   }
 
   Future<void> init() async {
-    await Permission.storage.request();
+    if (Platform.isAndroid) {
+      await Permission.storage.request();
+    }
     final dir = Directory(path);
     if (!dir.existsSync()) {
       try {
@@ -65,6 +75,8 @@ class SharedStorageHandle {
   }
 
   Future<void> rescan() async {
+    // MediaScanner is Android-only
+    if (!Platform.isAndroid) return;
     await MediaScanner.loadMedia(path: path);
   }
 
@@ -85,7 +97,11 @@ class SharedStorageHandle {
   Future<void> open(String dest, {String? on}) async {
     try {
       final filePath = p.join(on ?? path, Uri.decodeFull(dest));
-      await StorageUtil().open(filePath);
+      if (Platform.isIOS) {
+        await OpenFilex.open(filePath);
+      } else {
+        await StorageUtil().open(filePath);
+      }
       // ignore: empty_catches
     } catch (e) {}
   }
