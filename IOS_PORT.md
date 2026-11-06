@@ -58,6 +58,10 @@ Settings → Backup and Restore → **Automatic backup**. iOS gives apps no reli
 
 The search option bar has a **random** toggle next to the rating filter. It applies from the next search and is translated per engine: `order:random` (Danbooru, Moebooru, e621, Shimmie), `sort:random` (Gelbooru, Safebooru, Szurubooru), `sf=random` (Philomena), and `sort=random&seed=…` for Monbooru, whose seed keeps paging free of repeats. On the other engines later pages are drawn independently, so already loaded posts are skipped.
 
+## Server icons
+
+Server icons are loaded from the server's own `/favicon.ico` first. Only for public hosts the app falls back to the DuckDuckGo icon service (`icons.duckduckgo.com`); local addresses (private IPs, `*.local`, `*.lan`) are never sent there.
+
 ## Send to Monbooru
 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.

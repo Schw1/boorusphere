@@ -85,16 +85,27 @@ class ServerAuthStore {
   static bool isInsecureRemote(String url) {
     final uri = Uri.tryParse(url.trim());
     if (uri == null || uri.scheme != 'http') return false;
-    final host = uri.host.toLowerCase();
-    if (host == 'localhost' || host.endsWith('.local')) return false;
+    return !isLocalHost(uri.host);
+  }
+
+  /// True for localhost, *.local, *.lan, *.home.arpa and private /
+  /// CGNAT (Tailscale) IPv4 addresses.
+  static bool isLocalHost(String rawHost) {
+    final host = rawHost.toLowerCase();
+    if (host == 'localhost' ||
+        host.endsWith('.local') ||
+        host.endsWith('.lan') ||
+        host.endsWith('.home.arpa')) {
+      return true;
+    }
     final ip = host.split('.').map(int.tryParse).toList();
     if (ip.length == 4 && ip.every((x) => x != null)) {
       final a = ip[0]!, b = ip[1]!;
-      if (a == 10 || a == 127) return false;
-      if (a == 192 && b == 168) return false;
-      if (a == 172 && b >= 16 && b <= 31) return false;
-      if (a == 100 && b >= 64 && b <= 127) return false; // CGNAT / Tailscale
+      if (a == 10 || a == 127) return true;
+      if (a == 192 && b == 168) return true;
+      if (a == 172 && b >= 16 && b <= 31) return true;
+      if (a == 100 && b >= 64 && b <= 127) return true; // CGNAT / Tailscale
     }
-    return true;
+    return false;
   }
 }
