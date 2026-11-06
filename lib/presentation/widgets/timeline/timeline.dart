@@ -27,7 +27,7 @@ class Timeline extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final grid = ref.watch(uiSettingStateProvider.select((ui) => ui.grid));
     final screenWidth = context.mediaQuery.size.width;
-    final flexibleGrid = (screenWidth / 200).round() + grid;
+    final flexibleGrid = ((screenWidth / 200).round() + grid).clamp(1, 12).toInt();
     final scrollController = ref
         .watch(timelineControllerProvider.select((it) => it.scrollController));
     final blurExplicit =

@@ -282,6 +282,10 @@
       "unavailable": "Monbooru is not configured in monloader or is paused",
       "api_disabled": "monloader API is disabled",
       "http": "Error ${code}"
+    },
+    "backup": {
+      "title": "Monbooru (monloader)",
+      "desc": "Address and API token for \"Send to Monbooru\". The token is stored in plain text in the backup file."
     }
   },
   "random_order": {

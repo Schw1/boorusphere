@@ -11,6 +11,7 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_option.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_result.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
+import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/provider/search_history_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
@@ -56,6 +57,7 @@ Future<String> writeBackupFile(
     if (option.favoritePost) ref.read(favoritePostRepoProvider).export(),
     if (option.setting) ref.read(settingsRepoProvider).export(),
     if (option.searchHistory) ref.read(searchHistoryRepoProvider).export(),
+    if (option.monloader) MonbooruSender.exportBackup(),
   ];
 
   // Own temp folder per run, so a manual and an automatic backup can't clash.
@@ -159,6 +161,9 @@ class DataBackupState extends _$DataBackupState {
           break;
         case UserSearchHistoryRepo.key:
           await ref.read(searchHistoryRepoProvider).import(content);
+          break;
+        case MonbooruSender.backupKey:
+          await MonbooruSender.importBackup(content);
           break;
         default:
           break;

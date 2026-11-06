@@ -276,6 +276,15 @@ class _BackupSelectionDialog extends HookWidget {
               option.value = option.value.copyWith(setting: newValue ?? true);
             },
           ),
+          CheckboxListTile(
+            title: Text(context.t.monbooru.backup.title),
+            subtitle: Text(context.t.monbooru.backup.desc),
+            value: option.value.monloader,
+            onChanged: (newValue) {
+              option.value =
+                  option.value.copyWith(monloader: newValue ?? true);
+            },
+          ),
         ],
       ),
       actions: [

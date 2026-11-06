@@ -280,6 +280,10 @@
       "unavailable": "Monbooru ist in monloader nicht eingerichtet oder pausiert",
       "api_disabled": "monloader-API ist deaktiviert",
       "http": "Fehler ${code}"
+    },
+    "backup": {
+      "title": "Monbooru (monloader)",
+      "desc": "Adresse und API-Token für „An Monbooru senden“. Der Token steht im Klartext in der Backup-Datei."
     }
   },
   "random_order": {

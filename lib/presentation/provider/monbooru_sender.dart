@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:dio/dio.dart';
 import 'package:hive_ce/hive.dart';
 
@@ -65,6 +68,24 @@ class MonbooruSender {
     final box = await _box();
     await box.put('url', normalizeUrl(url));
     await box.put('token', token.trim());
+  }
+
+  static const backupKey = 'monloader';
+
+  /// monloader address and token for the backup file. Note: the token ends
+  /// up in plain text in the backup, the user can deselect it.
+  static Future<BackupItem> exportBackup() async {
+    final config = await load();
+    return BackupItem(backupKey, {'url': config.url, 'token': config.token});
+  }
+
+  static Future<void> importBackup(String src) async {
+    final data = jsonDecode(src);
+    if (data is! Map) return;
+    final url = '${data['url'] ?? ''}';
+    final token = '${data['token'] ?? ''}';
+    if (url.isEmpty && token.isEmpty) return;
+    await save(url, token);
   }
 
   static Dio _dio() => Dio(BaseOptions(

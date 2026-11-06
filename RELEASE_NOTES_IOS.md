@@ -1,7 +1,11 @@
 Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. with Sideloadly or AltStore).
 
 ## Fixed
-- **Server icons** (e.g. Monbooru) now load: the icon request sends the app's User-Agent like all other image requests, because many servers and proxies reject requests without one.
+- **Server icons for Monbooru:** Monbooru only serves `/favicon.ico` to logged-in browser sessions, so the app got the login page instead of an image. The app now reads the icons linked from the server's start/login page, like a browser does.
+
+## New
+- **Backup includes monloader settings** (address and token for "Send to Monbooru"). It can be deselected in the backup dialog; note that the token is stored in plain text in the backup file.
+- **Extra zoom step:** the grid button now also cycles to one column less than before, for bigger thumbnails on tablets.
 
 ## New in ios.7
 - **Native Monbooru support:** add your Monbooru instance under Servers → Add with an API token (`read` scope). The token is stored in the iOS Keychain, only on this device, not in backups.

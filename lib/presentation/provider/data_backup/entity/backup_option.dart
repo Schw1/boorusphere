@@ -10,10 +10,16 @@ class BackupOption with _$BackupOption {
     @Default(true) bool blockedTags,
     @Default(true) bool favoritePost,
     @Default(true) bool setting,
+    @Default(true) bool monloader,
   }) = _BackupOption;
 }
 
 extension BackupOptionX on BackupOption {
   bool isValid() =>
-      (searchHistory || server || blockedTags || favoritePost || setting);
+      (searchHistory ||
+          server ||
+          blockedTags ||
+          favoritePost ||
+          setting ||
+          monloader);
 }

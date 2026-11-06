@@ -60,7 +60,7 @@ The search option bar has a **random** toggle next to the rating filter. It appl
 
 ## Server icons
 
-Server icons are loaded from the server's own `/favicon.ico` first. Only for public hosts the app falls back to the DuckDuckGo icon service (`icons.duckduckgo.com`); local addresses (private IPs, `*.local`, `*.lan`) are never sent there.
+Server icons are resolved like a browser does: the server's own `/favicon.ico`; if that returns a page instead (Monbooru answers with its login page to clients without a web session), the icons linked from that page or the start page; SVG icons are skipped because Flutter cannot decode them. Only for public hosts the app falls back to the DuckDuckGo icon service; local addresses (private IPs, `*.local`, `*.lan`) are never sent there. Icons are fetched with a separate client without cookie jar.
 
 ## Send to Monbooru
 
