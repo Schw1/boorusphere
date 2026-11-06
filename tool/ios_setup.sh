@@ -86,7 +86,7 @@ set_or_add CFBundleDisplayName string "$DISPLAY_NAME"
 set_or_add UIFileSharingEnabled bool true
 set_or_add LSSupportsOpeningDocumentsInPlace bool true
 # monloader on the home network (Send to Monbooru)
-set_or_add NSLocalNetworkUsageDescription string "Zugriff auf deinen monloader-Server im lokalen Netzwerk"
+plutil -replace NSLocalNetworkUsageDescription -string "Zugriff auf deinen monloader-Server im lokalen Netzwerk" "$PLIST"
 # flutter_downloader settings
 set_or_add FDMaximumConcurrentTasks integer 3
 set_or_add FDAllowsCellularAccess bool true

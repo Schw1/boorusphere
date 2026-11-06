@@ -19,8 +19,10 @@ class MonbooruConfig {
 class MonbooruSender {
   static const _boxName = 'monbooru';
 
-  static Future<Box> _box() async =>
-      Hive.isBoxOpen(_boxName) ? Hive.box(_boxName) : Hive.openBox(_boxName);
+  static Future<Box> _box() async {
+    if (Hive.isBoxOpen(_boxName)) return Hive.box(_boxName);
+    return Hive.openBox(_boxName);
+  }
 
   static String normalizeUrl(String input) {
     var url = input.trim();

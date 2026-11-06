@@ -4,11 +4,21 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    tags: ['v*-ios*']
+
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: macos-15
-    timeout-minutes: 60
+    # Intel pool: the arm64 macOS pool (macos-15/macos-latest) keeps cancelling
+    # jobs for lack of capacity.
+    runs-on: macos-15-intel
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
@@ -29,8 +39,29 @@ jobs:
           dart run slang
           dart run build_runner build --delete-conflicting-outputs
 
+      # Fails fast with readable Dart errors (warnings/infos are ignored).
+      - name: Analyze (errors only)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings lib
+
       - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign -v
+        run: |
+          set -o pipefail
+          if ! flutter build ios --release --no-codesign -v > build.log 2>&1; then
+            echo "::group::Errors"
+            grep -nE "error:|Error:|\*\* BUILD FAILED|Command .* failed" build.log | tail -100 || true
+            echo "::endgroup::"
+            tail -200 build.log
+            exit 1
+          fi
+          tail -20 build.log
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          if-no-files-found: ignore
 
       - name: Package IPA
         run: |
@@ -43,3 +74,10 @@ jobs:
           name: boorusphere-unsigned-ipa
           path: boorusphere-unsigned.ipa
           if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: boorusphere-unsigned.ipa
+          body_path: RELEASE_NOTES_IOS.md
