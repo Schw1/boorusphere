@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
+import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/download_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/download_quality.dart';
@@ -60,6 +61,7 @@ class SettingsPage extends StatelessWidget {
             _Section(
               title: Text(context.t.settings.misc),
               children: const [
+                _Monbooru(),
                 _BackupRestore(),
                 _ClearCache(),
               ],
@@ -413,6 +415,112 @@ class _ClearCache extends ConsumerWidget {
           );
         }
       },
+    );
+  }
+}
+
+class _Monbooru extends StatelessWidget {
+  const _Monbooru();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: const Text('Monbooru (monloader)'),
+      subtitle: const Padding(
+        padding: EdgeInsets.only(top: 8),
+        child: Text('Adresse und Token für „An Monbooru senden"'),
+      ),
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => const _MonbooruDialog(),
+      ),
+    );
+  }
+}
+
+class _MonbooruDialog extends StatefulWidget {
+  const _MonbooruDialog();
+
+  @override
+  State<_MonbooruDialog> createState() => _MonbooruDialogState();
+}
+
+class _MonbooruDialogState extends State<_MonbooruDialog> {
+  final _url = TextEditingController();
+  final _token = TextEditingController();
+  String? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    MonbooruSender.load().then((c) {
+      if (!mounted) return;
+      _url.text = c.url;
+      _token.text = c.token;
+    });
+  }
+
+  @override
+  void dispose() {
+    _url.dispose();
+    _token.dispose();
+    super.dispose();
+  }
+
+  Future<void> _test() async {
+    setState(() => _status = 'Teste …');
+    final error = await MonbooruSender.testConnection(_url.text);
+    if (mounted) setState(() => _status = error ?? 'Verbindung OK');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Monbooru (monloader)'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _url,
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+              decoration: const InputDecoration(
+                labelText: 'monloader-Adresse',
+                hintText: 'http://192.168.0.10:8080',
+              ),
+            ),
+            TextField(
+              controller: _token,
+              autocorrect: false,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'API-Token (Schreibrecht)',
+              ),
+            ),
+            if (_status != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(_status!),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: _test, child: const Text('Testen')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        TextButton(
+          onPressed: () async {
+            await MonbooruSender.save(_url.text, _token.text);
+            if (context.mounted) Navigator.of(context).pop();
+          },
+          child: const Text('Speichern'),
+        ),
+      ],
     );
   }
 }

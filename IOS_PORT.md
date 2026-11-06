@@ -41,3 +41,7 @@ Der Port wurde ohne Flutter-SDK und ohne Gerät geschrieben. Erwartbare Stellen 
 erste Build oder Start scheitert: Paketversionen in `pubspec.yaml` (`flutter pub get`),
 `tool/ios_setup.sh` (andere Flutter-Version = anderes `AppDelegate`-Template) und das Verhalten von
 `flutter_downloader` im Hintergrund.
+
+## An Monbooru senden
+
+Im Post-Viewer gibt es neben Download einen Wolken-Knopf. Er schickt die Post-Seite über die monloader-API (`POST /api/v1/queue`) an monloader, der sie per gallery-dl lädt und in Monbooru ablegt. Adresse und Token (Schreibrecht) werden unter Einstellungen → „Monbooru (monloader)" eingetragen; sie liegen nur lokal auf dem Gerät und sind nicht Teil des Backups. Das iPhone muss die Adresse erreichen können.

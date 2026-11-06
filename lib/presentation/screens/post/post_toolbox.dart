@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
+import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -41,6 +42,7 @@ class PostToolbox extends HookConsumerWidget {
         children: [
           PostFavoriteButton(post: post),
           PostDownloadButton(post: post),
+          PostMonbooruButton(post: post),
           PostOpenLinkButton(post: post),
           PostDetailsButton(post: post),
         ],
@@ -165,6 +167,42 @@ class PostDownloadButton extends HookConsumerWidget {
           disabledColor: context.colorScheme.primary,
         ),
       ],
+    );
+  }
+}
+
+class PostMonbooruButton extends HookWidget {
+  const PostMonbooruButton({super.key, required this.post});
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context) {
+    final sending = useState(false);
+    return IconButton(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      icon: sending.value
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.cloud_upload_outlined),
+      onPressed: sending.value
+          ? null
+          : () async {
+              final messenger = ScaffoldMessenger.of(context);
+              sending.value = true;
+              final error = await MonbooruSender.send(post);
+              if (context.mounted) sending.value = false;
+              messenger
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(
+                  content: Text(error ?? 'An Monbooru gesendet'),
+                  duration: const Duration(seconds: 3),
+                ));
+            },
     );
   }
 }

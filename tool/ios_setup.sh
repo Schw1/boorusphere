@@ -85,6 +85,8 @@ set_or_add CFBundleDisplayName string "$DISPLAY_NAME"
 # Downloads/backups live in Documents/Boorusphere and should show up in the Files app
 set_or_add UIFileSharingEnabled bool true
 set_or_add LSSupportsOpeningDocumentsInPlace bool true
+# monloader on the home network (Send to Monbooru)
+set_or_add NSLocalNetworkUsageDescription string "Zugriff auf deinen monloader-Server im lokalen Netzwerk"
 # flutter_downloader settings
 set_or_add FDMaximumConcurrentTasks integer 3
 set_or_add FDAllowsCellularAccess bool true
