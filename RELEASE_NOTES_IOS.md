@@ -1,6 +1,9 @@
 Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. with Sideloadly or AltStore).
 
-## New
+## Fixed
+- **Server icons** (e.g. Monbooru) now load: the icon request sends the app's User-Agent like all other image requests, because many servers and proxies reject requests without one.
+
+## New in ios.7
 - **Native Monbooru support:** add your Monbooru instance under Servers → Add with an API token (`read` scope). The token is stored in the iOS Keychain, only on this device, not in backups.
 - **Automatic backups:** Settings → Backup and Restore. Runs when the app is opened (daily or weekly) and keeps the newest 1/3/5/10 automatic backups; manual backups are never deleted.
 - **Random order:** "random" toggle next to the rating filter in the search bar, for every supported booru type.

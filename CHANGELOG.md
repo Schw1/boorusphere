@@ -5,7 +5,7 @@
 * iOS: optional "Save to Photos" for downloads
 * iOS: automatic backups (daily or weekly, keeps the newest backups)
 * iOS: random order toggle in the search bar for every supported booru type
-* iOS: server icons are loaded from the server itself first; local addresses are no longer sent to DuckDuckGo
+* iOS: server icons are loaded from the server itself first (with the app's User-Agent, so servers behind a proxy work too); local addresses are no longer sent to DuckDuckGo
 * iOS: installed version is always shown in the drawer and About page
 * iOS: new features follow the app language (English, German)
 * iOS: fixed app icon and empty server list after restoring a backup
