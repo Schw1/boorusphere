@@ -21,7 +21,7 @@ The workflow calls `tool/ios_setup.sh`. The script generates `ios/` with `flutte
 | Area | Android | iOS |
 | --- | --- | --- |
 | Version / `sdkVersion` | Pigeon `AppEnv` (Kotlin) | `package_info_plus`, `sdkVersion = 99` |
-| Download folder | public Downloads folder (Pigeon `StorageUtil`) | app folder `Documents/Boorusphere`, visible in the Files app |
+| Download folder | public Downloads folder (Pigeon `StorageUtil`) | app folder `Documents/Boorusphere`, visible in the Files app; optionally also saved to Photos (Settings → Save to Photos) |
 | Opening files | Intent (Pigeon `StorageUtil`) | `open_filex` |
 | Media scan, "Hide media" | `media_scanner`, `.nomedia` | not applicable (setting hidden) |
 | Notification permission for downloads | requested | not requested |
@@ -30,6 +30,10 @@ The workflow calls `tool/ios_setup.sh`. The script generates `ios/` with `flutte
 | Video | media_kit (libmpv) | media_kit (libmpv), plays WebM/VP9 too |
 
 Video now uses `media_kit` instead of `video_player` on **all** platforms, because AVPlayer on iOS cannot play WebM.
+
+## Save to Photos
+
+Settings → Downloads → **Save to Photos** (iOS only). When enabled, every finished download is also added to the Photos library via [`gal`](https://pub.dev/packages/gal); iOS asks for permission when the toggle is first turned on. The copy in the Files app is kept, so the download list keeps working. Photos only accepts MP4/MOV/M4V videos, so WebM files stay in Files only.
 
 ## Send to Monbooru
 

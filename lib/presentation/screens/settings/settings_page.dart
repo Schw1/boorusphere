@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
+import 'package:boorusphere/presentation/provider/photos_saver.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/download_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/download_quality.dart';
@@ -32,6 +33,7 @@ class SettingsPage extends StatelessWidget {
               title: Text(context.t.downloads.title),
               children: const [
                 _HideMedia(),
+                _SaveToPhotos(),
                 _DownloadQuality(),
               ],
             ),
@@ -121,6 +123,44 @@ class _HideMedia extends HookConsumerWidget {
       onChanged: (value) async {
         await sharedStorageHandle.hide(value);
         markRebuild();
+      },
+    );
+  }
+}
+
+class _SaveToPhotos extends ConsumerWidget {
+  const _SaveToPhotos();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!Platform.isIOS) return const SizedBox.shrink();
+    final value = ref
+        .watch(downloadSettingStateProvider.select((it) => it.saveToPhotos));
+
+    return SwitchListTile(
+      title: const Text('Save to Photos'),
+      subtitle: const Padding(
+        padding: EdgeInsets.only(top: 8),
+        child: Text(
+            'Also add downloaded images and videos to the Photos app. '
+            'WebM videos are not supported by Photos and stay in Files.'),
+      ),
+      value: value,
+      onChanged: (enable) async {
+        final notifier = ref.read(downloadSettingStateProvider.notifier);
+        if (!enable) {
+          await notifier.setSaveToPhotos(false);
+          return;
+        }
+        final messenger = ScaffoldMessenger.of(context);
+        if (await PhotosSaver.requestAccess()) {
+          await notifier.setSaveToPhotos(true);
+        } else {
+          messenger.showSnackBar(const SnackBar(
+            content: Text(
+                'No access to Photos. Allow it in iOS Settings → Boorusphere.'),
+          ));
+        }
       },
     );
   }

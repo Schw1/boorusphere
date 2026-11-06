@@ -8,5 +8,6 @@ class DownloadSetting with _$DownloadSetting {
   const factory DownloadSetting({
     @Default(false) bool groupByServer,
     @Default(DownloadQuality.ask) DownloadQuality quality,
+    @Default(false) bool saveToPhotos,
   }) = _DownloadSetting;
 }

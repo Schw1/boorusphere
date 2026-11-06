@@ -14,6 +14,7 @@ class DownloadSettingState extends _$DownloadSettingState {
     return DownloadSetting(
       groupByServer: repo.get(Setting.downloadsGroupByServer, or: false),
       quality: repo.get(Setting.downloadsQuality, or: DownloadQuality.ask),
+      saveToPhotos: repo.get(Setting.downloadsSaveToPhotos, or: false),
     );
   }
 
@@ -27,5 +28,11 @@ class DownloadSettingState extends _$DownloadSettingState {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(quality: value);
     await repo.put(Setting.downloadsQuality, value);
+  }
+
+  Future<void> setSaveToPhotos(bool value) async {
+    final repo = ref.read(settingsRepoProvider);
+    state = state.copyWith(saveToPhotos: value);
+    await repo.put(Setting.downloadsSaveToPhotos, value);
   }
 }

@@ -90,6 +90,8 @@ set_or_add CFBundleDisplayName string "$DISPLAY_NAME"
 set_or_add UIFileSharingEnabled bool true
 set_or_add LSSupportsOpeningDocumentsInPlace bool true
 # monloader on the home network (Send to Monbooru)
+plutil -replace NSPhotoLibraryAddUsageDescription -string "Used to save downloaded images and videos to Photos." "$PLIST"
+plutil -replace NSPhotoLibraryUsageDescription -string "Used to save downloaded images and videos to Photos." "$PLIST"
 plutil -replace NSLocalNetworkUsageDescription -string "Used to reach your monloader server on the local network." "$PLIST"
 # flutter_downloader settings
 set_or_add FDMaximumConcurrentTasks integer 3
