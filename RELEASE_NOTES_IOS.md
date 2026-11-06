@@ -1,14 +1,14 @@
-Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. with Sideloadly or AltStore).
+**Test build** of native Monbooru support (branch `monbooru-native`). Not merged into `main` yet.
 
 ## New
-- The iOS port's own features (Send to Monbooru, Save to Photos) now follow the app language. Translations: English and German; other languages fall back to English.
-- The installed version (including the iOS release number) is now always shown in the drawer and on the About page, even without the online update check.
+- **Monbooru as a server:** add your Monbooru instance under Servers → Add, enter an API token with `read` scope and tap Scan. Browsing, search, tag suggestions, rating filter, videos and downloads work directly against the Monbooru API, no bridge needed.
+- Post details: **Location** opens the image in the Monbooru web UI, **Source** the original source.
+- The token is stored in the iOS Keychain (this device only, not in backups) and only sent to that server. A warning is shown for plain-HTTP addresses outside the local network.
+- "Open link" opens the Monbooru page instead of the raw file; "Send to Monbooru" is hidden for posts that already come from Monbooru.
 
-## Included from earlier releases
-- **Save to Photos:** toggle under Settings → Downloads; finished downloads are also added to the Photos app (WebM stays in Files).
-- **Send to Monbooru:** cloud button in the post viewer (images and videos) sends the post to Monbooru through the monloader API. Set it up under Settings → "Monbooru (monloader)".
-- App icon matches the Android app; restoring a backup no longer leaves the server list empty.
-- Videos (including WebM) play through media_kit; downloads and backups are stored in the Files app under "On My iPhone → Boorusphere".
+## Notes
+- After restoring a backup, tokens are not included and have to be entered again.
+- Archives (CBZ) are not shown.
 
 ## Installation
-Download `boorusphere-unsigned.ipa` and install it with Sideloadly over the existing app (same Apple ID, don't delete the app first, so your data is kept). With a free Apple ID the signature expires after 7 days. Developer Mode must be enabled on the iPhone.
+Install `boorusphere-unsigned.ipa` with Sideloadly over the existing app (same Apple ID, don't delete the app first). To go back, install the latest regular release the same way.

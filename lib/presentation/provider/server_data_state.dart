@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -21,6 +22,7 @@ class ServerState extends _$ServerState {
     final repo = ref.read(serverRepoProvider);
     await repo.populate();
     state = repo.servers;
+    await ServerAuthStore.load(state);
 
     if (state.isNotEmpty && serverSetting.lastActiveId.isEmpty) {
       final server = state.firstWhere(
@@ -45,6 +47,7 @@ class ServerState extends _$ServerState {
     final repo = ref.read(serverRepoProvider);
     await repo.remove(data);
     state = repo.servers;
+    await ServerAuthStore.remove(data.id);
   }
 
   Future<void> edit(Server from, Server to) async {
@@ -62,6 +65,14 @@ class ServerState extends _$ServerState {
 }
 
 extension ServerDataListExt on Iterable<Server> {
+  /// Like [getById] but without falling back to another server.
+  Server? findById(String id) {
+    for (final it in this) {
+      if (it.id == id) return it;
+    }
+    return null;
+  }
+
   Server getById(String id, {Server? or}) {
     return isEmpty
         ? Server.empty

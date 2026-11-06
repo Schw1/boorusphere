@@ -166,6 +166,11 @@
     "parser_type": {
       "search": "Search Parser",
       "suggestion": "Tag Suggestion Parser"
+    },
+    "api_token": {
+      "label": "API token (optional)",
+      "desc": "Needed for servers like Monbooru (token with read scope). Stored in the iOS Keychain on this device only, not in backups, and only sent to this server.",
+      "insecure": "Warning: this address uses plain HTTP outside your local network, so the token would be sent unencrypted. Use HTTPS."
     }
   },
   "server_query": {

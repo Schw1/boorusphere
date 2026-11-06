@@ -6,8 +6,18 @@ extension StringExt on String {
     return lookupMimeType(fileName) ?? 'application/octet-stream';
   }
 
+  /// File name of a URL. Some APIs (e.g. Monbooru) serve media from paths
+  /// without an extension; their URLs carry the real name as `?name=`.
   String get fileName {
-    return basename(toUri().path);
+    final uri = toUri();
+    final base = basename(uri.path);
+    if (extension(base).isEmpty) {
+      final name = uri.queryParameters['name'];
+      if (name != null && name.isNotEmpty && !name.contains('/')) {
+        return name;
+      }
+    }
+    return base;
   }
 
   String get fileNameNoExt {
@@ -15,7 +25,7 @@ extension StringExt on String {
   }
 
   String get fileExt {
-    return extension(toUri().path).replaceFirst('.', '');
+    return extension(fileName).replaceFirst('.', '');
   }
 
   Uri toUri() {

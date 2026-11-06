@@ -1,9 +1,12 @@
 import 'package:boorusphere/data/dio/headers_factory.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_entry.dart';
+import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
+import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -35,6 +38,13 @@ class Downloader {
 
     await sharedStorageHandle.init();
     final versionRepo = ref.read(versionRepoProvider);
+    final server = ref
+        .read(serverStateProvider)
+        .cast<Server?>()
+      .firstWhere((it) => it?.id == post.serverId, orElse: () => null);
+    final authHeaders = server == null
+        ? const <String, String>{}
+        : ServerAuthStore.headersFor(server, fileUrl);
     final taskId = await FlutterDownloader.enqueue(
       url: fileUrl,
       fileName: fileName,
@@ -44,7 +54,8 @@ class Downloader {
       headers: HeadersFactory.builder()
           .setUserAgent(versionRepo.current)
           .setReferer(createReferer(fileUrl))
-          .build(),
+          .build()
+        ..addAll(authHeaders),
     );
 
     if (taskId != null) {

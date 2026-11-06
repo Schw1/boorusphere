@@ -32,7 +32,11 @@ class Server with _$Server {
   String searchUrlOf(PageOption option, {required int page}) {
     final query = option.query.trim();
     var tags = query.isEmpty ? Server.defaultTag : query;
-    if (searchUrl.toUri().queryParameters.containsKey('offset')) {
+    if (searchUrl.contains('api/v1/images/search')) {
+      // Monbooru: no catch-all tag, and its own rating levels
+      if (tags == Server.defaultTag) tags = '';
+      tags += ' ${_monbooruRateString(option.searchRating)}';
+    } else if (searchUrl.toUri().queryParameters.containsKey('offset')) {
       // Szurubooru has exclusive-way (but still same shit) of rating
       tags += ' ${_szuruRateString(option.searchRating)}';
     } else if (searchUrl.contains('api/v1/json/search')) {
@@ -96,6 +100,16 @@ class Server with _$Server {
 String _rateString(BooruRating searchRating) {
   return switch (searchRating) {
     BooruRating.safe => 'rating:safe',
+    BooruRating.questionable => 'rating:questionable',
+    BooruRating.explicit => 'rating:explicit',
+    BooruRating.sensitive => 'rating:sensitive',
+    _ => ''
+  };
+}
+
+String _monbooruRateString(BooruRating searchRating) {
+  return switch (searchRating) {
+    BooruRating.safe => 'rating:general',
     BooruRating.questionable => 'rating:questionable',
     BooruRating.explicit => 'rating:explicit',
     BooruRating.sensitive => 'rating:sensitive',

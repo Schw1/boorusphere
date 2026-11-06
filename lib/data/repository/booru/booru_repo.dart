@@ -2,6 +2,7 @@ import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/domain/repository/imageboards_repo.dart';
 import 'package:boorusphere/presentation/provider/booru/suggestion_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
@@ -28,7 +29,11 @@ class BooruRepo implements ImageboardRepo {
   final Server server;
 
   Future<Response> _request(String url, BooruParser parser) {
-    return client.get(url, options: _opt.copyWith(headers: parser.headers));
+    return client.get(url,
+        options: _opt.copyWith(headers: {
+          ...parser.headers,
+          ...ServerAuthStore.headersFor(server, url),
+        }));
   }
 
   @override

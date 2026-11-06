@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:boorusphere/utils/logger.dart';
 import 'package:collection/collection.dart';
@@ -56,6 +58,7 @@ class BooruScanner {
   final _log = Logger('BooruScanner');
 
   late CancelToken _cancelToken = CancelToken();
+  String _token = '';
 
   final _uiLogs = ValueNotifier(<String>[]);
   final _isScanning = ValueNotifier(false);
@@ -107,7 +110,11 @@ class BooruScanner {
         testUrl,
         options: Options(
           validateStatus: (it) => it == 200,
-          headers: parser.headers,
+          headers: {
+            ...parser.headers,
+            if (server != null)
+              ...ServerAuthStore.headersFor(server, testUrl, token: _token),
+          },
           responseType: type == _ScanType.post ? ResponseType.stream : null,
         ),
         cancelToken: _cancelToken,
@@ -203,7 +210,10 @@ class BooruScanner {
     yield firstFound;
   }
 
-  Future<Server> scan(Server server) async {
+  /// [token] is sent (only to the server's own origin) for servers whose
+  /// API needs authentication, e.g. Monbooru.
+  Future<Server> scan(Server server, {String token = ''}) async {
+    _token = token.trim();
     final api = server.apiAddress.replaceFirst(RegExp(r'/$'), '');
     final home = server.homepage.replaceFirst(RegExp(r'/$'), '');
     var data = server;
@@ -238,6 +248,17 @@ class BooruScanner {
           suggestionParserId: ev.parserId,
           tagSuggestionUrl: ev.query,
           apiAddr: ev.origin,
+        );
+      }
+
+      if (data.searchParserId == MonbooruJsonParser.parserId) {
+        // Monbooru's web UI redirects unauthenticated requests to its login
+        // page, so probing post URLs would match anything.
+        _isScanning.value = false;
+        return data.copyWith(
+          postUrl: MonbooruJsonParser().postUrl,
+          apiAddr: data.apiAddr == data.homepage ? '' : data.apiAddr,
+          id: data.id.isEmpty ? home.toUri().host : data.id,
         );
       }
 

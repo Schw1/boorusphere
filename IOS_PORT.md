@@ -35,6 +35,21 @@ Video now uses `media_kit` instead of `video_player` on **all** platforms, becau
 
 Settings → Downloads → **Save to Photos** (iOS only). When enabled, every finished download is also added to the Photos library via [`gal`](https://pub.dev/packages/gal); iOS asks for permission when the toggle is first turned on. The copy in the Files app is kept, so the download list keeps working. Photos only accepts MP4/MOV/M4V videos, so WebM files stay in Files only.
 
+## Monbooru as a server
+
+Monbooru can be added as a regular server (parser `Monbooru.json`):
+
+1. Servers → Add, enter the Monbooru address (e.g. `https://booru.example.org` or `http://192.168.x.x:8455`).
+2. Enter an **API token** with `read` scope (Monbooru → Settings → Authentication) and tap **Scan**.
+
+Search uses `/api/v1/images/search`, tag suggestions `/api/v1/tags`, and the safe-mode/rating filter maps to Monbooru's `rating:general|sensitive|questionable|explicit`. In post details, **Location** opens the image page in the Monbooru web UI (`/images/{id}`) and **Source** the original source. A `?gallery=<name>` can be added through the URL suffix. Archives (CBZ) are skipped; AVIF/JXL are shown through Monbooru's WebP still.
+
+Security:
+- The token is stored in the iOS Keychain (this device only, not synced, not part of backups) and cached in memory.
+- It is only attached to requests whose origin matches the server's homepage or API address, including images, videos and downloads.
+- The settings warn when the address is plain HTTP outside the local network.
+- Known limitation: flutter_downloader keeps the request headers of a download task (including the token) in its local task database inside the app sandbox.
+
 ## Send to Monbooru
 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.

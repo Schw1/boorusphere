@@ -1,9 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
+import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -73,7 +76,7 @@ class PostDetailsButton extends ConsumerWidget {
   }
 }
 
-class PostOpenLinkButton extends StatelessWidget {
+class PostOpenLinkButton extends ConsumerWidget {
   const PostOpenLinkButton({
     super.key,
     required this.post,
@@ -82,13 +85,21 @@ class PostOpenLinkButton extends StatelessWidget {
   final Post post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final server = ref.watch(serverStateProvider).findById(post.serverId);
+    // A browser cannot send the API token, so open the post page instead of
+    // a file URL that needs it.
+    final needsToken = server != null &&
+        ServerAuthStore.tokenOf(server.id).isNotEmpty &&
+        ServerAuthStore.isOwnOrigin(server, post.originalFile);
+    final url =
+        needsToken && post.postUrl.isNotEmpty ? post.postUrl : post.originalFile;
     return IconButton(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.link_outlined),
-      onPressed: () => launchUrlString(post.originalFile,
-          mode: LaunchMode.externalApplication),
+      onPressed: () =>
+          launchUrlString(url, mode: LaunchMode.externalApplication),
     );
   }
 }
@@ -173,14 +184,19 @@ class PostDownloadButton extends HookConsumerWidget {
   }
 }
 
-class PostMonbooruButton extends HookWidget {
+class PostMonbooruButton extends HookConsumerWidget {
   const PostMonbooruButton({super.key, required this.post});
 
   final Post post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final sending = useState(false);
+    final server = ref.watch(serverStateProvider).findById(post.serverId);
+    // Posts that already come from Monbooru are not sent back to it.
+    if (server != null && MonbooruJsonParser.isMonbooru(server)) {
+      return const SizedBox.shrink();
+    }
     return IconButton(
       padding: const EdgeInsets.all(16),
       color: Colors.white,

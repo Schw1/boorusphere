@@ -5,6 +5,7 @@ import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/booru/provider.dart';
 import 'package:boorusphere/data/repository/booru/utils/booru_scanner.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
@@ -62,6 +63,12 @@ class _ServerEditor extends HookConsumerWidget {
     final apiAddr = useTextEditingController(
         text: _server.apiAddr.isEmpty ? 'https://' : _server.apiAddr);
     final cUrlSuffix = useTextEditingController(text: _server.urlSuffix);
+    final cToken = useTextEditingController(
+        text: isEditing ? ServerAuthStore.tokenOf(_server.id) : '');
+    useListenable(homepage);
+    useListenable(cToken);
+    final insecureToken = cToken.text.trim().isNotEmpty &&
+        ServerAuthStore.isInsecureRemote(homepage.text);
 
     validateAddress(String? value) {
       if (value?.contains(RegExp(r'https?://.+\..+')) == false) {
@@ -87,6 +94,27 @@ class _ServerEditor extends HookConsumerWidget {
                     labelText: context.t.servers.homepageHint,
                   ),
                   validator: validateAddress,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+                child: TextFormField(
+                  controller: cToken,
+                  obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  enableIMEPersonalizedLearning: false,
+                  decoration: InputDecoration(
+                    border: const UnderlineInputBorder(),
+                    labelText: context.t.servers.apiToken.label,
+                    helperText: insecureToken
+                        ? context.t.servers.apiToken.insecure
+                        : context.t.servers.apiToken.desc,
+                    helperMaxLines: 4,
+                    helperStyle: insecureToken
+                        ? TextStyle(color: context.colorScheme.error)
+                        : null,
+                  ),
                 ),
               ),
               if (!isEditing)
@@ -147,8 +175,9 @@ class _ServerEditor extends HookConsumerWidget {
                       apiAddr: useApiAddr.value ? apiAddr.text : '',
                       urlSuffix: cUrlSuffix.text,
                     );
-                    final result =
-                        await ScannerDialog.open(context, baseServer);
+                    final result = await ScannerDialog.open(
+                        context, baseServer,
+                        token: cToken.text);
                     if (result.searchParserId.isNotEmpty) {
                       server.value = result;
                     }
@@ -166,20 +195,24 @@ class _ServerEditor extends HookConsumerWidget {
         ServerDetails(
           server: server.value,
           isEditing: isEditing,
-          onSubmitted: (newServer) {
+          onSubmitted: (newServer) async {
             final serverPod = ref.read(serverStateProvider.notifier);
             newServer = newServer.copyWith(
               homepage: homepage.text,
               apiAddr: useApiAddr.value ? apiAddr.text : '',
             );
 
+            await ServerAuthStore.save(newServer.id, cToken.text);
             if (isEditing) {
-              serverPod.edit(_server, newServer);
+              if (_server.id != newServer.id) {
+                await ServerAuthStore.remove(_server.id);
+              }
+              await serverPod.edit(_server, newServer);
             } else {
-              serverPod.add(newServer);
+              await serverPod.add(newServer);
             }
 
-            context.router.maybePop();
+            if (context.mounted) await context.router.maybePop();
           },
         ),
       ],
@@ -191,14 +224,17 @@ class ScannerDialog extends HookConsumerWidget {
   const ScannerDialog({
     super.key,
     required this.server,
+    this.token = '',
   });
 
   final Server server;
-  static Future<Server> open(BuildContext context, Server server) async {
+  final String token;
+  static Future<Server> open(BuildContext context, Server server,
+      {String token = ''}) async {
     final result = context.navigator.push<Server>(
       DialogRoute(
         context: context,
-        builder: (context) => ScannerDialog(server: server),
+        builder: (context) => ScannerDialog(server: server, token: token),
       ),
     );
     return await result ?? server;
@@ -218,7 +254,7 @@ class ScannerDialog extends HookConsumerWidget {
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
         try {
           final unparsedErr = context.t.servers.incompatible;
-          final newServer = await scanner.scan(server);
+          final newServer = await scanner.scan(server, token: token);
           if (newServer.searchParserId.isNotEmpty) {
             result.value = newServer;
           } else {

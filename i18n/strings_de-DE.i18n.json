@@ -165,6 +165,11 @@
     "parser_type": {
       "search": "Suchparser",
       "suggestion": "Tag-Vorschlagsparser"
+    },
+    "api_token": {
+      "label": "API-Token (optional)",
+      "desc": "Nötig für Server wie Monbooru (Token mit Leserecht). Wird nur auf diesem Gerät im iOS-Schlüsselbund gespeichert, nicht im Backup, und nur an diesen Server gesendet.",
+      "insecure": "Achtung: Diese Adresse nutzt unverschlüsseltes HTTP außerhalb deines Heimnetzes, der Token würde unverschlüsselt übertragen. Nutze HTTPS."
     }
   },
   "server_query": {
