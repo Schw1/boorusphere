@@ -9,7 +9,7 @@
 #   - Info.plist: downloads visible in the Files app, background downloads,
 #     cleartext HTTP for boorus without TLS, app name
 #   - Podfile / Xcode: iOS 13 deployment target (required by media_kit)
-#   - app icon generated from assets/icons/exported/legacy-fill.png
+#   - app icon generated from assets/icons/ios-icon.png (Android icon colors, larger logo)
 set -euo pipefail
 
 if [ "$(uname)" != "Darwin" ]; then
@@ -34,12 +34,12 @@ fi
 flutter pub get
 
 # 2. App icon (non-fatal)
-if [ -f assets/icons/exported/legacy-fill.png ]; then
+if [ -f assets/icons/ios-icon.png ]; then
   cat > flutter_launcher_icons-ios.yaml <<EOF
 flutter_launcher_icons:
   ios: true
   android: false
-  image_path: "assets/icons/exported/legacy-fill.png"
+  image_path: "assets/icons/ios-icon.png"
   remove_alpha_ios: true
 EOF
   dart run flutter_launcher_icons -f flutter_launcher_icons-ios.yaml \

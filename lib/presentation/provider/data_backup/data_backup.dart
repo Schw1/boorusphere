@@ -125,6 +125,9 @@ class DataBackupState extends _$DataBackupState {
     }
 
     _invalidateProviders();
+    // ServerState is keepAlive and only filled by populate() at app start. Android
+    // restarts the app after a restore, iOS cannot, so refill the list here.
+    await ref.read(serverStateProvider.notifier).populate();
     state = const BackupResult.imported();
     // restart_app cannot relaunch the app by itself on iOS
     if (Platform.isAndroid) {
