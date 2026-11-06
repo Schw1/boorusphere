@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show Random;
 
 import 'package:boorusphere/data/repository/booru/entity/booru_error.dart';
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
@@ -26,6 +27,7 @@ class PageState extends _$PageState {
   final _posts = <Post>[];
   final _filteredPosts = <Post>[];
   int _page = 0;
+  final _random = Random();
 
   @override
   FetchResult<PageData> build() {
@@ -81,9 +83,15 @@ class PageState extends _$PageState {
     }
 
     final settings = ref.read(serverSettingStateProvider);
-    final option = state.data.option.copyWith(
+    final current = state.data.option;
+    final option = current.copyWith(
       limit: settings.postLimit,
       searchRating: settings.searchRating,
+      random: settings.searchRandom,
+      // new seed for every new search, kept while loading more pages
+      seed: current.clear || current.seed == 0
+          ? 1 + _random.nextInt(0x7ffffffe)
+          : current.seed,
     );
 
     if (option.clear) {

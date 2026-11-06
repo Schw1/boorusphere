@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
+import 'package:boorusphere/presentation/provider/data_backup/auto_backup.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_option.dart';
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_result.dart';
@@ -9,6 +10,7 @@ import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 @RoutePage()
 class DataBackupPage extends StatelessWidget {
@@ -117,6 +119,80 @@ class _Content extends HookConsumerWidget {
                 .restore(onConfirm: () => _warningDialog(context));
           },
         ),
+        const Divider(),
+        const _AutoBackupSection(),
+      ],
+    );
+  }
+}
+
+class _AutoBackupSection extends HookConsumerWidget {
+  const _AutoBackupSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auto = ref.watch(autoBackupProvider);
+    // AutoBackup reads its values from the settings box; bump to rebuild.
+    final revision = useState(0);
+    void refresh() => revision.value++;
+    final t = context.t.dataBackup.auto;
+    final last = auto.lastRun;
+    final lastText = last == null
+        ? t.never
+        : t.last(time: DateFormat.yMd().add_Hm().format(last));
+
+    return Column(
+      children: [
+        SwitchListTile(
+          title: Text(t.title),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('${t.desc}\n$lastText'),
+          ),
+          value: auto.enabled,
+          onChanged: (value) async {
+            await auto.setEnabled(value);
+            refresh();
+          },
+        ),
+        if (auto.enabled) ...[
+          ListTile(
+            title: Text(t.interval),
+            trailing: DropdownButton<AutoBackupInterval>(
+              value: auto.interval,
+              underline: const SizedBox.shrink(),
+              items: [
+                DropdownMenuItem(
+                    value: AutoBackupInterval.daily, child: Text(t.daily)),
+                DropdownMenuItem(
+                    value: AutoBackupInterval.weekly, child: Text(t.weekly)),
+              ],
+              onChanged: (value) async {
+                if (value == null) return;
+                await auto.setInterval(value);
+                refresh();
+              },
+            ),
+          ),
+          ListTile(
+            title: Text(t.keep),
+            trailing: DropdownButton<int>(
+              value: AutoBackup.keepOptions.contains(auto.keep)
+                  ? auto.keep
+                  : 3,
+              underline: const SizedBox.shrink(),
+              items: AutoBackup.keepOptions
+                  .map((n) => DropdownMenuItem(
+                      value: n, child: Text(t.keepValue(count: '$n'))))
+                  .toList(),
+              onChanged: (value) async {
+                if (value == null) return;
+                await auto.setKeep(value);
+                refresh();
+              },
+            ),
+          ),
+        ],
       ],
     );
   }

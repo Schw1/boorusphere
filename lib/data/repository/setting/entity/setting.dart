@@ -15,5 +15,10 @@ enum Setting {
   videoPlayerMuted,
   imeIncognito,
   searchRating,
-  downloadsSaveToPhotos;
+  downloadsSaveToPhotos,
+  backupAutoEnabled,
+  backupAutoInterval,
+  backupAutoKeep,
+  backupAutoLast,
+  searchRandom;
 }

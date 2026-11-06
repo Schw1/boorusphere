@@ -45,9 +45,15 @@ class Server with _$Server {
     } else {
       tags += ' ${_rateString(option.searchRating)}';
     }
+    var extraParams = '';
+    if (option.random) {
+      final random = _randomOrder(option.seed);
+      tags += random.tag;
+      extraParams = random.params;
+    }
     tags = Uri.encodeComponent(tags.trim());
 
-    return '$homepage/$searchUrl$urlSuffix'
+    return '$homepage/$searchUrl$urlSuffix$extraParams'
         .replaceAll('{tags}', tags)
         .replaceAll('{page-id}', '$page')
         .replaceAll('{post-offset}', (page * option.limit).toString())
@@ -71,6 +77,28 @@ class Server with _$Server {
       return url.replaceAll(RegExp(r'[*%]*{tag-part}[*%]*'), '*');
     }
     return url.replaceAll('{tag-part}', encq);
+  }
+
+  /// How each booru engine is asked for a random order: either an extra
+  /// search tag or extra URL parameters.
+  ({String tag, String params}) _randomOrder(int seed) {
+    if (searchUrl.contains('api/v1/images/search')) {
+      // Monbooru: a seed keeps paging stable (no repeats across pages)
+      return (tag: '', params: '&sort=random&seed=$seed');
+    }
+    if (searchUrl.contains('api/v1/json/search')) {
+      // Philomena / booru-on-rails
+      return (tag: '', params: '&sf=random');
+    }
+    final parser = searchParserId.toLowerCase();
+    if (parser.startsWith('gelbooru') ||
+        parser.startsWith('safebooru') ||
+        parser.startsWith('szurubooru') ||
+        searchUrl.toUri().queryParameters.containsKey('offset')) {
+      return (tag: ' sort:random', params: '');
+    }
+    // Danbooru, Moebooru, e621, Shimmie
+    return (tag: ' order:random', params: '');
   }
 
   String postUrlOf(int id) {

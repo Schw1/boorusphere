@@ -246,6 +246,17 @@
       "invalid": "Ungültige Sicherungsdatei",
       "warning": "Warnung! Diese Aktion überschreibt alle vorhandenen Daten.\nMöchten Sie wirklich fortfahren?",
       "loading": "Daten werden wiederhergestellt..."
+    },
+    "auto": {
+      "title": "Automatisches Backup",
+      "desc": "Sichert alle Daten beim Öffnen der App, wenn das letzte automatische Backup älter als das gewählte Intervall ist. Ältere automatische Backups werden gelöscht, manuelle bleiben erhalten.",
+      "interval": "Häufigkeit",
+      "daily": "Täglich",
+      "weekly": "Wöchentlich",
+      "keep": "Behalten",
+      "keep_value": "Letzte ${count}",
+      "last": "Letztes automatisches Backup: ${time}",
+      "never": "Noch kein automatisches Backup"
     }
   },
   "monbooru": {
@@ -270,5 +281,10 @@
       "api_disabled": "monloader-API ist deaktiviert",
       "http": "Fehler ${code}"
     }
+  },
+  "random_order": {
+    "label": "zufällig",
+    "on": "an",
+    "off": "aus"
   }
 }

@@ -10,6 +10,9 @@ class PageOption with _$PageOption {
     @Default(false) bool clear,
     @Default(PageOption.defaultLimit) int limit,
     @Default(BooruRating.safe) BooruRating searchRating,
+    @Default(false) bool random,
+    // Seed for servers that support stable random paging (Monbooru)
+    @Default(0) int seed,
   }) = _PageOption;
   const PageOption._();
 

@@ -186,7 +186,48 @@ class _OptionBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           _RatingButton(),
+          SizedBox(width: 8),
+          _RandomButton(),
         ],
+      ),
+    );
+  }
+}
+
+class _RandomButton extends ConsumerWidget {
+  const _RandomButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final random =
+        ref.watch(serverSettingStateProvider.select((it) => it.searchRandom));
+    final t = context.t.randomOrder;
+    final label = '${t.label}: ${random ? t.on : t.off}';
+
+    return TextButton.icon(
+      onPressed: () => ref
+          .read(serverSettingStateProvider.notifier)
+          .setRandom(!random),
+      icon: Icon(
+        Icons.shuffle_rounded,
+        size: 16,
+        color: random ? context.colorScheme.primary : context.colorScheme.onSurface,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+        minimumSize: const Size(1, 1),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        side: BorderSide(
+          width: 1,
+          color: random
+              ? context.colorScheme.primary
+              : context.colorScheme.surfaceContainerHighest,
+        ),
+        elevation: 0,
+      ),
+      label: Text(
+        label.toLowerCase(),
+        style: TextStyle(color: context.colorScheme.onSurface),
       ),
     );
   }
