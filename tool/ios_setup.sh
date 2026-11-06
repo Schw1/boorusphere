@@ -33,18 +33,22 @@ fi
 
 flutter pub get
 
-# 2. App icon (non-fatal)
-if [ -f assets/icons/ios-icon.png ]; then
-  cat > flutter_launcher_icons-ios.yaml <<EOF
+# 2. App icon
+# The config file must NOT be named flutter_launcher_icons-<x>.yaml: the tool
+# treats <x> as a flavor and writes AppIcon-<x>.appiconset, which the app never
+# uses (it keeps the default Flutter icon).
+cat > ios_launcher_icons.yaml <<EOF
 flutter_launcher_icons:
   ios: true
   android: false
   image_path: "assets/icons/ios-icon.png"
   remove_alpha_ios: true
 EOF
-  dart run flutter_launcher_icons -f flutter_launcher_icons-ios.yaml \
-    || echo "WARNING: icon generation failed, continuing with the default icon"
-  rm -f flutter_launcher_icons-ios.yaml
+dart run flutter_launcher_icons -f ios_launcher_icons.yaml
+rm -f ios_launcher_icons.yaml
+if ls -d ios/Runner/Assets.xcassets/AppIcon-*.appiconset >/dev/null 2>&1; then
+  echo "ERROR: icons were generated as a flavor icon set" >&2
+  exit 1
 fi
 
 # 3. AppDelegate (flutter_downloader needs to register its plugins for background isolates)

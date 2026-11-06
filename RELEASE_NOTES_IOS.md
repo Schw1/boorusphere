@@ -2,7 +2,7 @@ Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. wit
 
 ## New
 - **Send to Monbooru:** a cloud button in the post viewer sends the post to Monbooru through the monloader API. Set it up under Settings → "Monbooru (monloader)" (address + API token with write scope).
-- **App icon** now uses the colors of the Android app.
+- **App icon** now matches the Android app (earlier builds still showed the default Flutter icon).
 
 ## Fixed
 - After restoring a backup, the server list stayed empty until the app was restarted.
