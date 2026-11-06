@@ -2,6 +2,11 @@ name: Build iOS (unsigned IPA)
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release-Tag (z. B. v1.5.4-ios.1); leer = nur bauen'
+        required: false
+        default: ''
   push:
     branches: [main]
     tags: ['v*-ios*']
@@ -76,8 +81,11 @@ jobs:
           if-no-files-found: error
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          name: Boorusphere iOS ${{ inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           files: boorusphere-unsigned.ipa
           body_path: RELEASE_NOTES_IOS.md
