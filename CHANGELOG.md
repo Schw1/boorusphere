@@ -7,7 +7,7 @@
 * iOS: random order toggle in the search bar for every supported booru type
 * iOS: server icons are loaded from the server itself, including icons linked from its start or login page (fixes Monbooru); local addresses are no longer sent to DuckDuckGo
 * iOS: monloader settings (Send to Monbooru) can be included in backups
-* iOS: additional zoom step with one column less (bigger thumbnails, mainly for tablets)
+* iOS: two additional zoom steps with one or two columns less (bigger thumbnails, mainly for tablets)
 * iOS: installed version is always shown in the drawer and About page
 * iOS: new features follow the app language (English, German)
 * iOS: fixed app icon and empty server list after restoring a backup

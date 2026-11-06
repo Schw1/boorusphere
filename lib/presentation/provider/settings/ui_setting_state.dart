@@ -24,9 +24,9 @@ class UiSettingState extends _$UiSettingState {
   }
 
   Future<int> cycleGrid() async {
-    // -1 = one column less than the width-based default (bigger thumbnails,
-    // mainly for tablets), up to +2 columns.
-    state = state.copyWith(grid: state.grid < 2 ? state.grid + 1 : -1);
+    // -2/-1 = two/one columns less than the width-based default (bigger
+    // thumbnails, mainly for tablets), up to +2 columns.
+    state = state.copyWith(grid: state.grid < 2 ? state.grid + 1 : -2);
     final repo = ref.read(settingsRepoProvider);
 
     await repo.put(Setting.uiTimelineGrid, state.grid);
