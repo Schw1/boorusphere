@@ -1,47 +1,38 @@
-# iOS-Port von Boorusphere
+# Boorusphere iOS port
 
-Dieser Fork baut eine **unsignierte IPA** über GitHub Actions (kein Mac nötig).
+This fork builds an **unsigned IPA** with GitHub Actions, so no Mac is needed.
 
-## Bauen
+## Building
 
-1. Fork auf GitHub pushen (öffentliches Repo = kostenlose macOS-Runner).
-2. Actions → **Build iOS (unsigned IPA)** → *Run workflow* (oder Push auf den Branch `ios-port`).
-3. Artefakt `boorusphere-unsigned-ipa` herunterladen und entpacken → `boorusphere-unsigned.ipa`.
+- Every push to `main` runs **Build iOS (unsigned IPA)** and uploads the artifact `boorusphere-unsigned-ipa`.
+- To publish a release: Actions → **Build iOS (unsigned IPA)** → *Run workflow*, and enter a tag such as `v1.5.4-ios.2`. The workflow builds the app, creates the tag and attaches `boorusphere-unsigned.ipa` to the release, using `RELEASE_NOTES_IOS.md` as the release text.
 
-Der Workflow ruft `tool/ios_setup.sh` auf. Das Skript erzeugt `ios/` mit `flutter create`
-und patcht danach AppDelegate (flutter_downloader), Info.plist, Podfile und das App-Icon.
-`ios/` wird deshalb nicht eingecheckt.
+The workflow runs on `macos-15-intel`. That only affects the build machine; the app itself is built for iPhone (arm64). The arm64 macOS runner pool frequently cancels jobs for lack of capacity.
 
-## Installieren (ohne Mac)
+The workflow calls `tool/ios_setup.sh`. The script generates `ios/` with `flutter create` and then patches AppDelegate (flutter_downloader), Info.plist, the Podfile and the app icon. That is why `ios/` is not committed.
 
-- **AltStore PAL (EU)** installieren → darüber **AltStore Classic** installieren → in Classic die `.ipa`
-  öffnen. Signiert wird mit der eigenen Apple-ID (Free-Account: 7 Tage Laufzeit, 3 Apps), Classic
-  erneuert die Signatur im Hintergrund.
-- Alternativ SideStore, oder Sideloadly unter Windows.
+## Installing (without a Mac)
 
-## Was auf iOS anders ist
+- **Sideloadly** (Windows/macOS): sign the IPA with your Apple ID and install it over USB. With a free account the signature expires after 7 days. Developer Mode must be enabled on the device.
+- Alternatively AltStore Classic (via AltStore PAL in the EU) or SideStore.
 
-| Bereich | Android | iOS |
+## Differences on iOS
+
+| Area | Android | iOS |
 | --- | --- | --- |
 | Version / `sdkVersion` | Pigeon `AppEnv` (Kotlin) | `package_info_plus`, `sdkVersion = 99` |
-| Download-Ordner | öffentlicher Downloads-Ordner (Pigeon `StorageUtil`) | App-Ordner `Documents/Boorusphere`, sichtbar in der Dateien-App |
-| Datei öffnen | Intent (Pigeon `StorageUtil`) | `open_filex` |
-| Medien-Scan, „Medien verstecken" | `media_scanner`, `.nomedia` | entfällt (Einstellung ausgeblendet) |
-| Benachrichtigungs-Berechtigung für Downloads | wird abgefragt | wird nicht abgefragt |
-| In-App-Updater (APK) | aktiv | ausgeblendet |
-| Neustart nach Backup-Wiederherstellung | automatisch (`restart_app`) | App manuell neu öffnen |
-| Video | media_kit (libmpv) | media_kit (libmpv), spielt auch WebM/VP9 |
+| Download folder | public Downloads folder (Pigeon `StorageUtil`) | app folder `Documents/Boorusphere`, visible in the Files app |
+| Opening files | Intent (Pigeon `StorageUtil`) | `open_filex` |
+| Media scan, "Hide media" | `media_scanner`, `.nomedia` | not applicable (setting hidden) |
+| Notification permission for downloads | requested | not requested |
+| In-app updater (APK) | enabled | hidden |
+| After restoring a backup | app restarts (`restart_app`) | state is reloaded in place |
+| Video | media_kit (libmpv) | media_kit (libmpv), plays WebM/VP9 too |
 
-Hinweis: Video läuft jetzt auf **allen** Plattformen über `media_kit` statt `video_player`
-(AVPlayer kann auf iOS kein WebM).
+Video now uses `media_kit` instead of `video_player` on **all** platforms, because AVPlayer on iOS cannot play WebM.
 
-## Nicht getestet
+## Send to Monbooru
 
-Der Port wurde ohne Flutter-SDK und ohne Gerät geschrieben. Erwartbare Stellen für Nacharbeit, falls der
-erste Build oder Start scheitert: Paketversionen in `pubspec.yaml` (`flutter pub get`),
-`tool/ios_setup.sh` (andere Flutter-Version = anderes `AppDelegate`-Template) und das Verhalten von
-`flutter_downloader` im Hintergrund.
+The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.
 
-## An Monbooru senden
-
-Im Post-Viewer gibt es neben Download einen Wolken-Knopf. Er schickt die Post-Seite über die monloader-API (`POST /api/v1/queue`) an monloader, der sie per gallery-dl lädt und in Monbooru ablegt. Adresse und Token (Schreibrecht) werden unter Einstellungen → „Monbooru (monloader)" eingetragen; sie liegen nur lokal auf dem Gerät und sind nicht Teil des Backups. Das iPhone muss die Adresse erreichen können.
+Set the address and an API token with write scope under Settings → "Monbooru (monloader)". Both are stored only on the device and are not part of the backup. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release-Tag (z. B. v1.5.4-ios.1); leer = nur bauen'
+        description: 'Release tag (e.g. v1.5.4-ios.2); leave empty to only build'
         required: false
         default: ''
   push:

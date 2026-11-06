@@ -199,7 +199,7 @@ class PostMonbooruButton extends HookWidget {
               messenger
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBar(
-                  content: Text(error ?? 'An Monbooru gesendet'),
+                  content: Text(error ?? 'Sent to Monbooru'),
                   duration: const Duration(seconds: 3),
                 ));
             },

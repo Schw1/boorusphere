@@ -428,7 +428,7 @@ class _Monbooru extends StatelessWidget {
       title: const Text('Monbooru (monloader)'),
       subtitle: const Padding(
         padding: EdgeInsets.only(top: 8),
-        child: Text('Adresse und Token für „An Monbooru senden"'),
+        child: Text('Address and token for "Send to Monbooru"'),
       ),
       onTap: () => showDialog(
         context: context,
@@ -468,9 +468,9 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
   }
 
   Future<void> _test() async {
-    setState(() => _status = 'Teste …');
+    setState(() => _status = 'Testing…');
     final error = await MonbooruSender.testConnection(_url.text);
-    if (mounted) setState(() => _status = error ?? 'Verbindung OK');
+    if (mounted) setState(() => _status = error ?? 'Connection OK');
   }
 
   @override
@@ -487,7 +487,7 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
               keyboardType: TextInputType.url,
               autocorrect: false,
               decoration: const InputDecoration(
-                labelText: 'monloader-Adresse',
+                labelText: 'monloader address',
                 hintText: 'http://192.168.0.10:8080',
               ),
             ),
@@ -496,7 +496,7 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
               autocorrect: false,
               obscureText: true,
               decoration: const InputDecoration(
-                labelText: 'API-Token (Schreibrecht)',
+                labelText: 'API token (write scope)',
               ),
             ),
             if (_status != null)
@@ -508,17 +508,17 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _test, child: const Text('Testen')),
+        TextButton(onPressed: _test, child: const Text('Test')),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () async {
             await MonbooruSender.save(_url.text, _token.text);
             if (context.mounted) Navigator.of(context).pop();
           },
-          child: const Text('Speichern'),
+          child: const Text('Save'),
         ),
       ],
     );

@@ -59,9 +59,9 @@ class MonbooruSender {
     try {
       final res = await _dio().get('${normalizeUrl(url)}/health');
       if (res.statusCode == 200) return null;
-      return 'Antwort ${res.statusCode}';
+      return 'Response ${res.statusCode}';
     } catch (e) {
-      return 'Nicht erreichbar: ${e is DioException ? e.message ?? e.type.name : e}';
+      return 'Unreachable: ${e is DioException ? e.message ?? e.type.name : e}';
     }
   }
 
@@ -69,13 +69,13 @@ class MonbooruSender {
   static Future<String?> send(Post post) async {
     final config = await load();
     if (!config.isComplete) {
-      return 'Monbooru ist nicht eingerichtet (Einstellungen)';
+      return 'Monbooru is not set up (see Settings)';
     }
 
     final pageUrl = post.postUrl;
     final fileUrl = post.originalFile;
     final target = pageUrl.isNotEmpty ? pageUrl : fileUrl;
-    if (target.isEmpty) return 'Post hat keine URL';
+    if (target.isEmpty) return 'Post has no URL';
 
     try {
       var res = await _post(config, target, post, pageUrl: pageUrl);
@@ -86,14 +86,14 @@ class MonbooruSender {
       final code = res.statusCode ?? 0;
       if (code == 200 || code == 202) return null;
       return switch (code) {
-        401 => 'Token ungültig',
-        403 => 'Token hat keine Schreibrechte',
-        409 => 'Monbooru in monloader nicht konfiguriert oder pausiert',
-        503 => 'monloader-API ist deaktiviert',
-        _ => 'Fehler $code',
+        401 => 'Invalid token',
+        403 => 'Token lacks write scope',
+        409 => 'Monbooru is not configured in monloader or is paused',
+        503 => 'monloader API is disabled',
+        _ => 'Error $code',
       };
     } catch (e) {
-      return 'Nicht erreichbar: ${e is DioException ? e.message ?? e.type.name : e}';
+      return 'Unreachable: ${e is DioException ? e.message ?? e.type.name : e}';
     }
   }
 

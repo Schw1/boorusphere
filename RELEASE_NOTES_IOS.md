@@ -1,16 +1,16 @@
-Inoffizieller iOS-Port von Boorusphere 1.5.4 (unsigniertes IPA zum Sideloaden, z. B. mit Sideloadly oder AltStore).
+Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. with Sideloadly or AltStore).
 
-## Neu
-- **An Monbooru senden:** Wolken-Knopf im Post-Viewer schickt den Post über die monloader-API an Monbooru. Einrichtung unter Einstellungen → „Monbooru (monloader)" (Adresse + API-Token mit Schreibrecht).
-- **App-Icon** in den Farben der Android-App.
+## New
+- **Send to Monbooru:** a cloud button in the post viewer sends the post to Monbooru through the monloader API. Set it up under Settings → "Monbooru (monloader)" (address + API token with write scope).
+- **App icon** now uses the colors of the Android app.
 
-## Behoben
-- Nach dem Wiederherstellen eines Backups war die Serverliste bis zum Neustart leer.
+## Fixed
+- After restoring a backup, the server list stayed empty until the app was restarted.
 
-## iOS-Port allgemein
-- Videos (auch WebM) über media_kit.
-- Downloads und Backups landen in der Dateien-App unter „Auf meinem iPhone → Boorusphere".
-- Kein In-App-Updater und keine Android-spezifischen Optionen.
+## iOS port in general
+- Videos (including WebM) play through media_kit.
+- Downloads and backups are stored in the Files app under "On My iPhone → Boorusphere".
+- No in-app updater and no Android-specific options.
 
 ## Installation
-`boorusphere-unsigned.ipa` herunterladen und mit Sideloadly installieren. Mit kostenloser Apple-ID läuft die Signatur nach 7 Tagen ab und muss erneuert werden. Entwicklermodus auf dem iPhone muss aktiv sein.
+Download `boorusphere-unsigned.ipa` and install it with Sideloadly. With a free Apple ID the signature expires after 7 days and must be renewed. Developer Mode must be enabled on the iPhone.
