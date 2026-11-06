@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/constant/app.dart';
+import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
@@ -176,11 +177,10 @@ class AppVersionTile extends ConsumerWidget {
     final appVersions = ref.watch(appVersionsStateProvider);
     final updateProgress = ref.watch(appUpdateProgressProvider);
 
+    // Shown from the installed app, independent of the online update check.
+    final current = ref.watch(versionRepoProvider).current;
     final currentTile = ListTile(
-      title: appVersions.maybeWhen(
-        data: (data) => Text('Boorusphere ${data.current}'),
-        orElse: () => const Text('Boorusphere'),
-      ),
+      title: Text('Boorusphere ${displayVersion(current)}'),
       leading: const Icon(Icons.info_outline),
       onTap: () => context.router.push(const AboutRoute()),
     );

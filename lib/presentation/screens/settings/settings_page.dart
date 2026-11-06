@@ -12,6 +12,7 @@ import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
 import 'package:boorusphere/presentation/utils/hooks/markmayneedrebuild.dart';
 import 'package:extended_image/extended_image.dart' as extended_image;
 import 'package:flutter/material.dart';
@@ -138,12 +139,10 @@ class _SaveToPhotos extends ConsumerWidget {
         .watch(downloadSettingStateProvider.select((it) => it.saveToPhotos));
 
     return SwitchListTile(
-      title: const Text('Save to Photos'),
-      subtitle: const Padding(
-        padding: EdgeInsets.only(top: 8),
-        child: Text(
-            'Also add downloaded images and videos to the Photos app. '
-            'WebM videos are not supported by Photos and stay in Files.'),
+      title: Text(context.t.settings.saveToPhotos.title),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(context.t.settings.saveToPhotos.desc),
       ),
       value: value,
       onChanged: (enable) async {
@@ -153,13 +152,11 @@ class _SaveToPhotos extends ConsumerWidget {
           return;
         }
         final messenger = ScaffoldMessenger.of(context);
+        final noAccess = context.t.settings.saveToPhotos.noAccess;
         if (await PhotosSaver.requestAccess()) {
           await notifier.setSaveToPhotos(true);
         } else {
-          messenger.showSnackBar(const SnackBar(
-            content: Text(
-                'No access to Photos. Allow it in iOS Settings → Boorusphere.'),
-          ));
+          messenger.showSnackBar(SnackBar(content: Text(noAccess)));
         }
       },
     );
@@ -465,10 +462,10 @@ class _Monbooru extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: const Text('Monbooru (monloader)'),
-      subtitle: const Padding(
-        padding: EdgeInsets.only(top: 8),
-        child: Text('Address and token for "Send to Monbooru"'),
+      title: Text(context.t.monbooru.settings.title),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(context.t.monbooru.settings.desc),
       ),
       onTap: () => showDialog(
         context: context,
@@ -508,15 +505,17 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
   }
 
   Future<void> _test() async {
-    setState(() => _status = 'Testing…');
+    setState(() => _status = context.t.monbooru.settings.testing);
     final error = await MonbooruSender.testConnection(_url.text);
-    if (mounted) setState(() => _status = error ?? 'Connection OK');
+    if (!mounted) return;
+    setState(() => _status =
+        error?.describe(context) ?? context.t.monbooru.settings.ok);
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Monbooru (monloader)'),
+      title: Text(context.t.monbooru.settings.title),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -526,8 +525,8 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
               controller: _url,
               keyboardType: TextInputType.url,
               autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'monloader address',
+              decoration: InputDecoration(
+                labelText: context.t.monbooru.settings.address,
                 hintText: 'http://192.168.0.10:8080',
               ),
             ),
@@ -535,8 +534,8 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
               controller: _token,
               autocorrect: false,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'API token (write scope)',
+              decoration: InputDecoration(
+                labelText: context.t.monbooru.settings.token,
               ),
             ),
             if (_status != null)
@@ -548,17 +547,18 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _test, child: const Text('Test')),
+        TextButton(
+            onPressed: _test, child: Text(context.t.monbooru.settings.test)),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.t.cancel),
         ),
         TextButton(
           onPressed: () async {
             await MonbooruSender.save(_url.text, _token.text);
             if (context.mounted) Navigator.of(context).pop();
           },
-          child: const Text('Save'),
+          child: Text(context.t.save),
         ),
       ],
     );

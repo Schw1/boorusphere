@@ -220,6 +220,11 @@
       "title": "Clear cache",
       "desc": "Clear loaded content from cache",
       "done": "Cache cleared"
+    },
+    "save_to_photos": {
+      "title": "Save to Photos",
+      "desc": "Also add downloaded images and videos to the Photos app. WebM videos are not supported by Photos and stay in Files.",
+      "no_access": "No access to Photos. Allow it in iOS Settings → Boorusphere."
     }
   },
   "data_backup": {
@@ -238,6 +243,29 @@
       "invalid": "Invalid backup file",
       "warning": "Warning! this action will overwrite any existing data.\nAre you sure you want to continue ?",
       "loading": "Restoring data..."
+    }
+  },
+  "monbooru": {
+    "send": "Send to Monbooru",
+    "sent": "Sent to Monbooru",
+    "settings": {
+      "title": "Monbooru (monloader)",
+      "desc": "Address and token for \"Send to Monbooru\"",
+      "address": "monloader address",
+      "token": "API token (write scope)",
+      "test": "Test",
+      "testing": "Testing…",
+      "ok": "Connection OK"
+    },
+    "error": {
+      "not_configured": "Monbooru is not set up (see Settings)",
+      "no_url": "Post has no URL",
+      "unreachable": "Unreachable: ${detail}",
+      "invalid_token": "Invalid token",
+      "no_write_scope": "Token lacks write scope",
+      "unavailable": "Monbooru is not configured in monloader or is paused",
+      "api_disabled": "monloader API is disabled",
+      "http": "Error ${code}"
     }
   }
 }

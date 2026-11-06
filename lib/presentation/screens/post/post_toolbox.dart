@@ -1,11 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
 import 'package:flutter/material.dart';
@@ -189,17 +191,20 @@ class PostMonbooruButton extends HookWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.cloud_upload_outlined),
+      tooltip: context.t.monbooru.send,
       onPressed: sending.value
           ? null
           : () async {
               final messenger = ScaffoldMessenger.of(context);
               sending.value = true;
               final error = await MonbooruSender.send(post);
-              if (context.mounted) sending.value = false;
+              if (!context.mounted) return;
+              sending.value = false;
               messenger
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBar(
-                  content: Text(error ?? 'Sent to Monbooru'),
+                  content: Text(error?.describe(context) ??
+                      context.t.monbooru.sent),
                   duration: const Duration(seconds: 3),
                 ));
             },

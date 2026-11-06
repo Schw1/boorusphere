@@ -16,6 +16,25 @@ class MonbooruConfig {
   bool get isComplete => url.isNotEmpty && token.isNotEmpty;
 }
 
+enum MonbooruErrorKind {
+  notConfigured,
+  noUrl,
+  unreachable,
+  invalidToken,
+  noWriteScope,
+  unavailable,
+  apiDisabled,
+  http,
+}
+
+/// Error from monloader; the UI turns it into a translated message.
+class MonbooruError {
+  const MonbooruError(this.kind, [this.detail = '']);
+
+  final MonbooruErrorKind kind;
+  final String detail;
+}
+
 class MonbooruSender {
   static const _boxName = 'monbooru';
 
@@ -54,28 +73,29 @@ class MonbooruSender {
         validateStatus: (_) => true,
       ));
 
-  /// Returns null when reachable, otherwise an error message.
-  static Future<String?> testConnection(String url) async {
+  /// Returns null when reachable, otherwise the error.
+  static Future<MonbooruError?> testConnection(String url) async {
     try {
       final res = await _dio().get('${normalizeUrl(url)}/health');
       if (res.statusCode == 200) return null;
-      return 'Response ${res.statusCode}';
+      return MonbooruError(MonbooruErrorKind.http, '${res.statusCode}');
     } catch (e) {
-      return 'Unreachable: ${e is DioException ? e.message ?? e.type.name : e}';
+      return MonbooruError(MonbooruErrorKind.unreachable,
+          e is DioException ? e.message ?? e.type.name : '$e');
     }
   }
 
-  /// Returns null on success, otherwise an error message.
-  static Future<String?> send(Post post) async {
+  /// Returns null on success, otherwise the error.
+  static Future<MonbooruError?> send(Post post) async {
     final config = await load();
     if (!config.isComplete) {
-      return 'Monbooru is not set up (see Settings)';
+      return const MonbooruError(MonbooruErrorKind.notConfigured);
     }
 
     final pageUrl = post.postUrl;
     final fileUrl = post.originalFile;
     final target = pageUrl.isNotEmpty ? pageUrl : fileUrl;
-    if (target.isEmpty) return 'Post has no URL';
+    if (target.isEmpty) return const MonbooruError(MonbooruErrorKind.noUrl);
 
     try {
       var res = await _post(config, target, post, pageUrl: pageUrl);
@@ -86,14 +106,15 @@ class MonbooruSender {
       final code = res.statusCode ?? 0;
       if (code == 200 || code == 202) return null;
       return switch (code) {
-        401 => 'Invalid token',
-        403 => 'Token lacks write scope',
-        409 => 'Monbooru is not configured in monloader or is paused',
-        503 => 'monloader API is disabled',
-        _ => 'Error $code',
+        401 => const MonbooruError(MonbooruErrorKind.invalidToken),
+        403 => const MonbooruError(MonbooruErrorKind.noWriteScope),
+        409 => const MonbooruError(MonbooruErrorKind.unavailable),
+        503 => const MonbooruError(MonbooruErrorKind.apiDisabled),
+        _ => MonbooruError(MonbooruErrorKind.http, '$code'),
       };
     } catch (e) {
-      return 'Unreachable: ${e is DioException ? e.message ?? e.type.name : e}';
+      return MonbooruError(MonbooruErrorKind.unreachable,
+          e is DioException ? e.message ?? e.type.name : '$e');
     }
   }
 

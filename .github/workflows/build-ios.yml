@@ -49,9 +49,18 @@ jobs:
         run: flutter analyze --no-fatal-infos --no-fatal-warnings lib
 
       - name: Build iOS (no codesign)
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
         run: |
           set -o pipefail
-          if ! flutter build ios --release --no-codesign -v > build.log 2>&1; then
+          # Version label shown in the app (About page and drawer)
+          if [ -z "$RELEASE_TAG" ]; then
+            BASE=$(grep -E '^version:' pubspec.yaml | sed -E 's/version: *([0-9.]+).*/\1/')
+            RELEASE_TAG="${BASE}-ios-dev+${GITHUB_SHA::7}"
+          fi
+          echo "IOS_RELEASE=$RELEASE_TAG"
+          if ! flutter build ios --release --no-codesign -v \
+              --dart-define=IOS_RELEASE="$RELEASE_TAG" > build.log 2>&1; then
             echo "::group::Errors"
             grep -nE "error:|Error:|\*\* BUILD FAILED|Command .* failed" build.log | tail -100 || true
             echo "::endgroup::"

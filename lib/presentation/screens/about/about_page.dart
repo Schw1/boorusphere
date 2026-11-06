@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/repository/version/app_version_repo.dart';
 import 'package:boorusphere/data/repository/version/entity/app_version.dart';
+import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
@@ -49,15 +50,12 @@ class AboutPage extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                child: appVersions.maybeWhen(
-                  data: (data) {
-                    return Text(
-                      context.t.version(version: '${data.current} - $kAppArch'),
-                      style: context.theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w400),
-                    );
-                  },
-                  orElse: SizedBox.shrink,
+                child: Text(
+                  context.t.version(
+                      version: '${displayVersion(ref.watch(versionRepoProvider).current)}'
+                          ' - $kAppArch'),
+                  style: context.theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w400),
                 ),
               ),
               if (kSupportsInAppUpdate)

@@ -218,6 +218,11 @@
       "title": "Cache löschen",
       "desc": "Geladenen Inhalt aus dem Cache löschen",
       "done": "Cache gelöscht"
+    },
+    "save_to_photos": {
+      "title": "In Fotos speichern",
+      "desc": "Heruntergeladene Bilder und Videos zusätzlich in der Fotos-App ablegen. WebM-Videos unterstützt Fotos nicht, sie bleiben in Dateien.",
+      "no_access": "Kein Zugriff auf Fotos. Erlaube ihn in den iOS-Einstellungen → Boorusphere."
     }
   },
   "data_backup": {
@@ -236,6 +241,29 @@
       "invalid": "Ungültige Sicherungsdatei",
       "warning": "Warnung! Diese Aktion überschreibt alle vorhandenen Daten.\nMöchten Sie wirklich fortfahren?",
       "loading": "Daten werden wiederhergestellt..."
+    }
+  },
+  "monbooru": {
+    "send": "An Monbooru senden",
+    "sent": "An Monbooru gesendet",
+    "settings": {
+      "title": "Monbooru (monloader)",
+      "desc": "Adresse und Token für „An Monbooru senden“",
+      "address": "monloader-Adresse",
+      "token": "API-Token (Schreibrecht)",
+      "test": "Testen",
+      "testing": "Teste…",
+      "ok": "Verbindung OK"
+    },
+    "error": {
+      "not_configured": "Monbooru ist nicht eingerichtet (siehe Einstellungen)",
+      "no_url": "Post hat keine URL",
+      "unreachable": "Nicht erreichbar: ${detail}",
+      "invalid_token": "Token ungültig",
+      "no_write_scope": "Token hat keine Schreibrechte",
+      "unavailable": "Monbooru ist in monloader nicht eingerichtet oder pausiert",
+      "api_disabled": "monloader-API ist deaktiviert",
+      "http": "Fehler ${code}"
     }
   }
 }
