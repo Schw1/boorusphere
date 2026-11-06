@@ -251,6 +251,7 @@ class _ToolboxOverlay extends ConsumerWidget {
           children: [
             PostFavoriteButton(post: post),
             PostDownloadButton(post: post),
+            PostMonbooruButton(post: post),
             IconButton(
               padding: const EdgeInsets.all(16),
               color: Colors.white,
