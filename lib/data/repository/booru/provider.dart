@@ -17,7 +17,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'provider.g.dart';
 
 @Riverpod(keepAlive: true)
-List<BooruParser> booruParsers(BooruParsersRef ref) {
+List<BooruParser> booruParsers(Ref ref) {
   return <BooruParser>[
     AutocompleteJsonParser(),
     BooruOnRailsJsonParser(),

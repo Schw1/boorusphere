@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'search_history_state.g.dart';
 
 @riverpod
-Map<int, SearchHistory> filterHistory(FilterHistoryRef ref, String query) {
+Map<int, SearchHistory> filterHistory(Ref ref, String query) {
   final history = ref.watch(searchHistoryStateProvider);
   if (query.endsWith(' ') || query.isEmpty) {
     return history;
@@ -35,18 +35,21 @@ class SearchHistoryState extends _$SearchHistoryState {
   Future<void> save(String value, Server server) async {
     final repo = ref.read(searchHistoryRepoProvider);
     await repo.save(value.trim(), server.id);
+    if (!ref.mounted) return;
     state = repo.all;
   }
 
   Future<void> delete(key) async {
     final repo = ref.read(searchHistoryRepoProvider);
     await repo.delete(key);
+    if (!ref.mounted) return;
     state = repo.all;
   }
 
   Future<void> clear() async {
     final repo = ref.read(searchHistoryRepoProvider);
     await repo.clear();
+    if (!ref.mounted) return;
     state = repo.all;
   }
 }

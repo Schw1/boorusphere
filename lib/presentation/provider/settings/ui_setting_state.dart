@@ -26,11 +26,12 @@ class UiSettingState extends _$UiSettingState {
   Future<int> cycleGrid() async {
     // -2/-1 = two/one columns less than the width-based default (bigger
     // thumbnails, mainly for tablets), up to +2 columns.
-    state = state.copyWith(grid: state.grid < 2 ? state.grid + 1 : -2);
+    final grid = state.grid < 2 ? state.grid + 1 : -2;
+    state = state.copyWith(grid: grid);
     final repo = ref.read(settingsRepoProvider);
 
-    await repo.put(Setting.uiTimelineGrid, state.grid);
-    return state.grid;
+    await repo.put(Setting.uiTimelineGrid, grid);
+    return grid;
   }
 
   Future<bool> showBlur(bool value) async {
@@ -38,7 +39,7 @@ class UiSettingState extends _$UiSettingState {
     final repo = ref.read(settingsRepoProvider);
 
     await repo.put(Setting.uiBlur, value);
-    return state.blur;
+    return value;
   }
 
   AppLocale? localeFromStr(String name) {
@@ -59,7 +60,7 @@ class UiSettingState extends _$UiSettingState {
     }
 
     await repo.put(Setting.uiLanguage, locale == null ? '' : locale.name);
-    return state.locale;
+    return locale;
   }
 
   Future<ThemeMode> setThemeMode(ThemeMode mode) async {
@@ -67,35 +68,28 @@ class UiSettingState extends _$UiSettingState {
 
     state = state.copyWith(themeMode: mode);
     await repo.put(Setting.uiThemeMode, mode.index);
-    return state.themeMode;
+    return mode;
   }
 
-  Future<ThemeMode> cycleThemeMode() async {
-    switch (state.themeMode) {
-      case ThemeMode.dark:
-        await setThemeMode(ThemeMode.light);
-        break;
-      case ThemeMode.light:
-        await setThemeMode(ThemeMode.system);
-        break;
-      default:
-        await setThemeMode(ThemeMode.dark);
-        break;
-    }
-    return state.themeMode;
+  Future<ThemeMode> cycleThemeMode() {
+    return switch (state.themeMode) {
+      ThemeMode.dark => setThemeMode(ThemeMode.light),
+      ThemeMode.light => setThemeMode(ThemeMode.system),
+      _ => setThemeMode(ThemeMode.dark),
+    };
   }
 
   Future<bool> setMidnightMode(bool value) async {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(midnightMode: value);
     await repo.put(Setting.uiMidnightMode, value);
-    return state.midnightMode;
+    return value;
   }
 
   Future<bool> setImeIncognito(bool value) async {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(imeIncognito: value);
     await repo.put(Setting.imeIncognito, value);
-    return state.imeIncognito;
+    return value;
   }
 }

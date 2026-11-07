@@ -6,7 +6,7 @@ part 'favorite_post.freezed.dart';
 part 'favorite_post.g.dart';
 
 @freezed
-class FavoritePost with _$FavoritePost {
+abstract class FavoritePost with _$FavoritePost {
   @HiveType(typeId: 5, adapterName: 'FavoritePostAdapter')
   const factory FavoritePost({
     @HiveField(0, defaultValue: Post.empty) @Default(Post.empty) Post post,

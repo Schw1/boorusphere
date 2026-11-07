@@ -6,7 +6,7 @@ part 'download_entry.freezed.dart';
 part 'download_entry.g.dart';
 
 @freezed
-class DownloadEntry with _$DownloadEntry {
+abstract class DownloadEntry with _$DownloadEntry {
   @HiveType(typeId: 4, adapterName: 'DownloadEntryAdapter')
   const factory DownloadEntry({
     @HiveField(0, defaultValue: '') @Default('') String id,

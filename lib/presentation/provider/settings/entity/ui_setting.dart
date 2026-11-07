@@ -5,7 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'ui_setting.freezed.dart';
 
 @freezed
-class UiSetting with _$UiSetting {
+abstract class UiSetting with _$UiSetting {
   const factory UiSetting({
     @Default(true) bool blur,
     @Default(1) int grid,

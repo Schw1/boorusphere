@@ -58,6 +58,8 @@ class SuggestionState extends _$SuggestionState {
     try {
       final res =
           await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
+      // Riverpod 3: using ref/state after the provider was disposed throws.
+      if (!ref.mounted) return;
       final blockedTags = ref.read(tagsBlockerRepoProvider);
       final result = res
           .where(
@@ -73,7 +75,7 @@ class SuggestionState extends _$SuggestionState {
 
       state = FetchResult.data(result);
     } catch (err, stack) {
-      if (word != _lastWord) {
+      if (!ref.mounted || word != _lastWord) {
         return;
       }
       state = FetchResult.error(state.data, error: err, stackTrace: stack);

@@ -11,7 +11,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'shared_storage_handle.g.dart';
 
 @Riverpod(keepAlive: true)
-SharedStorageHandle sharedStorageHandle(SharedStorageHandleRef ref) {
+SharedStorageHandle sharedStorageHandle(Ref ref) {
   throw UnimplementedError();
 }
 

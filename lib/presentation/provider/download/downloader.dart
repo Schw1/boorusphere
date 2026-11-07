@@ -15,8 +15,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'downloader.g.dart';
 
-@riverpod
-Downloader downloader(DownloaderRef ref) {
+// keepAlive: the service keeps its Ref and uses it after awaits; with
+// Riverpod 3 an auto-disposed Ref throws once the provider is gone.
+@Riverpod(keepAlive: true)
+Downloader downloader(Ref ref) {
   return Downloader(ref);
 }
 

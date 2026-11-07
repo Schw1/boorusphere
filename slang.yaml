@@ -1,4 +1,7 @@
 base_locale: en
+# slang 4 loads translations asynchronously by default; all locales are bundled,
+# so keep the synchronous API (LocaleSettings.setLocale without await).
+lazy: false
 fallback_strategy: base_locale
 input_directory: i18n
 input_file_pattern: .i18n.json

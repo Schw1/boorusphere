@@ -9,7 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'flutter_downloader_handle.g.dart';
 
 @Riverpod(keepAlive: true)
-FlutterDownloaderHandle downloaderHandle(DownloaderHandleRef ref) {
+FlutterDownloaderHandle downloaderHandle(Ref ref) {
   final handle = FlutterDownloaderHandle();
   ref.onDispose(handle.dispose);
   return handle;

@@ -5,7 +5,7 @@ part 'search_session.freezed.dart';
 part 'search_session.g.dart';
 
 @freezed
-class SearchSession with _$SearchSession {
+abstract class SearchSession with _$SearchSession {
   const factory SearchSession({
     @Default('') String query,
     @Default('') String serverId,
@@ -14,6 +14,6 @@ class SearchSession with _$SearchSession {
 }
 
 @riverpod
-SearchSession searchSession(SearchSessionRef ref) {
+SearchSession searchSession(Ref ref) {
   return const SearchSession();
 }
