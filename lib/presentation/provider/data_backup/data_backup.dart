@@ -66,8 +66,9 @@ Future<String> writeBackupFile(
       '.backup.tmp-${DateTime.now().microsecondsSinceEpoch}'));
   temp.createSync(recursive: true);
   try {
+    final zipPath = path.join(temp.path, 'data.zip');
     final encoder = ZipFileEncoder();
-    encoder.create('${temp.path}/data.zip');
+    encoder.create(zipPath);
     await Future.wait(entries.map((entry) async {
       final item = await entry;
       final data = item.value;
@@ -86,7 +87,7 @@ Future<String> writeBackupFile(
     if (zip.existsSync()) {
       zip.deleteSync();
     }
-    await File(encoder.zipPath).copy(zip.path);
+    await File(zipPath).copy(zip.path);
     await ref.read(sharedStorageHandleProvider).rescan();
     return zip.path;
   } finally {
@@ -129,8 +130,9 @@ class DataBackupState extends _$DataBackupState {
       state = const BackupResult.idle();
       return;
     }
-    final stream = InputFileStream(path);
-    final decoder = ZipDecoder().decodeBuffer(stream);
+    // Backups are small JSON files: decoding from memory leaves no open file
+    // handle behind (archive 4 has no decodeBuffer anymore).
+    final decoder = ZipDecoder().decodeBytes(await File(path).readAsBytes());
     if (!decoder.files.any((it) => it.name == '$appId.json')) {
       state = const BackupResult.error();
       return;
