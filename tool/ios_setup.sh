@@ -52,6 +52,11 @@ if ls -d ios/Runner/Assets.xcassets/AppIcon-*.appiconset >/dev/null 2>&1; then
 fi
 
 # 3. AppDelegate (flutter_downloader needs to register its plugins for background isolates)
+# Since Flutter 3.38 `flutter create` generates the UIScene lifecycle (SceneDelegate,
+# FlutterImplicitEngineDelegate). The app keeps the classic AppDelegate lifecycle for
+# now (the UIApplicationSceneManifest is removed from Info.plist in step 4), so the
+# plugins keep the window/app-delegate callbacks they were tested with. The generated
+# SceneDelegate.swift stays in the project but is not used.
 cat > ios/Runner/AppDelegate.swift <<'EOF'
 import Flutter
 import UIKit
@@ -86,6 +91,8 @@ set_or_add() { # key type value
 }
 
 set_or_add CFBundleDisplayName string "$DISPLAY_NAME"
+# Classic AppDelegate lifecycle, see step 3
+"$PB" -c "Delete :UIApplicationSceneManifest" "$PLIST" 2>/dev/null || true
 # Downloads/backups live in Documents/Boorusphere and should show up in the Files app
 set_or_add UIFileSharingEnabled bool true
 set_or_add LSSupportsOpeningDocumentsInPlace bool true
