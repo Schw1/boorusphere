@@ -52,7 +52,7 @@ Security:
 
 ## Automatic backups
 
-Settings → Backup and Restore → **Automatic backup**. iOS gives apps no reliable background time, so the backup runs when the app starts or returns to the foreground and the last automatic backup is older than the chosen interval (daily/weekly). Files are named `boorusphere_autobackup_<time>.zip` in `Documents/Boorusphere/backups`; only the newest N (1/3/5/10) are kept, manual backups (`boorusphere_backup_…`) are never deleted. API tokens are not part of any backup.
+Settings → Backup and Restore → **Automatic backup**. iOS gives apps no reliable background time, so the backup runs when the app starts or returns to the foreground and the last automatic backup is older than the chosen interval (daily/weekly). Files are named `boorusphere_autobackup_<time>.zip` in `Documents/Boorusphere/backups`; only the newest N (1/3/5/10) are kept, manual backups (`boorusphere_backup_…`) are never deleted. API tokens are not part of any backup, and automatic backups never contain the login data from URL suffixes.
 
 ## Random order
 
@@ -67,3 +67,9 @@ Server icons are resolved like a browser does: the server's own `/favicon.ico`; 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.
 
 Set the address and an API token with write scope under Settings → "Monbooru (monloader)". The token is stored in the iOS Keychain (this device only, not synced, not part of backups; tokens from older versions are moved there from Hive on startup), the address in Hive and in the backup. The settings warn when the address is plain HTTP outside the local network. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.
+
+## Security notes
+
+- **Keychain:** the Monbooru server tokens and the monloader token are stored in the iOS Keychain (`first unlock, this device only`): not synced via iCloud Keychain and not part of backups.
+- **Login data in URL suffixes:** some boorus take credentials as query parameters (e.g. `&api_key=…&user_id=…`). They stay in the app's Hive storage. A manual backup leaves them out unless **Include login data** is checked; then they are in plain text in the backup file, which is visible in the Files app. Restoring a backup without login data on the same device keeps the existing keys.
+- **Plain HTTP (App Transport Security):** `NSAllowsArbitraryLoads` stays enabled on purpose, so user-added boorus without HTTPS keep working (browsing, video and downloads). All bundled servers use HTTPS. Token fields warn when the address is plain HTTP outside the local network.

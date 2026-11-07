@@ -237,7 +237,12 @@
       "title": "Daten sichern",
       "desc": "App-Daten in einer Datei sichern",
       "success": "Sicherung erstellt unter:\n${dest}",
-      "loading": "Sicherung wird erstellt..."
+      "loading": "Sicherung wird erstellt...",
+      "credentials": {
+        "title": "Zugangsdaten mitsichern",
+        "desc": "API-Keys und Benutzernamen aus dem URL-Suffix der Server (z. B. api_key=…). Aus: Sie fehlen im Backup, beim Wiederherstellen auf diesem Gerät bleiben sie erhalten.",
+        "warning": "Die Zugangsdaten stehen dann im Klartext in der Backup-Datei, die in der Dateien-App sichtbar ist. Gib sie nur an Personen weiter, denen du vertraust."
+      }
     },
     "restore": {
       "title": "Daten wiederherstellen",

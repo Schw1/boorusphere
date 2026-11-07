@@ -239,7 +239,12 @@
       "title": "Backup data",
       "desc": "Backup app data into a file",
       "success": "Backup created at :\n${dest}",
-      "loading": "Creating backup..."
+      "loading": "Creating backup...",
+      "credentials": {
+        "title": "Include login data",
+        "desc": "API keys and user names in the servers' URL suffix (e.g. api_key=…). Off: they are left out of the backup, restoring on this device keeps them.",
+        "warning": "The login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust."
+      }
     },
     "restore": {
       "title": "Restore data",

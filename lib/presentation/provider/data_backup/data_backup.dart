@@ -52,7 +52,10 @@ Future<String> writeBackupFile(
   final entries = [
     Future.value(BackupItem(DataBackupState.appId,
         {'version': '${versionRepo.current}'})),
-    if (option.server) ref.read(serverRepoProvider).export(),
+    if (option.server)
+      ref
+          .read(serverRepoProvider)
+          .export(withCredentials: option.credentials),
     if (option.blockedTags) ref.read(tagsBlockerRepoProvider).export(),
     if (option.favoritePost) ref.read(favoritePostRepoProvider).export(),
     if (option.setting) ref.read(settingsRepoProvider).export(),
