@@ -13,6 +13,8 @@ The workflow calls `tool/ios_setup.sh`. The script generates `ios/` with `flutte
 
 ## Installing (without a Mac)
 
+The app requires **iOS 14** or later.
+
 - **Sideloadly** (Windows/macOS): sign the IPA with your Apple ID and install it over USB. With a free account the signature expires after 7 days. Developer Mode must be enabled on the device.
 - Alternatively AltStore Classic (via AltStore PAL in the EU) or SideStore.
 
