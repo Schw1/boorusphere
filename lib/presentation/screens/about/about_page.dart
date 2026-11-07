@@ -60,6 +60,9 @@ class AboutPage extends ConsumerWidget {
               ),
               if (kSupportsInAppUpdate)
               appVersions.when(
+                // Riverpod 3 keeps the previous value while refreshing; show
+                // the spinner like before when "check again" is tapped.
+                skipLoadingOnRefresh: false,
                 data: (data) {
                   return data.latest.isNewerThan(data.current)
                       ? _Updater(data.latest)

@@ -65,7 +65,8 @@ dependencies:
   mime: ^2.1.0
   path_provider: ^2.1.5
   path: ^1.8.1
-  permission_handler: ^13.0.2
+  # 13 (permission_handler_android 14) needs AGP 9 (built-in Kotlin)
+  permission_handler: ^12.0.1
   riverpod_annotation: ^4.0.2
   scroll_to_index: ^3.0.1
   separated_row: ^3.0.3
