@@ -34,7 +34,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  archive: ^4.0.7
+  archive: ^4.6.0
   async: ^2.8.2
   auto_route: ^9.2.2
   collection: ^1.16.0
@@ -61,10 +61,10 @@ dependencies:
   json_annotation: ^4.8.1
   logging: ^1.2.0
   media_scanner: ^2.2.0
-  mime: ^2.0.0
+  mime: ^2.1.0
   path_provider: ^2.1.5
   path: ^1.8.1
-  permission_handler: ^13.0.2
+  permission_handler: ^12.0.1
   riverpod_annotation: ^2.0.0
   scroll_to_index: ^3.0.1
   separated_row: ^3.0.3
@@ -78,7 +78,7 @@ dependencies:
   media_kit_video: ^2.0.1
   media_kit_libs_ios_video: ^1.1.4
   media_kit_libs_android_video: ^1.3.6
-  package_info_plus: ^9.0.1
+  package_info_plus: ^8.3.0
   open_filex: ^5.0.0
   gal: ^2.3.2
   flutter_secure_storage: ^10.0.0
@@ -86,7 +86,7 @@ dependencies:
   xml2json: ^6.0.0
   yaml: ^3.1.4
   extended_image: ^10.1.0
-  wakelock_plus: ^1.4.0
+  wakelock_plus: ^1.2.8
   restart_app: ^1.10.2
 
 dev_dependencies:
