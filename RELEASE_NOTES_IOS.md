@@ -2,6 +2,12 @@ Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. wit
 
 ## New
 - **Another zoom step:** the grid button now goes down to two columns less than the width-based default (e.g. 2 columns on a tablet in portrait), for even bigger thumbnails.
+- **Requires iOS 14 or later** (was iOS 13).
+
+## Security
+- The monloader token ("Send to Monbooru") is now stored in the iOS Keychain instead of the app database and is no longer part of backups. An existing token is moved automatically.
+- Login data in a server's URL suffix (e.g. `api_key=…`) is left out of backups unless you check **Include login data**. Restoring such a backup on the same device keeps your keys.
+- Built with Flutter 3.41 and updated dependencies (including a file_picker security fix).
 
 ## New in ios.9
 - Monbooru server icons load (icons linked from the server's login/start page).

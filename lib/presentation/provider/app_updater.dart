@@ -15,13 +15,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_updater.g.dart';
 
-@riverpod
-AppUpdater appUpdater(AppUpdaterRef ref) {
+// keepAlive: the service keeps its Ref and uses it after awaits; with
+// Riverpod 3 an auto-disposed Ref throws once the provider is gone.
+@Riverpod(keepAlive: true)
+AppUpdater appUpdater(Ref ref) {
   return AppUpdater(ref);
 }
 
 @riverpod
-DownloadProgress appUpdateProgress(AppUpdateProgressRef ref) {
+DownloadProgress appUpdateProgress(Ref ref) {
   final id = ref.watch(appUpdaterProvider.select((it) => it.id));
   return ref.watch(downloadProgressStateProvider).getById(id);
 }

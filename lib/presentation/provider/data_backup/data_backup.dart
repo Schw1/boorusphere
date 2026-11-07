@@ -122,20 +122,19 @@ class DataBackupState extends _$DataBackupState {
     final backupsDir = await _backupDir();
     await FilePicker.clearTemporaryFiles();
 
-    final result = await FilePicker.pickFiles(
+    final picked = await FilePicker.pickFile(
       initialDirectory: backupsDir.absolute.path,
       type: FileType.custom,
       allowedExtensions: ['zip'],
     );
 
-    final path = result?.files.single.path;
-    if (path == null) {
+    if (picked == null) {
       state = const BackupResult.idle();
       return;
     }
     // Backups are small JSON files: decoding from memory leaves no open file
     // handle behind (archive 4 has no decodeBuffer anymore).
-    final decoder = ZipDecoder().decodeBytes(await File(path).readAsBytes());
+    final decoder = ZipDecoder().decodeBytes(await picked.readAsBytes());
     if (!decoder.files.any((it) => it.name == '$appId.json')) {
       state = const BackupResult.error();
       return;

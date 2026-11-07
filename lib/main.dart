@@ -64,6 +64,9 @@ void main() async {
 
   runApp(
     ProviderScope(
+      // Riverpod 3 retries failing providers automatically; keep the 2.x
+      // behavior (errors surface right away, e.g. a booru being offline).
+      retry: (retryCount, error) => null,
       overrides: [
         sharedStorageHandleProvider
             .overrideWithValue(await provideSharedStorageHandle()),

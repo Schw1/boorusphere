@@ -25,7 +25,7 @@ enum AutoBackupInterval {
 }
 
 @Riverpod(keepAlive: true)
-AutoBackup autoBackup(AutoBackupRef ref) => AutoBackup(ref);
+AutoBackup autoBackup(Ref ref) => AutoBackup(ref);
 
 /// Automatic backups. iOS gives apps no reliable background time, so a
 /// backup is made when the app starts or returns to the foreground and the

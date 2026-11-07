@@ -13,7 +13,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'provider.g.dart';
 
 @Riverpod(keepAlive: true)
-CookieJar cookieJar(CookieJarRef ref) {
+CookieJar cookieJar(Ref ref) {
   return CookieJar();
 }
 
@@ -25,7 +25,7 @@ Future<CookieJar> provideCookieJar() async {
 }
 
 @Riverpod(keepAlive: true)
-Map<String, Server> defaultServers(DefaultServersRef ref) {
+Map<String, Server> defaultServers(Ref ref) {
   return {};
 }
 
@@ -39,7 +39,7 @@ Future<Map<String, Server>> provideDefaultServers() async {
 }
 
 @riverpod
-Dio dio(DioRef ref) {
+Dio dio(Ref ref) {
   final cookieJar = ref.watch(cookieJarProvider);
   final envRepo = ref.watch(envRepoProvider);
   return AppDio(cookieJar: cookieJar, envRepo: envRepo);

@@ -80,6 +80,8 @@ class PageState extends _$PageState {
 
     if (query.isNotEmpty) {
       await ref.read(searchHistoryStateProvider.notifier).save(query, _server);
+      // Riverpod 3: using ref/state after the provider was disposed throws.
+      if (!ref.mounted) return;
     }
 
     final settings = ref.read(serverSettingStateProvider);
@@ -110,6 +112,7 @@ class PageState extends _$PageState {
       var skipCount = 0;
       while (skipCount <= 3) {
         final res = await repo.getPage(option, _page);
+        if (!ref.mounted) return;
         if (res.isEmpty) {
           state = FetchResult.error(state.data, error: BooruError.empty);
           return;
@@ -132,6 +135,7 @@ class PageState extends _$PageState {
         skipCount++;
       }
     } catch (err, stack) {
+      if (!ref.mounted) return;
       state = FetchResult.error(state.data, error: err, stackTrace: stack);
     }
   }

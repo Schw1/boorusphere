@@ -37,10 +37,43 @@ jobs:
       - name: Generate code
         run: |
           dart run slang
-          dart run build_runner build --delete-conflicting-outputs
+          dart run build_runner build
 
       - name: Analyze (errors only)
         run: flutter analyze --no-fatal-infos --no-fatal-warnings lib test tool
 
       - name: Test
         run: flutter test
+
+  android:
+    # The fork ships iOS only, but keeps the upstream Android build working
+    # (a Gradle/AGP mismatch went unnoticed before).
+    name: Android build (debug)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: '3.41.x' # keep in sync with build-ios.yml
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Generate code
+        run: |
+          dart run slang
+          dart run build_runner build
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug

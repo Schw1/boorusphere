@@ -19,7 +19,7 @@ String createReferer(String url) {
 
 @riverpod
 Map<String, String> postHeadersFactory(
-  PostHeadersFactoryRef ref,
+  Ref ref,
   Post post, {
   List<Cookie> cookies = const [],
 }) {

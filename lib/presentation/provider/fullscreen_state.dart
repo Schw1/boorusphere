@@ -7,9 +7,12 @@ part 'fullscreen_state.g.dart';
 @riverpod
 class FullscreenState extends _$FullscreenState {
   List<DeviceOrientation> _lastOrientations = [];
+  int _sdkVersion = 0;
 
   @override
   bool build() {
+    // Read here: Riverpod 3 forbids using ref inside onDispose (see reset).
+    _sdkVersion = ref.read(envRepoProvider).sdkVersion;
     ref.onDispose(reset);
     _lastOrientations = [];
     return false;
@@ -32,8 +35,7 @@ class FullscreenState extends _$FullscreenState {
   }
 
   Future<void> unfullscreen() async {
-    final envRepo = ref.read(envRepoProvider);
-    if (envRepo.sdkVersion < 29) {
+    if (_sdkVersion < 29) {
       // SDK 28 and below ignores edgeToEdge, so we have to manually reenable them
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
         SystemUiOverlay.top,

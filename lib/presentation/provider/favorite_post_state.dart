@@ -15,12 +15,14 @@ class FavoritePostState extends _$FavoritePostState {
   Future<void> clear() async {
     final repo = ref.read(favoritePostRepoProvider);
     await repo.clear();
+    if (!ref.mounted) return;
     state = repo.get();
   }
 
   Future<void> remove(Post post) async {
     final repo = ref.read(favoritePostRepoProvider);
     await repo.remove(post);
+    if (!ref.mounted) return;
     state = repo.get();
   }
 
@@ -29,6 +31,7 @@ class FavoritePostState extends _$FavoritePostState {
 
     final repo = ref.read(favoritePostRepoProvider);
     await repo.save(post);
+    if (!ref.mounted) return;
     state = repo.get();
   }
 }

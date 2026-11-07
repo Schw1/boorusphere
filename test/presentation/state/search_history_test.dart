@@ -37,10 +37,10 @@ void main() async {
     });
 
     test('filter', () {
-      expect(ref.read(FilterHistoryProvider('o')).values.first.query, 'foo');
-      expect(ref.read(FilterHistoryProvider('r')).values.first.query, 'bar');
-      expect(ref.read(FilterHistoryProvider('z')).values.first.query, 'baz');
-      expect(ref.read(FilterHistoryProvider('m')).length, 0);
+      expect(ref.read(filterHistoryProvider('o')).values.first.query, 'foo');
+      expect(ref.read(filterHistoryProvider('r')).values.first.query, 'bar');
+      expect(ref.read(filterHistoryProvider('z')).values.first.query, 'baz');
+      expect(ref.read(filterHistoryProvider('m')).length, 0);
     });
 
     test('remove last', () async {
