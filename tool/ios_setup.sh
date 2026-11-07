@@ -8,7 +8,7 @@
 #   - AppDelegate: flutter_downloader plugin registrant callback
 #   - Info.plist: downloads visible in the Files app, background downloads,
 #     cleartext HTTP for boorus without TLS, app name
-#   - Podfile / Xcode: iOS 13 deployment target (required by media_kit)
+#   - Podfile / Xcode: iOS 14 deployment target (file_picker 12+; media_kit needs 13)
 #   - app icon generated from assets/icons/ios-icon.png (Android icon colors, larger logo)
 set -euo pipefail
 
@@ -116,20 +116,20 @@ set_or_add FDAllowsCellularAccess bool true
 "$PB" -c "Add :UIBackgroundModes:0 string fetch" "$PLIST"
 "$PB" -c "Add :UIBackgroundModes:1 string remote-notification" "$PLIST"
 
-# 5. iOS 13 deployment target (media_kit requirement)
+# 5. iOS 14 deployment target (file_picker 12+ requires 14, media_kit 13)
 python3 - <<'EOF'
 import pathlib, re
 p = pathlib.Path("ios/Podfile")
 s = p.read_text()
 if not re.search(r"^platform :ios", s, re.M):
-    s, n = re.subn(r"^#\s*platform :ios, '[0-9.]+'", "platform :ios, '13.0'", s, count=1, flags=re.M)
+    s, n = re.subn(r"^#\s*platform :ios, '[0-9.]+'", "platform :ios, '14.0'", s, count=1, flags=re.M)
     if n == 0:
-        s = "platform :ios, '13.0'\n" + s
+        s = "platform :ios, '14.0'\n" + s
 else:
-    s = re.sub(r"^platform :ios, '[0-9.]+'", "platform :ios, '13.0'", s, count=1, flags=re.M)
+    s = re.sub(r"^platform :ios, '[0-9.]+'", "platform :ios, '14.0'", s, count=1, flags=re.M)
 p.write_text(s)
 EOF
-sed -i.bak "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/g" \
+sed -i.bak "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g" \
   ios/Runner.xcodeproj/project.pbxproj
 rm -f ios/Runner.xcodeproj/project.pbxproj.bak
 
