@@ -47,7 +47,7 @@ jobs:
       - name: Generate code
         run: |
           dart run slang
-          dart run build_runner build --delete-conflicting-outputs
+          dart run build_runner build
 
       # Fails fast with readable Dart errors (warnings/infos are ignored).
       - name: Analyze (errors only)

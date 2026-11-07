@@ -37,7 +37,7 @@ jobs:
       - name: Generate code
         run: |
           dart run slang
-          dart run build_runner build --delete-conflicting-outputs
+          dart run build_runner build
 
       - name: Analyze (errors only)
         run: flutter analyze --no-fatal-infos --no-fatal-warnings lib test tool

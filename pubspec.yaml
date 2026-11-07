@@ -20,7 +20,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.5.4+53
 
 environment:
-  sdk: ">=3.0.3 <4.0.0"
+  sdk: ">=3.11.0 <4.0.0"
   flutter: ">=3.41.0 <3.42.0"
 
 # Dependencies specify other packages that your package needs in order to work.
@@ -43,7 +43,8 @@ dependencies:
   dio_cookie_manager: ^3.0.0
   dio_smart_retry: ^7.0.1
   dio: ^5.11.1
-  dynamic_color: ^1.9.0
+  # 1.9.0 needs AGP 9 (built-in Kotlin) for its Android build; no effect on iOS
+  dynamic_color: ">=1.8.1 <1.9.0"
   file_picker: ^13.3.2
   flutter_cache_manager: ^3.5.0
   flutter_displaymode: ^0.7.0
