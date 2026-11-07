@@ -96,7 +96,10 @@ plutil -replace NSLocalNetworkUsageDescription -string "Used to reach your monlo
 # flutter_downloader settings
 set_or_add FDMaximumConcurrentTasks integer 3
 set_or_add FDAllowsCellularAccess bool true
-# Some boorus are plain HTTP; AVPlayer/NSURLSession (downloads) enforce ATS
+# Plain HTTP stays allowed for all hosts on purpose (intentional trade-off, see #5
+# and IOS_PORT.md "Security notes"): user-added boorus without HTTPS must keep
+# working, and AVPlayer/NSURLSession (downloads) enforce ATS. All bundled servers
+# use HTTPS; tokens get a warning in the UI when they would go over plain HTTP.
 "$PB" -c "Delete :NSAppTransportSecurity" "$PLIST" 2>/dev/null || true
 "$PB" -c "Add :NSAppTransportSecurity dict" "$PLIST"
 "$PB" -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PLIST"
