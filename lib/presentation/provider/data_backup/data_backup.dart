@@ -116,9 +116,9 @@ class DataBackupState extends _$DataBackupState {
 
   Future<void> restore({Future<bool?> Function()? onConfirm}) async {
     final backupsDir = await _backupDir();
-    await FilePicker.platform.clearTemporaryFiles();
+    await FilePicker.clearTemporaryFiles();
 
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       initialDirectory: backupsDir.absolute.path,
       type: FileType.custom,
       allowedExtensions: ['zip'],
