@@ -1,0 +1,11 @@
+# Keeps the SHA-pinned GitHub Actions up to date (one grouped PR per week).
+# Dart/Flutter packages are updated by hand together with the Flutter SDK.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
