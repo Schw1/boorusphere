@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/url_suffix_credentials.dart';
 import 'package:boorusphere/domain/repository/server_data_repo.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:hive_ce/hive.dart';
@@ -76,18 +77,39 @@ class UserServerRepo implements ServerRepo {
   Future<void> import(String src) async {
     final List maps = jsonDecode(src);
     if (maps.isEmpty) return;
+    final previous = {for (final s in box.values) s.id: s};
     await box.deleteAll(box.keys);
     for (final map in maps) {
       if (map is Map<String, dynamic>) {
-        final server = Server.fromJson(map);
-        await add(server);
+        await add(_keepCredentials(Server.fromJson(map), previous));
       }
     }
   }
 
+  /// A backup made without credentials must not wipe the API keys of a
+  /// server that is restored on the same device: if the imported URL suffix
+  /// is the current one minus its credentials, the current one is kept.
+  static Server _keepCredentials(Server server, Map<String, Server> previous) {
+    final current = previous[server.id];
+    if (current == null || current.urlSuffix == server.urlSuffix) {
+      return server;
+    }
+    if (UrlSuffixCredentials.strip(current.urlSuffix) == server.urlSuffix) {
+      return server.copyWith(urlSuffix: current.urlSuffix);
+    }
+    return server;
+  }
+
   @override
-  Future<BackupItem> export() async {
-    return BackupItem(key, box.values.map((e) => e.toJson()).toList());
+  Future<BackupItem> export({bool withCredentials = true}) async {
+    return BackupItem(key, [
+      for (final server in box.values)
+        (withCredentials
+                ? server
+                : server.copyWith(
+                    urlSuffix: UrlSuffixCredentials.strip(server.urlSuffix)))
+            .toJson(),
+    ]);
   }
 
   static const String key = 'server';

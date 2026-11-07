@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_ce/hive.dart';
 
 /// Sends posts to a monloader instance (the queue service behind Monsender),
 /// which downloads them and files them into Monbooru.
 ///
-/// Address and token are stored in their own Hive box, so they are not part of
-/// the settings backup.
+/// The address is stored in its own Hive box (and is part of the backup), the
+/// token in the iOS Keychain (this device only, never in Hive or a backup).
 class MonbooruConfig {
   const MonbooruConfig({this.url = '', this.token = ''});
 
@@ -56,36 +58,102 @@ class MonbooruSender {
     return url;
   }
 
+  static const _storage = FlutterSecureStorage(
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
+  );
+  static const _tokenKey = 'monloader_token';
+
+  static Future<String> _readToken() async {
+    try {
+      return await _storage.read(key: _tokenKey) ?? '';
+    } catch (e) {
+      debugPrint('MonbooruSender._readToken: $e');
+      return '';
+    }
+  }
+
+  static Future<void> _writeToken(String token) async {
+    if (token.isEmpty) {
+      await _storage.delete(key: _tokenKey);
+    } else {
+      await _storage.write(key: _tokenKey, value: token);
+    }
+  }
+
+  /// Older versions kept the token in the (unencrypted) Hive box. Moves it to
+  /// the Keychain and removes it from the box file. Returns the token to use.
+  static Future<String> _migrateLegacyToken(Box box, String current) async {
+    final legacy = box.get('token');
+    if (legacy is! String) return current;
+    var token = current;
+    if (token.isEmpty && legacy.isNotEmpty) {
+      try {
+        await _writeToken(legacy);
+        token = legacy;
+      } catch (e) {
+        // Keep it in Hive for now rather than losing it.
+        debugPrint('MonbooruSender: token not moved to the Keychain: $e');
+        return legacy;
+      }
+    }
+    await box.delete('token');
+    // Hive appends to its file; compact so the old value is really gone.
+    await box.compact();
+    return token;
+  }
+
+  /// Moves a token stored by an older version into the Keychain. Call once at
+  /// startup so the plain-text copy does not wait for the first use.
+  static Future<void> migrate() async {
+    try {
+      await load();
+    } catch (e) {
+      debugPrint('MonbooruSender.migrate: $e');
+    }
+  }
+
   static Future<MonbooruConfig> load() async {
     final box = await _box();
+    final token = await _migrateLegacyToken(box, await _readToken());
     return MonbooruConfig(
       url: box.get('url', defaultValue: '') as String,
-      token: box.get('token', defaultValue: '') as String,
+      token: token,
     );
   }
 
   static Future<void> save(String url, String token) async {
     final box = await _box();
     await box.put('url', normalizeUrl(url));
-    await box.put('token', token.trim());
+    await _writeToken(token.trim());
+    if (box.containsKey('token')) {
+      await box.delete('token');
+      await box.compact();
+    }
   }
 
   static const backupKey = 'monloader';
 
-  /// monloader address and token for the backup file. Note: the token ends
-  /// up in plain text in the backup, the user can deselect it.
+  /// Only the monloader address goes into the backup; the token stays in the
+  /// Keychain and has to be entered again after restoring on another device.
   static Future<BackupItem> exportBackup() async {
     final config = await load();
-    return BackupItem(backupKey, {'url': config.url, 'token': config.token});
+    return BackupItem(backupKey, {'url': config.url});
   }
 
+  /// Restores the address. A token is only present in backups made by older
+  /// versions; it is moved into the Keychain. Without one the current token is
+  /// kept.
   static Future<void> importBackup(String src) async {
     final data = jsonDecode(src);
     if (data is! Map) return;
     final url = '${data['url'] ?? ''}';
-    final token = '${data['token'] ?? ''}';
+    final token = '${data['token'] ?? ''}'.trim();
     if (url.isEmpty && token.isEmpty) return;
-    await save(url, token);
+    final box = await _box();
+    if (url.isNotEmpty) await box.put('url', normalizeUrl(url));
+    if (token.isNotEmpty) await _writeToken(token);
   }
 
   static Dio _dio() => Dio(BaseOptions(

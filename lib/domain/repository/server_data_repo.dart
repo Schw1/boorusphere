@@ -10,5 +10,7 @@ abstract interface class ServerRepo {
   Future<void> remove(Server data);
   Future<void> reset();
   Future<void> import(String src);
-  Future<BackupItem> export();
+  /// Without [withCredentials], credential parameters are removed from the
+  /// servers' URL suffix (see UrlSuffixCredentials).
+  Future<BackupItem> export({bool withCredentials = true});
 }

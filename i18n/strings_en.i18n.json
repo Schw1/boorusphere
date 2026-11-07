@@ -239,7 +239,12 @@
       "title": "Backup data",
       "desc": "Backup app data into a file",
       "success": "Backup created at :\n${dest}",
-      "loading": "Creating backup..."
+      "loading": "Creating backup...",
+      "credentials": {
+        "title": "Include login data",
+        "desc": "API keys and user names in the servers' URL suffix (e.g. api_key=…). Off: they are left out of the backup, restoring on this device keeps them.",
+        "warning": "The login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust."
+      }
     },
     "restore": {
       "title": "Restore data",
@@ -269,6 +274,7 @@
       "desc": "Address and token for \"Send to Monbooru\"",
       "address": "monloader address",
       "token": "API token (write scope)",
+      "token_desc": "Stored in the iOS Keychain on this device only, not part of backups.",
       "test": "Test",
       "testing": "Testing…",
       "ok": "Connection OK"
@@ -285,7 +291,7 @@
     },
     "backup": {
       "title": "Monbooru (monloader)",
-      "desc": "Address and API token for \"Send to Monbooru\". The token is stored in plain text in the backup file."
+      "desc": "Address for \"Send to Monbooru\". The API token stays in the Keychain and has to be entered again after restoring on another device."
     }
   },
   "random_order": {

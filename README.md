@@ -80,7 +80,7 @@ For building the Android app and for general development (code generation, trans
 
 # Security
 
-Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere-ios/issues?q=label%3Asecurity). Please don't store sensitive credentials in server URLs: they end up in plain text in backup files.
+Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere-ios/issues?q=label%3Asecurity). API tokens (Monbooru, monloader) are kept in the iOS Keychain. Credentials in a server's URL suffix (e.g. `api_key=…`) are stored in plain app storage and are left out of backups unless you choose "Include login data". See [IOS_PORT.md](IOS_PORT.md#security-notes) for details.
 
 # License
 

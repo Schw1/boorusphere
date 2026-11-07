@@ -235,57 +235,80 @@ class _BackupSelectionDialog extends HookWidget {
     return AlertDialog(
       title: Text(context.t.dataBackup.backup.title),
       icon: const Icon(Icons.restore),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CheckboxListTile(
-            title: Text(context.t.servers.title),
-            value: option.value.server,
-            onChanged: (newValue) {
-              option.value = option.value.copyWith(server: newValue ?? true);
-            },
-          ),
-          CheckboxListTile(
-            title: Text(context.t.searchHistory),
-            value: option.value.searchHistory,
-            onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(searchHistory: newValue ?? true);
-            },
-          ),
-          CheckboxListTile(
-            title: Text(context.t.tagsBlocker.title),
-            value: option.value.blockedTags,
-            onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(blockedTags: newValue ?? true);
-            },
-          ),
-          CheckboxListTile(
-            title: Text(context.t.favorites.title),
-            value: option.value.favoritePost,
-            onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(favoritePost: newValue ?? true);
-            },
-          ),
-          CheckboxListTile(
-            title: Text(context.t.settings.title),
-            value: option.value.setting,
-            onChanged: (newValue) {
-              option.value = option.value.copyWith(setting: newValue ?? true);
-            },
-          ),
-          CheckboxListTile(
-            title: Text(context.t.monbooru.backup.title),
-            subtitle: Text(context.t.monbooru.backup.desc),
-            value: option.value.monloader,
-            onChanged: (newValue) {
-              option.value =
-                  option.value.copyWith(monloader: newValue ?? true);
-            },
-          ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CheckboxListTile(
+              title: Text(context.t.servers.title),
+              value: option.value.server,
+              onChanged: (newValue) {
+                option.value = option.value.copyWith(server: newValue ?? true);
+              },
+            ),
+            // API keys in the servers' URL suffix; off by default because they
+            // would end up in plain text in the backup file.
+            CheckboxListTile(
+              contentPadding: const EdgeInsets.only(left: 40, right: 24),
+              title: Text(context.t.dataBackup.backup.credentials.title),
+              subtitle: Text(
+                option.value.credentials
+                    ? context.t.dataBackup.backup.credentials.warning
+                    : context.t.dataBackup.backup.credentials.desc,
+                style: option.value.credentials
+                    ? TextStyle(color: context.colorScheme.error)
+                    : null,
+              ),
+              value: option.value.server && option.value.credentials,
+              onChanged: option.value.server
+                  ? (newValue) {
+                      option.value = option.value
+                          .copyWith(credentials: newValue ?? false);
+                    }
+                  : null,
+            ),
+            CheckboxListTile(
+              title: Text(context.t.searchHistory),
+              value: option.value.searchHistory,
+              onChanged: (newValue) {
+                option.value =
+                    option.value.copyWith(searchHistory: newValue ?? true);
+              },
+            ),
+            CheckboxListTile(
+              title: Text(context.t.tagsBlocker.title),
+              value: option.value.blockedTags,
+              onChanged: (newValue) {
+                option.value =
+                    option.value.copyWith(blockedTags: newValue ?? true);
+              },
+            ),
+            CheckboxListTile(
+              title: Text(context.t.favorites.title),
+              value: option.value.favoritePost,
+              onChanged: (newValue) {
+                option.value =
+                    option.value.copyWith(favoritePost: newValue ?? true);
+              },
+            ),
+            CheckboxListTile(
+              title: Text(context.t.settings.title),
+              value: option.value.setting,
+              onChanged: (newValue) {
+                option.value = option.value.copyWith(setting: newValue ?? true);
+              },
+            ),
+            CheckboxListTile(
+              title: Text(context.t.monbooru.backup.title),
+              subtitle: Text(context.t.monbooru.backup.desc),
+              value: option.value.monloader,
+              onChanged: (newValue) {
+                option.value =
+                    option.value.copyWith(monloader: newValue ?? true);
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -297,7 +320,9 @@ class _BackupSelectionDialog extends HookWidget {
         ElevatedButton(
           onPressed: option.value.isValid()
               ? () {
-                  final result = option.value;
+                  final result = option.value.copyWith(
+                      credentials:
+                          option.value.server && option.value.credentials);
                   context.navigator.pop(result);
                 }
               : null,
