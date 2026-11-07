@@ -66,4 +66,4 @@ Server icons are resolved like a browser does: the server's own `/favicon.ico`; 
 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.
 
-Set the address and an API token with write scope under Settings → "Monbooru (monloader)". Both are stored only on the device and are not part of the backup. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.
+Set the address and an API token with write scope under Settings → "Monbooru (monloader)". The token is stored in the iOS Keychain (this device only, not synced, not part of backups; tokens from older versions are moved there from Hive on startup), the address in Hive and in the backup. The settings warn when the address is plain HTTP outside the local network. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.

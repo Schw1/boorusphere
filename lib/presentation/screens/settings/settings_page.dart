@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/provider/photos_saver.dart';
@@ -490,12 +491,21 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
   @override
   void initState() {
     super.initState();
+    _url.addListener(_onChanged);
+    _token.addListener(_onChanged);
     MonbooruSender.load().then((c) {
       if (!mounted) return;
       _url.text = c.url;
       _token.text = c.token;
     });
   }
+
+  void _onChanged() => setState(() {});
+
+  /// Plain HTTP outside the local network sends the bearer token unencrypted.
+  bool get _insecureToken =>
+      _token.text.trim().isNotEmpty &&
+      ServerAuthStore.isInsecureRemote(MonbooruSender.normalizeUrl(_url.text));
 
   @override
   void dispose() {
@@ -534,8 +544,17 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
               controller: _token,
               autocorrect: false,
               obscureText: true,
+              enableSuggestions: false,
+              enableIMEPersonalizedLearning: false,
               decoration: InputDecoration(
                 labelText: context.t.monbooru.settings.token,
+                helperText: _insecureToken
+                    ? context.t.servers.apiToken.insecure
+                    : context.t.monbooru.settings.tokenDesc,
+                helperMaxLines: 4,
+                helperStyle: _insecureToken
+                    ? TextStyle(color: context.colorScheme.error)
+                    : null,
               ),
             ),
             if (_status != null)

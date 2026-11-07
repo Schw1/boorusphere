@@ -267,6 +267,7 @@
       "desc": "Adresse und Token für „An Monbooru senden“",
       "address": "monloader-Adresse",
       "token": "API-Token (Schreibrecht)",
+      "token_desc": "Liegt nur auf diesem Gerät in der iOS-Keychain und ist nicht Teil von Backups.",
       "test": "Testen",
       "testing": "Teste…",
       "ok": "Verbindung OK"
@@ -283,7 +284,7 @@
     },
     "backup": {
       "title": "Monbooru (monloader)",
-      "desc": "Adresse und API-Token für „An Monbooru senden“. Der Token steht im Klartext in der Backup-Datei."
+      "desc": "Adresse für „An Monbooru senden“. Der API-Token bleibt in der Keychain und muss nach einer Wiederherstellung auf einem anderen Gerät neu eingegeben werden."
     }
   },
   "random_order": {

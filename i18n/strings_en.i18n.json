@@ -269,6 +269,7 @@
       "desc": "Address and token for \"Send to Monbooru\"",
       "address": "monloader address",
       "token": "API token (write scope)",
+      "token_desc": "Stored in the iOS Keychain on this device only, not part of backups.",
       "test": "Test",
       "testing": "Testing…",
       "ok": "Connection OK"
@@ -285,7 +286,7 @@
     },
     "backup": {
       "title": "Monbooru (monloader)",
-      "desc": "Address and API token for \"Send to Monbooru\". The token is stored in plain text in the backup file."
+      "desc": "Address for \"Send to Monbooru\". The API token stays in the Keychain and has to be entered again after restoring on another device."
     }
   },
   "random_order": {
