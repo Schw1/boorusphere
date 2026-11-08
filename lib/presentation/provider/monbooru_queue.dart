@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
@@ -221,6 +222,9 @@ class MonbooruQueue {
         },
         options: Options(headers: {
           'Accept': 'application/json',
+          // The app strips Dart's default User-Agent; some proxies in front
+          // of Monbooru reject requests without one.
+          'User-Agent': 'Boorusphere/${displayVersion('dev')}',
           ...ServerAuthStore.headersFor(server, url,
               token: _tokenOf(server.id)),
         }),

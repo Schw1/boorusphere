@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 import 'package:dio/dio.dart';
@@ -169,6 +170,8 @@ class MonbooruSender {
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 20),
         validateStatus: (_) => true,
+        // The app strips Dart's default User-Agent (see CustomHttpClient).
+        headers: {'User-Agent': 'Boorusphere/${displayVersion('dev')}'},
       ));
 
   /// Returns null when reachable, otherwise the error.
