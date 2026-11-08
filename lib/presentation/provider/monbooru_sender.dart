@@ -275,6 +275,16 @@ class MonbooruSender {
     }
   }
 
+  /// Tags handed to monloader with a post. Galleries (nhentai) send none:
+  /// their tags in the app are search tokens like `tag:"big breasts"` or
+  /// `language:english`, which monloader would store verbatim, and
+  /// gallery-dl already reads the gallery's tags with their categories.
+  @visibleForTesting
+  static List<String> tagsFor(Post post) {
+    final isGallery = post.pageCount > 0 && post.originalFile.isEmpty;
+    return isGallery ? const [] : post.tags;
+  }
+
   static Future<Response> _post(
     MonbooruConfig config,
     String url,
@@ -283,7 +293,7 @@ class MonbooruSender {
   }) {
     final options = <String, dynamic>{
       'via': 'boorusphere',
-      if (post.tags.isNotEmpty) 'tags': post.tags,
+      if (tagsFor(post) case final tags when tags.isNotEmpty) 'tags': tags,
       if (pageUrl.isNotEmpty) 'page_url': pageUrl,
     };
     return _dio().post(

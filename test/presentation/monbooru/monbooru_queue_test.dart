@@ -95,6 +95,20 @@ void main() {
       expect(MonbooruSender.jobIdOf('nope'), isNull);
     });
 
+    test('tags sent to monloader', () {
+      const booruPost = Post(
+          tags: ['cat', 'blue_eyes'], originalFile: 'https://x/1.jpg');
+      expect(MonbooruSender.tagsFor(booruPost), ['cat', 'blue_eyes']);
+      // nhentai gallery: search tokens stay in the app
+      const gallery = Post(
+          tags: ['tag:"big hat"', 'language:english'], pageCount: 20);
+      expect(MonbooruSender.tagsFor(gallery), isEmpty);
+      // Monbooru archive (has a file) keeps its tags
+      const archive = Post(
+          tags: ['cat'], pageCount: 5, originalFile: 'https://x/f.cbz');
+      expect(MonbooruSender.tagsFor(archive), ['cat']);
+    });
+
     test('error codes', () {
       expect(MonbooruSender.errorOf(401).kind, MonbooruErrorKind.invalidToken);
       expect(MonbooruSender.errorOf(403).kind, MonbooruErrorKind.noWriteScope);
