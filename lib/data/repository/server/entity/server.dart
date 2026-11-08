@@ -37,7 +37,11 @@ abstract class Server with _$Server {
       // nhentai: everything is explicit (no rating), `order:` tags become
       // its sort parameter, and the query must not be empty
       final split = NhentaiJsonParser.splitQuery(tags);
-      final sort = split.sort.isEmpty ? '' : '&sort=${split.sort}';
+      // an order: tag in the search wins over the sort button
+      final order = split.sort.isNotEmpty || split.hadOrder
+          ? split.sort
+          : option.sort;
+      final sort = order.isEmpty ? '' : '&sort=$order';
       return '$homepage/$searchUrl$urlSuffix$sort'
           .replaceAll('{tags}', Uri.encodeComponent(split.query))
           .replaceAll('{page-id}', '$page')

@@ -11,6 +11,8 @@ abstract class ServerSetting with _$ServerSetting {
     @Default(PageOption.defaultLimit) int postLimit,
     @Default(BooruRating.safe) BooruRating searchRating,
     @Default(false) bool searchRandom,
+    /// nhentai sort order ('' = newest, popular-week, …)
+    @Default('') String searchSort,
   }) = _ServerSetting;
   const ServerSetting._();
 }

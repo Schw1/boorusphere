@@ -43,6 +43,15 @@ class NhentaiJsonParser extends BooruParser {
 
   /// `order:`/`sort:` tags of the app's search, turned into nhentai's `sort`
   /// parameter (`popular-week` etc.). Everything else stays in the query.
+  /// Choices of the sort button: '' is nhentai's default (newest first).
+  static const sortOptions = [
+    '',
+    'popular-today',
+    'popular-week',
+    'popular-month',
+    'popular',
+  ];
+
   static const sortAliases = {
     'rank': 'popular-week',
     'popular-week': 'popular-week',
@@ -64,8 +73,10 @@ class NhentaiJsonParser extends BooruParser {
 
   /// Splits the app's search into nhentai's `query` and `sort`. `*` (the
   /// app's "everything") and rating tags are dropped; nhentai has neither.
-  static ({String query, String sort}) splitQuery(String tags) {
+  static ({String query, String sort, bool hadOrder}) splitQuery(
+      String tags) {
     var sort = '';
+    var hadOrder = false;
     final words = <String>[];
     for (final word in tags.split(RegExp(r'\s+'))) {
       if (word.isEmpty || word == '*' || word.startsWith('rating:')) continue;
@@ -75,13 +86,18 @@ class NhentaiJsonParser extends BooruParser {
         final alias = sortAliases[m.group(1)!.toLowerCase()];
         if (alias != null) {
           sort = alias;
+          hadOrder = true;
           continue;
         }
       }
       words.add(word);
     }
     final query = words.join(' ');
-    return (query: query.isEmpty ? matchAll : query, sort: sort);
+    return (
+      query: query.isEmpty ? matchAll : query,
+      sort: sort,
+      hadOrder: hadOrder,
+    );
   }
 
   /// `galleries/123/thumb.webp` -> full URL on [host].

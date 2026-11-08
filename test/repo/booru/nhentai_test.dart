@@ -1,3 +1,4 @@
+import 'package:boorusphere/data/repository/booru/booru_repo.dart';
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
@@ -87,6 +88,25 @@ void main() {
       expect(url('sort:month'), endsWith('&sort=popular-month'));
       expect(url('order:popular'), endsWith('&sort=popular'));
       expect(url('order:recent tag:glasses'), isNot(contains('sort=')));
+    });
+
+    test('sort button, overridden by order: tags', () {
+      String sorted(String query, String sort) => server.searchUrlOf(
+          PageOption(query: query, sort: sort), page: 1);
+      expect(sorted('', 'popular-month'), endsWith('&sort=popular-month'));
+      expect(sorted('order:rank', 'popular-month'),
+          endsWith('&sort=popular-week'));
+      // order:recent means nhentai's default, even if the button says else
+      expect(sorted('order:recent', 'popular'), isNot(contains('sort=')));
+      expect(sorted('tag:glasses', ''), isNot(contains('sort=')));
+    });
+
+    test('random page order is fixed by the seed', () {
+      final a = BooruRepo.randomPageOrder(20, 42);
+      expect(a, hasLength(20));
+      expect(a.toSet(), {for (var i = 1; i <= 20; i++) i});
+      expect(BooruRepo.randomPageOrder(20, 42), a);
+      expect(BooruRepo.randomPageOrder(0, 42), isEmpty);
     });
 
     test('no rating tags and no catch-all', () {

@@ -20,5 +20,6 @@ enum Setting {
   backupAutoInterval,
   backupAutoKeep,
   backupAutoLast,
-  searchRandom;
+  searchRandom,
+  searchSort;
 }

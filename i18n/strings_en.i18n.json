@@ -354,5 +354,13 @@
     "language": "Language",
     "category": "Category",
     "tags_failed": "Couldn't load the tags of this gallery."
+  },
+  "sort_order": {
+    "label": "Sort",
+    "recent": "Newest",
+    "today": "Popular today",
+    "week": "Popular this week",
+    "month": "Popular this month",
+    "all_time": "Popular all time"
   }
 }

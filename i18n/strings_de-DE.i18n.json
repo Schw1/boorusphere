@@ -352,5 +352,13 @@
     "language": "Sprache",
     "category": "Kategorie",
     "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden."
+  },
+  "sort_order": {
+    "label": "Sortierung",
+    "recent": "Neueste",
+    "today": "Beliebt heute",
+    "week": "Beliebt diese Woche",
+    "month": "Beliebt diesen Monat",
+    "all_time": "Beliebt aller Zeiten"
   }
 }

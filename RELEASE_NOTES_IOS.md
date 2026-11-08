@@ -1,7 +1,7 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
-- **nhentai:** can be added as a server (Servers → Add, address `https://nhentai.net`). Galleries open in the reader; `order:rank` (or `order:popular-today`, `-month`, `order:popular`) sorts by popularity, e.g. `language:english order:rank`.
+- **nhentai:** can be added as a server (Servers → Add, address `https://nhentai.net`). Galleries open in the reader. The search bar gets a sort button (newest, popular today/this week/this month/all time) instead of the rating; `order:rank` etc. in the search does the same, e.g. `language:english order:rank`. Random order shuffles the result pages.
 
 ## In 1.5.4-ios.12
 - **Android:** APKs for Android, signed with this fork's own key. The app ID is `io.github.schw1.boorusphere`, so it installs next to the original Boorusphere (move your data with Backup and Restore). Updates can be installed from the app.
