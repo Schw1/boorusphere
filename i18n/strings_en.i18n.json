@@ -89,7 +89,8 @@
     "on_latest": "You're on latest version",
     "on_new_version": "New version is available",
     "install": "Install update",
-    "progress": "Downloading: ${progress}%"
+    "progress": "Downloading: ${progress}%",
+    "open_release": "Open release ${version}"
   },
   "changelog": {
     "title": "Changelog",
@@ -169,7 +170,7 @@
     },
     "api_token": {
       "label": "API token (optional)",
-      "desc": "Needed for servers like Monbooru (token with read scope). Stored in the iOS Keychain on this device only, not in backups, and only sent to this server.",
+      "desc": "Needed for servers like Monbooru (token with read scope). Stored only on this device in the system keychain, in backups only with \"Include login data\", and only sent to this server.",
       "insecure": "Warning: this address uses plain HTTP outside your local network, so the token would be sent unencrypted. Use HTTPS."
     }
   },
@@ -242,8 +243,8 @@
       "loading": "Creating backup...",
       "credentials": {
         "title": "Include login data",
-        "desc": "API keys and user names in the servers' URL suffix (e.g. api_key=…). Off: they are left out of the backup, restoring on this device keeps them.",
-        "warning": "The login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust."
+        "desc": "API tokens (Monbooru servers, monloader) and API keys/user names in the servers' URL suffix (e.g. api_key=…), e.g. to move to another device. Off: they are left out of the backup, restoring on this device keeps them.",
+        "warning": "Tokens and login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust and delete it after moving."
       }
     },
     "restore": {
@@ -268,16 +269,17 @@
   },
   "monbooru": {
     "send": "Send to Monbooru",
-    "sent": "Sent to Monbooru",
+    "sent": "Sent to monloader, waiting for the result…",
     "settings": {
       "title": "Monbooru (monloader)",
       "desc": "Address and token for \"Send to Monbooru\"",
       "address": "monloader address",
-      "token": "API token (write scope)",
-      "token_desc": "Stored in the iOS Keychain on this device only, not part of backups.",
+      "token": "API token (read + write scope)",
+      "token_desc": "Write scope sends posts, read scope shows the result. Stored only on this device in the system keychain; backups only include it with \"Include login data\".",
       "test": "Test",
       "testing": "Testing…",
-      "ok": "Connection OK"
+      "ok": "Connection OK",
+      "duplicate_check": "Posts are checked for duplicates against your Monbooru server in the server list (by file md5)."
     },
     "error": {
       "not_configured": "Monbooru is not set up (see Settings)",
@@ -291,12 +293,59 @@
     },
     "backup": {
       "title": "Monbooru (monloader)",
-      "desc": "Address for \"Send to Monbooru\". The API token stays in the Keychain and has to be entered again after restoring on another device."
+      "desc": "Address for \"Send to Monbooru\". The API token stays in the system keychain and has to be entered again after restoring on another device."
+    },
+    "present": "Already in Monbooru",
+    "result": {
+      "added": "Added to Monbooru",
+      "duplicate": "Already in Monbooru (monloader skipped it)",
+      "skipped": "monloader skipped the post",
+      "failed": "monloader couldn't add the post",
+      "failed_with": "monloader couldn't add the post: ${error}",
+      "unconfirmed": "Sent to monloader. No result to show (the token needs read scope, or the job is still running)."
+    },
+    "batch": {
+      "sending": "Sending ${sent}/${total} to Monbooru…",
+      "added": "${n} added",
+      "already_there": "${n} already in Monbooru",
+      "skipped": "${n} skipped",
+      "failed": "${n} failed",
+      "unconfirmed": "${n} without result",
+      "nothing": "Nothing sent"
+    },
+    "duplicate_dialog": {
+      "title": "Already in Monbooru",
+      "desc": "The file of this post is already in Monbooru. Send it anyway?",
+      "send_anyway": "Send anyway"
+    },
+    "selection": {
+      "count": "${n} selected",
+      "select_all": "Select all",
+      "clear": "Clear selection",
+      "send": "Send to Monbooru",
+      "sending": "Sending…"
     }
   },
   "random_order": {
     "label": "random",
     "on": "on",
     "off": "off"
+  },
+  "signature": {
+    "expires": "App signature expires ${when}",
+    "desc": "After that the app won't open until you install it again with Sideloadly (over the existing app, your data is kept).",
+    "dismiss": "Dismiss",
+    "in_hours": "in ${n} h",
+    "in_days": "in ${n} days",
+    "valid_until": "Signature valid until ${date}"
+  },
+  "video": {
+    "seek_bar": "Seek bar",
+    "back10": "Back 10 seconds",
+    "forward10": "Forward 10 seconds"
+  },
+  "archive": {
+    "read": "Read (${n} pages)",
+    "page": "Page ${current} of ${total}"
   }
 }

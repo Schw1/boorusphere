@@ -1,0 +1,77 @@
+name: Upstream check
+
+# Once a week: are there commits in Kropatz/boorusphere that this fork does
+# not have yet? If so, open an issue (or update the open one). Nothing is
+# merged automatically.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1' # Mondays 06:17 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      UPSTREAM: https://github.com/Kropatz/boorusphere
+      LABEL: upstream
+      TITLE: New upstream changes in Kropatz/boorusphere
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compare with upstream
+        id: compare
+        run: |
+          set -euo pipefail
+          git fetch --quiet --no-tags "$UPSTREAM" HEAD
+          UPSTREAM_SHA=$(git rev-parse FETCH_HEAD)
+          COUNT=$(git rev-list --count HEAD..FETCH_HEAD)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "sha=${UPSTREAM_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "Upstream $UPSTREAM_SHA, $COUNT commit(s) not in this fork"
+          {
+            echo "Upstream has **$COUNT** commit(s) that are not in \`main\` yet (upstream HEAD \`${UPSTREAM_SHA::7}\`)."
+            echo
+            echo '```'
+            git log --no-merges --format='%h %ad %s' --date=short HEAD..FETCH_HEAD | head -50
+            echo '```'
+            echo
+            echo "Compare: $UPSTREAM/compare/main...${UPSTREAM_SHA}"
+            echo
+            echo "_Updated by the weekly upstream check. Close this issue once the changes are merged or deliberately skipped; a new issue is opened only when upstream moves on._"
+          } > body.md
+
+      - name: Open or update issue
+        if: steps.compare.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ steps.compare.outputs.sha }}
+        run: |
+          set -euo pipefail
+          gh label create "$LABEL" --color 0e8a16 \
+            --description "Changes from Kropatz/boorusphere" 2>/dev/null || true
+          NUMBER=$(gh issue list --label "$LABEL" --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$NUMBER" ]; then
+            gh issue edit "$NUMBER" --body-file body.md
+            echo "Updated issue #$NUMBER"
+            exit 0
+          fi
+          # Closed for this upstream state already (merged or skipped)?
+          LAST=$(gh issue list --label "$LABEL" --state closed --limit 1 \
+            --json body --jq '.[0].body // ""')
+          if printf '%s' "$LAST" | grep -q "upstream HEAD \`$SHA\`"; then
+            echo "Upstream $SHA was already handled in a closed issue"
+            exit 0
+          fi
+          gh issue create --title "$TITLE" --label "$LABEL" --body-file body.md

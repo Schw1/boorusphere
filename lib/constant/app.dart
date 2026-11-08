@@ -1,17 +1,19 @@
 import 'dart:ffi';
 import 'dart:io' show Platform;
 
-/// The in-app updater downloads and installs an APK, so it only makes sense on Android.
+/// The in-app updater downloads and installs an APK, so it only makes sense on
+/// Android. iOS shows available updates with a link to the release page.
 bool get kSupportsInAppUpdate => Platform.isAndroid;
 
-/// iOS port release (e.g. "v1.5.4-ios.5"), passed by CI via
-/// --dart-define=IOS_RELEASE=... ; empty for local/Android builds.
-const kIosRelease = String.fromEnvironment('IOS_RELEASE');
+/// Release of this fork (e.g. "v1.5.4-ios.12"), passed by CI via
+/// --dart-define=APP_RELEASE=... for the iOS and Android builds; a dev label
+/// like "1.5.4-ios-dev+abc1234" for test builds, empty for local builds.
+const kAppRelease = String.fromEnvironment('APP_RELEASE');
 
-/// Version shown in the UI: the iOS port release if known, else [appVersion].
+/// Version shown in the UI: the release label if known, else [appVersion].
 String displayVersion(Object appVersion) {
-  if (kIosRelease.isEmpty) return '$appVersion';
-  return kIosRelease.startsWith('v') ? kIosRelease.substring(1) : kIosRelease;
+  if (kAppRelease.isEmpty) return '$appVersion';
+  return kAppRelease.startsWith('v') ? kAppRelease.substring(1) : kAppRelease;
 }
 
 String get kAppArch {

@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/utils/file_md5.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/utils/entity/content.dart';
 import 'package:boorusphere/presentation/utils/entity/pixel_size.dart';
@@ -60,4 +61,10 @@ extension PostExt on Post {
   bool get isReserved {
     return id < 0;
   }
+
+  /// md5 of the original file, from the booru or from the file URL.
+  String get fileMd5 => md5.isNotEmpty ? md5 : FileMd5.fromUrl(originalFile);
+
+  /// Multi-page archive (Monbooru CBZ).
+  bool get isArchive => pageCount > 0;
 }

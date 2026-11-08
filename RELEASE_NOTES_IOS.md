@@ -1,6 +1,17 @@
-Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. with Sideloadly or AltStore).
+Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **Android:** APKs for Android, signed with this fork's own key. The app ID is `io.github.schw1.boorusphere`, so it installs next to the original Boorusphere (move your data with Backup and Restore). Updates can be installed from the app.
+- **Send several posts to Monbooru:** long-press a thumbnail (timeline or Favorites) to select posts, then send them in one go.
+- **Result after sending:** the app follows the monloader job and shows whether the post was added, was already in Monbooru, or failed (and why). Needs read scope on the monloader token in addition to write.
+- **Duplicates:** the send button shows a check mark when the post is already in your Monbooru server (from the server list), and asks before sending it again. Batch sends skip those posts.
+- **CBZ archives from Monbooru:** shown with their cover and a **Read** button that opens a page reader (swipe left to right, zoom, page slider).
+- **Video seek bar:** new button in the video toolbar for a bigger seek bar with times and 10-second jumps.
+- **Signature warning:** two days before the sideloading signature expires, a banner reminds you to install the app again. About shows the date.
+- **Moving to another device:** "Include login data" in the backup dialog now also includes the API tokens (Monbooru servers, monloader), e.g. to move from iPhone to Android. Off by default, automatic backups never include them.
+- **Update notice on iOS:** the drawer and About page show when a newer release is out, with a link to it.
+
+## Earlier in 1.5.4-ios
 - **Another zoom step:** the grid button now goes down to two columns less than the width-based default (e.g. 2 columns on a tablet in portrait), for even bigger thumbnails.
 - **Requires iOS 14 or later** (was iOS 13).
 
@@ -25,4 +36,5 @@ Unofficial iOS port of Boorusphere 1.5.4 (unsigned IPA for sideloading, e.g. wit
 - Send to Monbooru (via monloader), Save to Photos, app language support for the new features, version shown in the app, app icon and restore fixes.
 
 ## Installation
-Download `boorusphere-unsigned.ipa` and install it with Sideloadly over the existing app (same Apple ID, don't delete the app first, so your data is kept). With a free Apple ID the signature expires after 7 days. Developer Mode must be enabled on the iPhone.
+- **iOS:** download `boorusphere-unsigned.ipa` and install it with Sideloadly over the existing app (same Apple ID, don't delete the app first, so your data is kept). With a free Apple ID the signature expires after 7 days. Developer Mode must be enabled on the iPhone.
+- **Android:** `boorusphere-arm64-v8a.apk` fits most phones; `boorusphere-universal.apk` works everywhere.

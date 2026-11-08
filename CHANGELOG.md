@@ -10,6 +10,13 @@
 * iOS: two additional zoom steps with one or two columns less (bigger thumbnails, mainly for tablets)
 * iOS: installed version is always shown in the drawer and About page
 * iOS: new features follow the app language (English, German)
+* Android APK of the fork (own app ID, signed releases, updater on this fork)
+* Send several posts to Monbooru at once (long-press to select), with the result shown after sending
+* Duplicate check against the Monbooru server before sending
+* Read CBZ archives from Monbooru
+* Video seek bar with times and 10-second jumps
+* Backups with "Include login data" also carry the API tokens (to move to another device)
+* iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup
 * Update dependencies
 * perf: move calculating filtered posts to load time

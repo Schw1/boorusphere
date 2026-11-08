@@ -9,6 +9,7 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:boorusphere/presentation/widgets/notice_card.dart';
+import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:collection/collection.dart';
@@ -142,16 +143,19 @@ class _Content extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final timelineController = ref.watch(timelineControllerProvider);
 
-    return CustomScrollView(
-      controller: timelineController.scrollController,
-      slivers: [
-        SliverSafeArea(
-          sliver: SliverPadding(
-            padding: const EdgeInsets.all(10),
-            sliver: Timeline(posts: posts),
+    return PostSelectionScope(
+      posts: () => posts,
+      child: CustomScrollView(
+        controller: timelineController.scrollController,
+        slivers: [
+          SliverSafeArea(
+            sliver: SliverPadding(
+              padding: const EdgeInsets.all(10),
+              sliver: Timeline(posts: posts),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/utils/booru_util.dart';
+import 'package:boorusphere/data/repository/booru/utils/file_md5.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/provider/booru/suggestion_state.dart';
 import 'package:boorusphere/utils/extensions/pick.dart';
@@ -55,6 +56,7 @@ class GelbooruJsonParser extends BooruParser {
       final rating = pick(post, 'rating').asStringOrNull() ?? 'q';
       final source = pick(post, 'source').asStringOrNull() ?? '';
       final score = pick(post, 'score').asIntOrNull() ?? 0;
+      final md5 = FileMd5.normalize(pick(post, 'md5').asStringOrNull());
 
       final hasFile = originalFile.isNotEmpty && previewFile.isNotEmpty;
       final hasContent = width > 0 && height > 0;
@@ -79,6 +81,7 @@ class GelbooruJsonParser extends BooruParser {
             rateValue: rating.isEmpty ? 'q' : rating,
             source: source,
             score: score,
+            md5: md5,
           ),
         );
       }

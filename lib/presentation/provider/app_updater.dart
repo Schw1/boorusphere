@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/downloads/entity/download_progress.dart';
-import 'package:boorusphere/data/repository/version/app_version_repo.dart';
 import 'package:boorusphere/data/repository/version/entity/app_version.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/download/downloader.dart';
@@ -36,7 +35,7 @@ class AppUpdater {
   String id = '';
 
   String _fileNameOf(AppVersion version) {
-    return 'boorusphere-$version-$kAppArch.apk';
+    return AppVersion.apkFileName(kAppArch);
   }
 
   final updateDir = 'app-update';
@@ -58,7 +57,7 @@ class AppUpdater {
   Future<void> start(AppVersion version) async {
     await clear();
     final fileName = _fileNameOf(version);
-    final url = '${AppVersionRepo.gitUrl}/releases/download/$version/$fileName';
+    final url = version.apkUrl;
 
     final tmp = await getTemporaryDirectory();
     if (!tmp.existsSync()) {

@@ -7,6 +7,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/changelog_state.dart';
+import 'package:boorusphere/presentation/provider/signature_expiry.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
@@ -14,6 +15,7 @@ import 'package:boorusphere/utils/extensions/number.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -58,7 +60,7 @@ class AboutPage extends ConsumerWidget {
                       ?.copyWith(fontWeight: FontWeight.w400),
                 ),
               ),
-              if (kSupportsInAppUpdate)
+              const _SignatureInfo(),
               appVersions.when(
                 // Riverpod 3 keeps the previous value while refreshing; show
                 // the spinner like before when "check again" is tapped.
@@ -147,7 +149,19 @@ class _Updater extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Text(context.t.updater.onNewVersion),
         ),
-        _Downloader(data),
+        if (kSupportsInAppUpdate)
+          _Downloader(data)
+        else
+          // iOS: no in-app install; the IPA is sideloaded from the release.
+          ElevatedButton.icon(
+            onPressed: () => launchUrlString(
+              data.releaseUrl,
+              mode: LaunchMode.externalApplication,
+            ),
+            style: ElevatedButton.styleFrom(elevation: 0),
+            icon: const Icon(Icons.open_in_new),
+            label: Text(context.t.updater.openRelease(version: data)),
+          ),
         ElevatedButton(
           onPressed: () {
             context.router.push(
@@ -246,6 +260,28 @@ class _Downloader extends ConsumerWidget {
             child: Text(context.t.updater.install),
           ),
       ],
+    );
+  }
+}
+
+/// Expiry of the sideloading signature (iOS), when the bundle has a profile.
+class _SignatureInfo extends ConsumerWidget {
+  const _SignatureInfo();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final expiry = ref.watch(signatureExpiryProvider).value;
+    if (expiry == null) return const SizedBox.shrink();
+    final warn = shouldWarnAboutSignature(expiry, DateTime.now().toUtc());
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        context.t.signature.validUntil(
+            date: DateFormat.yMMMEd().add_Hm().format(expiry.toLocal())),
+        style: context.theme.textTheme.bodySmall?.copyWith(
+          color: warn ? context.colorScheme.error : null,
+        ),
+      ),
     );
   }
 }

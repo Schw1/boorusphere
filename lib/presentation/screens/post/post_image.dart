@@ -60,7 +60,8 @@ class PostImage extends HookConsumerWidget {
           Hero(
             tag: post.viewId,
             child: ExtendedImage.network(
-              contentSetting.loadOriginal
+              // An archive's original file is the .cbz; show its cover.
+              contentSetting.loadOriginal && !post.isArchive
                   ? post.originalFile
                   : post.content.url,
               headers: headers,

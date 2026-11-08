@@ -48,10 +48,17 @@ void main() async {
     when(() => adapter.fetch(any(), any(), any()))
         .thenAnswer((x) async => FakeResponseBody.fromFixture(fakePage, 200));
 
+    final page =
+        await ref.read(imageboardRepoProvider(server)).getPage(option, 1);
     expect(
-      await ref.read(imageboardRepoProvider(server)).getPage(option, 1),
+      page,
       isA<Iterable>().having((x) => x.length, 'total', option.limit - 2),
       reason: 'expecting 2 invalid post',
+    );
+    expect(
+      page.map((it) => it.md5),
+      contains('1dc55dfd8c000ae54b0411d59c39d057'),
+      reason: 'md5 is taken from the API',
     );
 
     const fakeTags = 'danbooru/tags.json';

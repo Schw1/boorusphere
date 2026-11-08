@@ -1,6 +1,7 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/utils/booru_util.dart';
+import 'package:boorusphere/data/repository/booru/utils/file_md5.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/provider/booru/suggestion_state.dart';
 import 'package:deep_pick/deep_pick.dart';
@@ -59,6 +60,7 @@ class SzurubooruJsonParser extends BooruParser {
       final height = pick(post, 'canvasHeight').asIntOrNull() ?? -1;
       final rating = pick(post, 'safety').asStringOrNull() ?? 'q';
       final score = pick(post, 'score').asIntOrNull() ?? 0;
+      final md5 = FileMd5.normalize(pick(post, 'checksumMD5').asStringOrNull());
 
       final tags = pick(post, 'tags').asListOrEmpty((x) {
         final obj = x.asMapOrEmpty()['names'];
@@ -86,6 +88,7 @@ class SzurubooruJsonParser extends BooruParser {
             postUrl: postUrl,
             rateValue: rating.isEmpty ? 'q' : rating,
             score: score,
+            md5: md5,
           ),
         );
       }

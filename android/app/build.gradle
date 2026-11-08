@@ -61,7 +61,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "io.chaldeaprjkt.boorusphere"
+        // Own ID, so this fork installs next to the original Boorusphere
+        // (the Kotlin namespace stays io.chaldeaprjkt.boorusphere).
+        applicationId "io.github.schw1.boorusphere"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion flutter.minSdkVersion

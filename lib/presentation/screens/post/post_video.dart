@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show FontFeature;
 
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
@@ -52,6 +53,10 @@ class _PostVideoState extends State<PostVideo> {
   }
 }
 
+/// Whether the detailed seek bar is shown; kept for the next video until the
+/// app restarts.
+bool _seekBarShown = false;
+
 class _PostVideoContent extends HookConsumerWidget {
   const _PostVideoContent({
     super.key,
@@ -82,6 +87,7 @@ class _PostVideoContent extends HookConsumerWidget {
     final showPauseOverlay = useState(false);
     final isPlaying = useState(true);
     final hideTimer = useState(Timer(const Duration(seconds: 2), () {}));
+    final seekBar = useState(_seekBarShown);
     final source = useVideoPostSource(ref, post: post, active: isActive);
     final player = isBlur.value ? null : source.player;
     final videoController = isBlur.value ? null : source.controller;
@@ -96,7 +102,12 @@ class _PostVideoContent extends HookConsumerWidget {
       if (!context.mounted) return;
       hideTimer.value.cancel();
       hideTimer.value = Timer(const Duration(seconds: 2), () {
-        if (context.mounted) {
+        if (!context.mounted) return;
+        if (seekBar.value) {
+          // Keep the toolbar and seek bar, only drop the play button and
+          // the dimming.
+          showPauseOverlay.value = false;
+        } else {
           onVisibilityChange.call(false);
         }
       });
@@ -194,6 +205,13 @@ class _PostVideoContent extends HookConsumerWidget {
                       post: post,
                       isMuted: contentSettings.videoMuted,
                       isFullscreen: fullscreen,
+                      showSeekBar: seekBar.value,
+                      onSeekBarChange: (value) {
+                        _seekBarShown = value;
+                        seekBar.value = value;
+                        showPauseOverlay.value = true;
+                        scheduleHide();
+                      },
                       onAutoHideRequest: scheduleHide,
                       onPlayChange: (value) {
                         isPlaying.value = value;
@@ -228,6 +246,8 @@ class _ToolboxOverlay extends ConsumerWidget {
     required this.isPlaying,
     required this.isMuted,
     required this.isFullscreen,
+    required this.showSeekBar,
+    required this.onSeekBarChange,
     this.onAutoHideRequest,
     this.onPlayChange,
   });
@@ -237,6 +257,8 @@ class _ToolboxOverlay extends ConsumerWidget {
   final Post post;
   final bool isMuted;
   final bool isFullscreen;
+  final bool showSeekBar;
+  final void Function(bool value) onSeekBarChange;
   final void Function()? onAutoHideRequest;
   final void Function(bool value)? onPlayChange;
 
@@ -267,6 +289,15 @@ class _ToolboxOverlay extends ConsumerWidget {
             ),
             PostDetailsButton(post: post),
             IconButton(
+              padding: const EdgeInsets.all(16),
+              color: Colors.white,
+              tooltip: context.t.video.seekBar,
+              isSelected: showSeekBar,
+              icon: const Icon(Icons.linear_scale),
+              selectedIcon: const Icon(Icons.linear_scale, color: Colors.red),
+              onPressed: () => onSeekBarChange(!showSeekBar),
+            ),
+            IconButton(
               color: Colors.white,
               icon: Icon(
                 isFullscreen
@@ -283,7 +314,11 @@ class _ToolboxOverlay extends ConsumerWidget {
             ),
           ],
         ),
-        _Progress(source: source),
+        _Progress(
+          source: source,
+          detailed: showSeekBar,
+          onInteraction: onAutoHideRequest,
+        ),
       ],
     );
   }
@@ -317,9 +352,15 @@ class _PlayPauseOverlay extends StatelessWidget {
 }
 
 class _Progress extends StatelessWidget {
-  const _Progress({required this.source});
+  const _Progress({
+    required this.source,
+    this.detailed = false,
+    this.onInteraction,
+  });
 
   final VideoPostSource source;
+  final bool detailed;
+  final void Function()? onInteraction;
 
   double _getProgressValue(VideoPostSource src) {
     return src.progress.downloaded / (src.progress.totalSize ?? 1);
@@ -363,6 +404,13 @@ class _Progress extends StatelessWidget {
       builder: (context, snapshot) {
         final duration = snapshot.data ?? Duration.zero;
         if (duration <= Duration.zero) return _buildLoading();
+        if (detailed) {
+          return _DetailedSeekBar(
+            player: player,
+            duration: duration,
+            onInteraction: onInteraction,
+          );
+        }
         return _SeekBar(player: player, duration: duration);
       },
     );
@@ -427,6 +475,118 @@ class _SeekBarState extends State<_SeekBar> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// `m:ss`, or `h:mm:ss` from one hour on.
+String formatVideoTime(Duration d) {
+  final total = d.isNegative ? 0 : d.inSeconds;
+  final h = total ~/ 3600;
+  final m = (total % 3600) ~/ 60;
+  final sec = (total % 60).toString().padLeft(2, '0');
+  return h > 0 ? '$h:${m.toString().padLeft(2, '0')}:$sec' : '$m:$sec';
+}
+
+/// Larger seek bar with elapsed/total time and 10 s jump buttons.
+class _DetailedSeekBar extends StatefulWidget {
+  const _DetailedSeekBar({
+    required this.player,
+    required this.duration,
+    this.onInteraction,
+  });
+
+  final Player player;
+  final Duration duration;
+  final void Function()? onInteraction;
+
+  @override
+  State<_DetailedSeekBar> createState() => _DetailedSeekBarState();
+}
+
+class _DetailedSeekBarState extends State<_DetailedSeekBar> {
+  static const _jump = Duration(seconds: 10);
+  double? _dragMs;
+
+  void _jumpBy(Duration offset) {
+    final target = widget.player.state.position + offset;
+    final clamped = target < Duration.zero
+        ? Duration.zero
+        : (target > widget.duration ? widget.duration : target);
+    widget.player.seek(clamped);
+    widget.onInteraction?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalMs = widget.duration.inMilliseconds.toDouble();
+    const textStyle = TextStyle(
+      color: Colors.white,
+      fontFeatures: [FontFeature.tabularFigures()],
+    );
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(color: Colors.black38),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: StreamBuilder<Duration>(
+          stream: widget.player.stream.position,
+          initialData: widget.player.state.position,
+          builder: (context, snapshot) {
+            final position = snapshot.data ?? Duration.zero;
+            final valueMs = (_dragMs ?? position.inMilliseconds.toDouble())
+                .clamp(0.0, totalMs <= 0 ? 0.0 : totalMs)
+                .toDouble();
+            return Row(
+              children: [
+                IconButton(
+                  color: Colors.white,
+                  tooltip: context.t.video.back10,
+                  icon: const Icon(Icons.replay_10),
+                  onPressed: () => _jumpBy(-_jump),
+                ),
+                Text(
+                  formatVideoTime(Duration(milliseconds: valueMs.round())),
+                  style: textStyle,
+                ),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: Colors.red,
+                      inactiveTrackColor: Colors.white24,
+                      thumbColor: Colors.red,
+                      overlayColor: Colors.red.withAlpha(40),
+                      trackHeight: 3,
+                    ),
+                    child: Slider(
+                      min: 0,
+                      max: totalMs <= 0 ? 1 : totalMs,
+                      value: valueMs,
+                      onChangeStart: (v) => setState(() => _dragMs = v),
+                      onChanged: (v) {
+                        setState(() => _dragMs = v);
+                        widget.player.seek(Duration(milliseconds: v.round()));
+                      },
+                      onChangeEnd: (v) {
+                        widget.player.seek(Duration(milliseconds: v.round()));
+                        setState(() => _dragMs = null);
+                        widget.onInteraction?.call();
+                      },
+                    ),
+                  ),
+                ),
+                Text(formatVideoTime(widget.duration), style: textStyle),
+                IconButton(
+                  color: Colors.white,
+                  tooltip: context.t.video.forward10,
+                  icon: const Icon(Icons.forward_10),
+                  onPressed: () => _jumpBy(_jump),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

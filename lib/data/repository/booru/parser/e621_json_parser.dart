@@ -1,6 +1,7 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/utils/booru_util.dart';
+import 'package:boorusphere/data/repository/booru/utils/file_md5.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/utils/extensions/pick.dart';
 import 'package:deep_pick/deep_pick.dart';
@@ -64,6 +65,7 @@ class E621JsonParser extends BooruParser {
       final hasContent = width > 0 && height > 0;
       final postUrl = server.postUrlOf(id);
       final score = pick(post, 'score', 'total').asIntOrNull() ?? 0;
+      final md5 = FileMd5.normalize(pick(post, 'file', 'md5').asStringOrNull());
 
       if (hasFile && hasContent) {
         result.add(
@@ -88,6 +90,7 @@ class E621JsonParser extends BooruParser {
             tagsGeneral: tagsGeneral.map(BooruUtil.decodeTag).toList(),
             tagsMeta: tagsMeta.map(BooruUtil.decodeTag).toList(),
             score: score,
+            md5: md5,
           ),
         );
       }

@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// API tokens for servers that need one (e.g. Monbooru).
 ///
-/// Tokens live in the platform keystore (iOS Keychain), never in Hive, so they
-/// are not part of backups. On iOS they are bound to this device and are not
+/// Tokens live in the platform keystore (iOS Keychain, Android Keystore), never
+/// in Hive. Backups only carry them when "Include login data" is chosen (to
+/// move to another device); automatic backups never do. On iOS they are bound to this device and are not
 /// synced via iCloud Keychain. A copy is cached in memory because request
 /// headers are built synchronously.
 class ServerAuthStore {
@@ -53,6 +56,34 @@ class ServerAuthStore {
       await _storage.delete(key: _key(serverId));
     } catch (e) {
       debugPrint('ServerAuthStore.remove($serverId): $e');
+    }
+  }
+
+  static const backupKey = 'server_tokens';
+
+  /// Tokens of [servers] for a backup with login data (`{serverId: token}`).
+  static MapEntry<String, Object> exportBackup(Iterable<Server> servers) =>
+      MapEntry(
+        backupKey,
+        {
+          for (final server in servers)
+            if (tokenOf(server.id).isNotEmpty) server.id: tokenOf(server.id),
+        },
+      );
+
+  /// Saves the tokens of a backup made with login data.
+  static Future<void> importBackup(String src) async {
+    final data = jsonDecode(src);
+    if (data is! Map) return;
+    for (final entry in data.entries) {
+      final id = '${entry.key}';
+      final token = '${entry.value ?? ''}'.trim();
+      if (id.isEmpty || token.isEmpty) continue;
+      try {
+        await save(id, token);
+      } catch (e) {
+        debugPrint('ServerAuthStore.importBackup($id): $e');
+      }
     }
   }
 

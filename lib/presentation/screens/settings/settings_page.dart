@@ -562,6 +562,13 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(_status!),
               ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                context.t.monbooru.settings.duplicateCheck,
+                style: context.theme.textTheme.bodySmall,
+              ),
+            ),
           ],
         ),
       ),
