@@ -5,8 +5,10 @@ import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/home_status.dart';
 import 'package:boorusphere/presentation/screens/home/search/search_screen.dart';
+import 'package:boorusphere/presentation/screens/home/signature_banner.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
+import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +55,9 @@ class HomeContent extends HookConsumerWidget {
     final isNewSearch =
         pageState is! DataFetchResult && pageState.data.option.clear;
 
-    return Stack(
+    return PostSelectionScope(
+      posts: () => filteredPosts,
+      child: Stack(
       alignment: Alignment.center,
       children: [
         RefreshIndicator(
@@ -70,8 +74,11 @@ class HomeContent extends HookConsumerWidget {
                 SliverSafeArea(
                   sliver: SliverPadding(
                     padding: const EdgeInsets.all(10),
-                    sliver: Timeline(
-                      posts: filteredPosts,
+                    sliver: SliverMainAxisGroup(
+                      slivers: [
+                        const SliverToBoxAdapter(child: SignatureBanner()),
+                        Timeline(posts: filteredPosts),
+                      ],
                     ),
                   ),
                 ),
@@ -90,6 +97,7 @@ class HomeContent extends HookConsumerWidget {
         const _EdgeShadow(),
         SearchScreen(scrollController: scrollController),
       ],
+      ),
     );
   }
 }
