@@ -48,7 +48,7 @@ Monbooru can be added as a regular server (parser `Monbooru.json`):
 Search uses `/api/v1/images/search`, tag suggestions `/api/v1/tags`, and the safe-mode/rating filter maps to Monbooru's `rating:general|sensitive|questionable|explicit`. In post details, **Location** opens the image page in the Monbooru web UI (`/images/{id}`) and **Source** the original source. A `?gallery=<name>` can be added through the URL suffix. AVIF/JXL are shown through Monbooru's WebP still. CBZ archives are shown with their cover (page 1) and a **Read** button; see [Archives](#archives-cbz).
 
 Security:
-- The token is stored in the iOS Keychain (this device only, not synced, not part of backups) and cached in memory.
+- The token is stored in the iOS Keychain / Android Keystore (this device only, not synced) and cached in memory. Backups only include it with "Include login data" (`server_tokens.json`), e.g. to move to another device; automatic backups never do.
 - It is only attached to requests whose origin matches the server's homepage or API address, including images, videos and downloads.
 - The settings warn when the address is plain HTTP outside the local network.
 - Known limitation: flutter_downloader keeps the request headers of a download task (including the token) in its local task database inside the app sandbox.
@@ -73,7 +73,7 @@ Monbooru archives (`file_type: cbz`) appear in the timeline with their first pag
 
 The post viewer has a cloud button next to Download. It sends the post page to a monloader instance through its API (`POST /api/v1/queue`); monloader downloads it with gallery-dl and files it into Monbooru. If monloader rejects the page URL, the app falls back to the direct file URL and passes the page as `page_url`.
 
-Set the address and an API token with **write** scope under Settings → "Monbooru (monloader)". With **read** scope as well, the app shows the result of each job. The token is stored in the iOS Keychain (this device only, not synced, not part of backups; tokens from older versions are moved there from Hive on startup), the address in Hive and in the backup. The settings warn when the address is plain HTTP outside the local network. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.
+Set the address and an API token with **write** scope under Settings → "Monbooru (monloader)". With **read** scope as well, the app shows the result of each job. The token is stored in the iOS Keychain (this device only, not synced, in backups only with "Include login data"; tokens from older versions are moved there from Hive on startup), the address in Hive and in the backup. The settings warn when the address is plain HTTP outside the local network. The device must be able to reach the address; for LAN addresses iOS asks for local network access on first use.
 
 ### Result after sending
 
@@ -109,7 +109,7 @@ The **Upstream check** workflow runs every Monday and compares `Kropatz/boorusph
 
 ## Security notes
 
-- **Keychain:** the Monbooru server tokens and the monloader token are stored in the iOS Keychain (`first unlock, this device only`): not synced via iCloud Keychain and not part of backups.
+- **Keychain:** the Monbooru server tokens and the monloader token are stored in the iOS Keychain (`first unlock, this device only`): not synced via iCloud Keychain. They are only written into a backup when "Include login data" is chosen (plain text, red warning in the dialog; automatic backups never include them), so they can be moved to another device, e.g. from iOS to Android.
 - **Login data in URL suffixes:** some boorus take credentials as query parameters (e.g. `&api_key=…&user_id=…`). They stay in the app's Hive storage. A manual backup leaves them out unless **Include login data** is checked; then they are in plain text in the backup file, which is visible in the Files app. Restoring a backup without login data on the same device keeps the existing keys.
 - **Plain HTTP (App Transport Security):** `NSAllowsArbitraryLoads` stays enabled on purpose, so user-added boorus without HTTPS keep working (browsing, video and downloads). The Android build allows cleartext traffic for the same reason. All bundled servers use HTTPS. Token fields warn when the address is plain HTTP outside the local network.
 - **Android backup:** Android's own auto backup stays enabled, so app data (including URL suffix credentials) can end up in the Google account backup; tokens in the Keystore don't.

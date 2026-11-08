@@ -170,7 +170,7 @@
     },
     "api_token": {
       "label": "API token (optional)",
-      "desc": "Needed for servers like Monbooru (token with read scope). Stored only on this device in the system keychain, not in backups, and only sent to this server.",
+      "desc": "Needed for servers like Monbooru (token with read scope). Stored only on this device in the system keychain, in backups only with \"Include login data\", and only sent to this server.",
       "insecure": "Warning: this address uses plain HTTP outside your local network, so the token would be sent unencrypted. Use HTTPS."
     }
   },
@@ -243,8 +243,8 @@
       "loading": "Creating backup...",
       "credentials": {
         "title": "Include login data",
-        "desc": "API keys and user names in the servers' URL suffix (e.g. api_key=…). Off: they are left out of the backup, restoring on this device keeps them.",
-        "warning": "The login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust."
+        "desc": "API tokens (Monbooru servers, monloader) and API keys/user names in the servers' URL suffix (e.g. api_key=…), e.g. to move to another device. Off: they are left out of the backup, restoring on this device keeps them.",
+        "warning": "Tokens and login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust and delete it after moving."
       }
     },
     "restore": {
@@ -275,7 +275,7 @@
       "desc": "Address and token for \"Send to Monbooru\"",
       "address": "monloader address",
       "token": "API token (read + write scope)",
-      "token_desc": "Write scope sends posts, read scope shows the result. Stored only on this device in the system keychain, not part of backups.",
+      "token_desc": "Write scope sends posts, read scope shows the result. Stored only on this device in the system keychain; backups only include it with \"Include login data\".",
       "test": "Test",
       "testing": "Testing…",
       "ok": "Connection OK",

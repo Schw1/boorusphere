@@ -169,7 +169,7 @@
     },
     "api_token": {
       "label": "API-Token (optional)",
-      "desc": "Nötig für Server wie Monbooru (Token mit Leserecht). Wird nur auf diesem Gerät im iOS-Schlüsselbund gespeichert, nicht im Backup, und nur an diesen Server gesendet.",
+      "desc": "Nötig für Server wie Monbooru (Token mit Leserecht). Wird nur auf diesem Gerät im Schlüsselbund des Systems gespeichert, im Backup nur mit „Zugangsdaten mitsichern“, und nur an diesen Server gesendet.",
       "insecure": "Achtung: Diese Adresse nutzt unverschlüsseltes HTTP außerhalb deines Heimnetzes, der Token würde unverschlüsselt übertragen. Nutze HTTPS."
     }
   },
@@ -241,8 +241,8 @@
       "loading": "Sicherung wird erstellt...",
       "credentials": {
         "title": "Zugangsdaten mitsichern",
-        "desc": "API-Keys und Benutzernamen aus dem URL-Suffix der Server (z. B. api_key=…). Aus: Sie fehlen im Backup, beim Wiederherstellen auf diesem Gerät bleiben sie erhalten.",
-        "warning": "Die Zugangsdaten stehen dann im Klartext in der Backup-Datei, die in der Dateien-App sichtbar ist. Gib sie nur an Personen weiter, denen du vertraust."
+        "desc": "API-Tokens (Monbooru-Server, monloader) sowie API-Keys und Benutzernamen aus dem URL-Suffix der Server (z. B. api_key=…), z. B. für den Umzug auf ein anderes Gerät. Aus: Sie fehlen im Backup, beim Wiederherstellen auf diesem Gerät bleiben sie erhalten.",
+        "warning": "Tokens und Zugangsdaten stehen dann im Klartext in der Backup-Datei, die in der Dateien-App sichtbar ist. Gib sie nur an Personen weiter, denen du vertraust, und lösche sie nach dem Umzug."
       }
     },
     "restore": {
@@ -273,7 +273,7 @@
       "desc": "Adresse und Token für „An Monbooru senden“",
       "address": "monloader-Adresse",
       "token": "API-Token (Lese- und Schreibrecht)",
-      "token_desc": "Mit Schreibrecht werden Posts gesendet, mit Leserecht wird das Ergebnis angezeigt. Liegt nur auf diesem Gerät im Schlüsselbund des Systems und ist nicht Teil von Backups.",
+      "token_desc": "Mit Schreibrecht werden Posts gesendet, mit Leserecht wird das Ergebnis angezeigt. Liegt nur auf diesem Gerät im Schlüsselbund des Systems; im Backup nur mit „Zugangsdaten mitsichern“.",
       "test": "Testen",
       "testing": "Teste…",
       "ok": "Verbindung OK",

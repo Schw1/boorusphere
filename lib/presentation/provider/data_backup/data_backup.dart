@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:boorusphere/data/repository/favorite_post/user_favorite_post_repo.dart';
 import 'package:boorusphere/data/repository/search_history/user_search_history.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/data/repository/server/user_server_repo.dart';
 import 'package:boorusphere/data/repository/setting/user_setting_repo.dart';
 import 'package:boorusphere/data/repository/tags_blocker/booru_tags_blocker_repo.dart';
@@ -60,7 +61,13 @@ Future<String> writeBackupFile(
     if (option.favoritePost) ref.read(favoritePostRepoProvider).export(),
     if (option.setting) ref.read(settingsRepoProvider).export(),
     if (option.searchHistory) ref.read(searchHistoryRepoProvider).export(),
-    if (option.monloader) MonbooruSender.exportBackup(),
+    if (option.monloader)
+      MonbooruSender.exportBackup(withToken: option.credentials),
+    // API tokens of servers (Keychain/Keystore) only with login data, e.g.
+    // to move to another device.
+    if (option.server && option.credentials)
+      Future.value(
+          ServerAuthStore.exportBackup(ref.read(serverRepoProvider).servers)),
   ];
 
   // Own temp folder per run, so a manual and an automatic backup can't clash.
@@ -168,6 +175,9 @@ class DataBackupState extends _$DataBackupState {
           break;
         case MonbooruSender.backupKey:
           await MonbooruSender.importBackup(content);
+          break;
+        case ServerAuthStore.backupKey:
+          await ServerAuthStore.importBackup(content);
           break;
         default:
           break;

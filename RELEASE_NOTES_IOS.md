@@ -8,6 +8,7 @@ Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideload
 - **CBZ archives from Monbooru:** shown with their cover and a **Read** button that opens a page reader (swipe left to right, zoom, page slider).
 - **Video seek bar:** new button in the video toolbar for a bigger seek bar with times and 10-second jumps.
 - **Signature warning:** two days before the sideloading signature expires, a banner reminds you to install the app again. About shows the date.
+- **Moving to another device:** "Include login data" in the backup dialog now also includes the API tokens (Monbooru servers, monloader), e.g. to move from iPhone to Android. Off by default, automatic backups never include them.
 - **Update notice on iOS:** the drawer and About page show when a newer release is out, with a link to it.
 
 ## Earlier in 1.5.4-ios

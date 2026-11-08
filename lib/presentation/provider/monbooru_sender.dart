@@ -147,14 +147,18 @@ class MonbooruSender {
 
   /// Only the monloader address goes into the backup; the token stays in the
   /// Keychain and has to be entered again after restoring on another device.
-  static Future<BackupItem> exportBackup() async {
+  /// The address; the token only with [withToken] ("Include login data").
+  static Future<BackupItem> exportBackup({bool withToken = false}) async {
     final config = await load();
-    return BackupItem(backupKey, {'url': config.url});
+    return BackupItem(backupKey, {
+      'url': config.url,
+      if (withToken && config.token.isNotEmpty) 'token': config.token,
+    });
   }
 
-  /// Restores the address. A token is only present in backups made by older
-  /// versions; it is moved into the Keychain. Without one the current token is
-  /// kept.
+  /// Restores the address, and the token if the backup has one (made with
+  /// "Include login data", or by older versions); it goes into the secure
+  /// storage. Without one the current token is kept.
   static Future<void> importBackup(String src) async {
     final data = jsonDecode(src);
     if (data is! Map) return;
