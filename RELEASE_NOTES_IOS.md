@@ -1,6 +1,9 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
-## New
+## Fixed
+- Sending an nhentai gallery to Monbooru added the app's search tokens as extra tags (`tag:_big_breasts`, `language:english`, `category:manga`). Now only the tags gallery-dl reads from the gallery are used.
+
+## In 1.5.4-ios.14
 - **Reading progress:** galleries and Monbooru CBZ archives remember the last page read; the Read button continues there, the thumbnail shows the progress.
 - **nhentai tag suggestions** while typing in the search (also `tag:`, `artist:`, `-tag:` …). Search results now know their tags, so blocked tags hide galleries too.
 
