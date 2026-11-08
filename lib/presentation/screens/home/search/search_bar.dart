@@ -1,3 +1,5 @@
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
+import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
@@ -175,20 +177,205 @@ class _SearchField extends HookConsumerWidget {
   }
 }
 
-class _OptionBar extends StatelessWidget {
+class _OptionBar extends ConsumerWidget {
   const _OptionBar();
 
   @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(18, 11, 18, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _RatingButton(),
-          SizedBox(width: 8),
-          _RandomButton(),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(searchSessionProvider);
+    final server = ref.watch(serverStateProvider).getById(session.serverId);
+    // nhentai has no ratings (all explicit) but its own sort orders.
+    final isNhentai = NhentaiJsonParser.isNhentai(server);
+    final canSort = server.sortOptions.length > 1;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 11, 18, 0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            if (!isNhentai) ...[
+              const _RatingButton(),
+              const SizedBox(width: 8),
+            ],
+            if (canSort) ...[
+              _SortButton(server: server),
+              const SizedBox(width: 8),
+            ],
+            if (isNhentai) ...[
+              _LanguageButton(server: server),
+              const SizedBox(width: 8),
+            ],
+            const _RandomButton(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sort order of the current server, from what its engine supports (see
+/// Server.sortOptions). Random order or an `order:`/`sort:` tag in the
+/// search take precedence.
+class _SortButton extends ConsumerWidget {
+  const _SortButton({required this.server});
+
+  final Server server;
+
+  static String describe(BuildContext context, String sort) {
+    final t = context.t.sortOrder;
+    return switch (sort) {
+      'popular-today' => t.today,
+      'popular-week' => t.week,
+      'popular-month' => t.month,
+      'popular' => t.allTime,
+      'rank' => t.rank,
+      'score' => t.score,
+      'favcount' => t.favorites,
+      'oldest' => t.oldest,
+      'size' => t.size,
+      _ => t.recent,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stored = ref.watch(serverSettingStateProvider
+        .select((it) => it.searchSorts[server.id] ?? ''));
+    final options = server.sortOptions;
+    final sort = options.contains(stored) ? stored : '';
+    final t = context.t.sortOrder;
+    final label = '${t.label}: ${describe(context, sort)}';
+
+    return TextButton.icon(
+      onPressed: () async {
+        final selected = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(t.label),
+            icon: const Icon(Icons.sort),
+            contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final option in options)
+                  RadioListTile<String>(
+                    value: option,
+                    groupValue: sort,
+                    title: Text(describe(context, option)),
+                    onChanged: (x) => context.navigator.pop(x),
+                  ),
+              ],
+            ),
+          ),
+        );
+        if (selected != null) {
+          await ref
+              .read(serverSettingStateProvider.notifier)
+              .setSort(server.id, selected);
+        }
+      },
+      icon: Icon(
+        Icons.sort,
+        size: 16,
+        color: sort.isNotEmpty
+            ? context.colorScheme.primary
+            : context.colorScheme.onSurface,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+        minimumSize: const Size(1, 1),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        side: BorderSide(
+          width: 1,
+          color: sort.isNotEmpty
+              ? context.colorScheme.primary
+              : context.colorScheme.surfaceContainerHighest,
+        ),
+        elevation: 0,
+      ),
+      label: Text(
+        label.toLowerCase(),
+        style: TextStyle(color: context.colorScheme.onSurface),
+      ),
+    );
+  }
+}
+
+/// nhentai only: show galleries of one language. A `language:` tag in the
+/// search takes precedence.
+class _LanguageButton extends ConsumerWidget {
+  const _LanguageButton({required this.server});
+
+  final Server server;
+
+  static String describe(BuildContext context, String language) {
+    final t = context.t.languageFilter;
+    return switch (language) {
+      'english' => t.english,
+      'japanese' => t.japanese,
+      'chinese' => t.chinese,
+      _ => t.all,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(serverSettingStateProvider
+        .select((it) => it.searchLanguages[server.id] ?? ''));
+    final t = context.t.languageFilter;
+    final active = language.isNotEmpty;
+
+    return TextButton.icon(
+      onPressed: () async {
+        final selected = await showDialog<String>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(t.label),
+            icon: const Icon(Icons.translate),
+            contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final option in NhentaiJsonParser.languages)
+                  RadioListTile<String>(
+                    value: option,
+                    groupValue: language,
+                    title: Text(describe(context, option)),
+                    onChanged: (x) => context.navigator.pop(x),
+                  ),
+              ],
+            ),
+          ),
+        );
+        if (selected != null) {
+          await ref
+              .read(serverSettingStateProvider.notifier)
+              .setLanguage(server.id, selected);
+        }
+      },
+      icon: Icon(
+        Icons.translate,
+        size: 16,
+        color: active
+            ? context.colorScheme.primary
+            : context.colorScheme.onSurface,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+        minimumSize: const Size(1, 1),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        side: BorderSide(
+          width: 1,
+          color: active
+              ? context.colorScheme.primary
+              : context.colorScheme.surfaceContainerHighest,
+        ),
+        elevation: 0,
+      ),
+      label: Text(
+        '${t.label}: ${describe(context, language)}'.toLowerCase(),
+        style: TextStyle(color: context.colorScheme.onSurface),
       ),
     );
   }

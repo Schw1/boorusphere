@@ -347,5 +347,32 @@
   "archive": {
     "read": "Read (${n} pages)",
     "page": "Page ${current} of ${total}"
+  },
+  "gallery": {
+    "title": "Title",
+    "group": "Group",
+    "language": "Language",
+    "category": "Category",
+    "tags_failed": "Couldn't load the tags of this gallery."
+  },
+  "sort_order": {
+    "label": "Sort",
+    "recent": "Newest",
+    "today": "Popular today",
+    "week": "Popular this week",
+    "month": "Popular this month",
+    "all_time": "Popular all time",
+    "rank": "Rank (trending)",
+    "score": "Score",
+    "favorites": "Favorites",
+    "oldest": "Oldest",
+    "size": "File size"
+  },
+  "language_filter": {
+    "label": "Language",
+    "all": "All",
+    "english": "English",
+    "japanese": "Japanese",
+    "chinese": "Chinese"
   }
 }

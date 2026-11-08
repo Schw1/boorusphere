@@ -13,6 +13,11 @@ abstract class PageOption with _$PageOption {
     @Default(false) bool random,
     // Seed for servers that support stable random paging (Monbooru)
     @Default(0) int seed,
+    // Sort order for servers with one (nhentai: popular-week etc.), '' for
+    // their default
+    @Default('') String sort,
+    // Language filter for servers with one (nhentai: english, …), '' = all
+    @Default('') String language,
   }) = _PageOption;
   const PageOption._();
 

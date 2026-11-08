@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/domain/repository/imageboards_repo.dart';
@@ -24,6 +27,10 @@ class BooruRepo implements ImageboardRepo {
 
   final _opt = Options(validateStatus: (it) => it == 200);
   final _log = Logger('BooruRepo');
+
+  /// nhentai has no random order: its result pages are visited in a random
+  /// order (fixed by the search's seed), and each page is shuffled.
+  final Map<String, List<int>> _randomPageOrder = {};
 
   @override
   final Server server;
@@ -67,6 +74,10 @@ class BooruRepo implements ImageboardRepo {
     var parser = parsers.firstWhere((x) => x.id == server.searchParserId,
         orElse: NoParser.new);
 
+    if (option.random && parser is NhentaiJsonParser) {
+      return _nhentaiRandomPage(parser, option, index);
+    }
+
     final searchUrl =
         server.searchUrlOf(option, page: index + parser.pageOffset);
     final res = await _request(searchUrl, parser);
@@ -88,4 +99,31 @@ class BooruRepo implements ImageboardRepo {
 
     return parser.parsePage(server, res).toSet();
   }
+
+  Future<Set<Post>> _nhentaiRandomPage(
+      NhentaiJsonParser parser, PageOption option, int index) async {
+    final key = '${option.query}|${option.sort}|${option.seed}';
+    var order = _randomPageOrder[key];
+    if (order == null) {
+      final first = await _request(server.searchUrlOf(option, page: 1), parser);
+      final data = first.data;
+      final pages = data is Map && data['num_pages'] is int
+          ? data['num_pages'] as int
+          : 0;
+      order = randomPageOrder(pages, option.seed);
+      _randomPageOrder[key] = order;
+    }
+    if (index >= order.length) return {};
+
+    final res =
+        await _request(server.searchUrlOf(option, page: order[index]), parser);
+    if (!parser.canParsePage(res)) return {};
+    final posts = parser.parsePage(server, res).toList()
+      ..shuffle(Random(option.seed ^ index));
+    return posts.toSet();
+  }
+
+  /// Pages 1..[pages] in a random order that only depends on [seed].
+  static List<int> randomPageOrder(int pages, int seed) =>
+      [for (var i = 1; i <= pages; i++) i]..shuffle(Random(seed));
 }

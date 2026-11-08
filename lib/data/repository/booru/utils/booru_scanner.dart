@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
@@ -234,6 +235,19 @@ class BooruScanner {
           searchParserId: ev.parserId,
           searchUrl: ev.query,
           apiAddr: ev.origin,
+        );
+      }
+
+      if (data.searchParserId == NhentaiJsonParser.parserId) {
+        // No tag suggestions; gallery pages sit behind Cloudflare, so don't
+        // probe them, the URL scheme is fixed.
+        _isScanning.value = false;
+        return data.copyWith(
+          postUrl: NhentaiJsonParser().postUrl,
+          tagSuggestionUrl: '',
+          suggestionParserId: '',
+          apiAddr: data.apiAddr == data.homepage ? '' : data.apiAddr,
+          id: data.id.isEmpty ? home.toUri().host : data.id,
         );
       }
 

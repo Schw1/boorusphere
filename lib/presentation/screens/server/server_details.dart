@@ -31,7 +31,8 @@ class ServerDetails extends HookConsumerWidget {
 
     return value.contains('{tags}') &&
         value.contains(RegExp(r'\{(page-id|post-offset)\}')) &&
-        value.contains('{post-limit}');
+        // nhentai has a fixed page size and no limit parameter
+        (value.contains('{post-limit}') || value.contains('api/v2/search'));
   }
 
   @override

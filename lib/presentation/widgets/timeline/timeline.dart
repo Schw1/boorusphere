@@ -106,6 +106,7 @@ class _ThumbnailCard extends HookConsumerWidget {
           onLongPress: onLongPress,
           child: _SelectionMark(
             selected: selected,
+            pages: post.pageCount,
             child: Hero(
             tag: post.viewId,
             flightShuttleBuilder: (flightContext, animation, flightDirection,
@@ -283,19 +284,53 @@ class _Placeholder extends StatelessWidget {
 
 /// Check mark and tint over a selected thumbnail.
 class _SelectionMark extends StatelessWidget {
-  const _SelectionMark({required this.selected, required this.child});
+  const _SelectionMark({
+    required this.selected,
+    required this.child,
+    this.pages = 0,
+  });
 
   final bool selected;
   final Widget child;
 
+  /// Page count of an archive or gallery, shown as a badge.
+  final int pages;
+
   @override
   Widget build(BuildContext context) {
-    if (!selected) return child;
+    if (!selected && pages <= 0) return child;
     final scheme = context.colorScheme;
     return Stack(
       fit: StackFit.passthrough,
       children: [
         child,
+        if (pages > 0)
+          Positioned(
+            left: 6,
+            bottom: 6,
+            child: IgnorePointer(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.menu_book_outlined,
+                        size: 12, color: Colors.white),
+                    const SizedBox(width: 3),
+                    Text('$pages',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 11)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        if (selected) ...[
         Positioned.fill(
           child: IgnorePointer(
             child: DecoratedBox(
@@ -318,6 +353,7 @@ class _SelectionMark extends StatelessWidget {
             ),
           ),
         ),
+        ],
       ],
     );
   }

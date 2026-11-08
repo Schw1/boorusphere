@@ -17,6 +17,9 @@ class ServerSettingState extends _$ServerSettingState {
       postLimit: repo.get(Setting.serverPostLimit, or: PageOption.defaultLimit),
       searchRating: repo.get(Setting.searchRating, or: BooruRating.safe),
       searchRandom: repo.get(Setting.searchRandom, or: false),
+      searchSorts: _sorts(repo.get<Object?>(Setting.searchSort, or: null)),
+      searchLanguages:
+          _sorts(repo.get<Object?>(Setting.searchLanguage, or: null)),
     );
   }
 
@@ -42,5 +45,30 @@ class ServerSettingState extends _$ServerSettingState {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(searchRandom: value);
     await repo.put(Setting.searchRandom, value);
+  }
+
+  /// Stored as a map of server id -> sort (Hive returns untyped maps).
+  static Map<String, String> _sorts(Object? value) {
+    if (value is! Map) return const {};
+    return {
+      for (final e in value.entries)
+        if ('${e.value}'.isNotEmpty) '${e.key}': '${e.value}',
+    };
+  }
+
+  Future<void> setSort(String serverId, String value) async {
+    final repo = ref.read(settingsRepoProvider);
+    final sorts = {...state.searchSorts, serverId: value}
+      ..removeWhere((_, v) => v.isEmpty);
+    state = state.copyWith(searchSorts: sorts);
+    await repo.put(Setting.searchSort, sorts);
+  }
+
+  Future<void> setLanguage(String serverId, String value) async {
+    final repo = ref.read(settingsRepoProvider);
+    final languages = {...state.searchLanguages, serverId: value}
+      ..removeWhere((_, v) => v.isEmpty);
+    state = state.copyWith(searchLanguages: languages);
+    await repo.put(Setting.searchLanguage, languages);
   }
 }
