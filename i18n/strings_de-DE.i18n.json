@@ -359,6 +359,11 @@
     "today": "Beliebt heute",
     "week": "Beliebt diese Woche",
     "month": "Beliebt diesen Monat",
-    "all_time": "Beliebt aller Zeiten"
+    "all_time": "Beliebt aller Zeiten",
+    "rank": "Rang (im Trend)",
+    "score": "Score",
+    "favorites": "Favoriten",
+    "oldest": "Älteste",
+    "size": "Dateigröße"
   }
 }

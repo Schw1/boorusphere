@@ -361,6 +361,11 @@
     "today": "Popular today",
     "week": "Popular this week",
     "month": "Popular this month",
-    "all_time": "Popular all time"
+    "all_time": "Popular all time",
+    "rank": "Rank (trending)",
+    "score": "Score",
+    "favorites": "Favorites",
+    "oldest": "Oldest",
+    "size": "File size"
   }
 }

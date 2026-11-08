@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
+import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
@@ -185,24 +186,37 @@ class _OptionBar extends ConsumerWidget {
     final server = ref.watch(serverStateProvider).getById(session.serverId);
     // nhentai has no ratings (all explicit) but its own sort orders.
     final isNhentai = NhentaiJsonParser.isNhentai(server);
+    final canSort = server.sortOptions.length > 1;
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 11, 18, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          if (isNhentai) const _SortButton() else const _RatingButton(),
-          const SizedBox(width: 8),
-          const _RandomButton(),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            if (!isNhentai) ...[
+              const _RatingButton(),
+              const SizedBox(width: 8),
+            ],
+            if (canSort) ...[
+              _SortButton(server: server),
+              const SizedBox(width: 8),
+            ],
+            const _RandomButton(),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// nhentai's sort order (newest, popular today/this week/this month/all
-/// time). An `order:` tag in the search overrides it.
+/// Sort order of the current server, from what its engine supports (see
+/// Server.sortOptions). Random order or an `order:`/`sort:` tag in the
+/// search take precedence.
 class _SortButton extends ConsumerWidget {
-  const _SortButton();
+  const _SortButton({required this.server});
+
+  final Server server;
 
   static String describe(BuildContext context, String sort) {
     final t = context.t.sortOrder;
@@ -211,14 +225,21 @@ class _SortButton extends ConsumerWidget {
       'popular-week' => t.week,
       'popular-month' => t.month,
       'popular' => t.allTime,
+      'rank' => t.rank,
+      'score' => t.score,
+      'favcount' => t.favorites,
+      'oldest' => t.oldest,
+      'size' => t.size,
       _ => t.recent,
     };
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sort =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchSort));
+    final stored = ref.watch(serverSettingStateProvider
+        .select((it) => it.searchSorts[server.id] ?? ''));
+    final options = server.sortOptions;
+    final sort = options.contains(stored) ? stored : '';
     final t = context.t.sortOrder;
     final label = '${t.label}: ${describe(context, sort)}';
 
@@ -233,7 +254,7 @@ class _SortButton extends ConsumerWidget {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                for (final option in NhentaiJsonParser.sortOptions)
+                for (final option in options)
                   RadioListTile<String>(
                     value: option,
                     groupValue: sort,
@@ -245,7 +266,9 @@ class _SortButton extends ConsumerWidget {
           ),
         );
         if (selected != null) {
-          await ref.read(serverSettingStateProvider.notifier).setSort(selected);
+          await ref
+              .read(serverSettingStateProvider.notifier)
+              .setSort(server.id, selected);
         }
       },
       icon: Icon(

@@ -62,6 +62,16 @@ abstract class Server with _$Server {
       tags += ' ${_rateString(option.searchRating)}';
     }
     var extraParams = '';
+    // Sort button: random order and an order:/sort: tag typed into the
+    // search take precedence.
+    if (!option.random &&
+        option.sort.isNotEmpty &&
+        sortOptions.contains(option.sort) &&
+        !_typedOrder.hasMatch(query)) {
+      final sort = _sortOrder(option.sort);
+      tags += sort.tag;
+      extraParams += sort.params;
+    }
     if (option.random) {
       final random = _randomOrder(option.seed);
       tags += random.tag;
@@ -115,6 +125,89 @@ abstract class Server with _$Server {
     }
     // Danbooru, Moebooru, e621, Shimmie
     return (tag: ' order:random', params: '');
+  }
+
+  static final _typedOrder =
+      RegExp(r'(^|\s)-?(order|sort):', caseSensitive: false);
+
+  /// Booru engine, as far as sorting is concerned.
+  String get _engine {
+    final parser = searchParserId.toLowerCase();
+    if (searchUrl.contains('api/v2/search')) return 'nhentai';
+    if (searchUrl.contains('api/v1/images/search')) return 'monbooru';
+    if (searchUrl.contains('api/v1/json/search')) return 'philomena';
+    if (parser.startsWith('szurubooru') ||
+        searchUrl.toUri().queryParameters.containsKey('offset')) {
+      return 'szurubooru';
+    }
+    if (parser.startsWith('gelbooru') || parser.startsWith('safebooru')) {
+      return 'gelbooru';
+    }
+    if (parser.startsWith('danbooru-v1.13')) return 'danbooru1';
+    if (parser.startsWith('danbooru')) return 'danbooru';
+    if (parser.startsWith('e621')) return 'e621';
+    if (parser.startsWith('moebooru')) return 'moebooru';
+    return '';
+  }
+
+  /// Sort orders the sort button offers for this server ('' = the
+  /// engine's default, newest first). Empty: no sort button.
+  List<String> get sortOptions => switch (_engine) {
+        'nhentai' => NhentaiJsonParser.sortOptions,
+        'danbooru' => const ['', 'rank', 'score', 'favcount', 'oldest'],
+        'e621' => const ['', 'score', 'favcount', 'oldest'],
+        'danbooru1' || 'moebooru' => const ['', 'score', 'oldest'],
+        'gelbooru' => const ['', 'score', 'oldest'],
+        'szurubooru' => const ['', 'score', 'favcount'],
+        'philomena' => const ['', 'score', 'favcount', 'oldest'],
+        'monbooru' => const ['', 'oldest', 'size'],
+        _ => const [],
+      };
+
+  /// How the engine is asked for [sort]: an extra search tag or extra URL
+  /// parameters (see [sortOptions] for the ids).
+  ({String tag, String params}) _sortOrder(String sort) {
+    const none = (tag: '', params: '');
+    switch (_engine) {
+      case 'danbooru':
+      case 'e621':
+      case 'danbooru1':
+      case 'moebooru':
+        return switch (sort) {
+          'rank' => (tag: ' order:rank', params: ''),
+          'score' => (tag: ' order:score', params: ''),
+          'favcount' => (tag: ' order:favcount', params: ''),
+          'oldest' => (tag: ' order:id', params: ''),
+          _ => none,
+        };
+      case 'gelbooru':
+        return switch (sort) {
+          'score' => (tag: ' sort:score:desc', params: ''),
+          'oldest' => (tag: ' sort:id:asc', params: ''),
+          _ => none,
+        };
+      case 'szurubooru':
+        return switch (sort) {
+          'score' => (tag: ' sort:score', params: ''),
+          'favcount' => (tag: ' sort:fav-count', params: ''),
+          _ => none,
+        };
+      case 'philomena':
+        return switch (sort) {
+          'score' => (tag: '', params: '&sf=score&sd=desc'),
+          'favcount' => (tag: '', params: '&sf=faves&sd=desc'),
+          'oldest' => (tag: '', params: '&sf=created_at&sd=asc'),
+          _ => none,
+        };
+      case 'monbooru':
+        return switch (sort) {
+          'oldest' => (tag: '', params: '&order=asc'),
+          'size' => (tag: '', params: '&sort=filesize'),
+          _ => none,
+        };
+      default:
+        return none;
+    }
   }
 
   String postUrlOf(int id) {

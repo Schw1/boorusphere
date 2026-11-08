@@ -90,7 +90,7 @@ class PageState extends _$PageState {
       limit: settings.postLimit,
       searchRating: settings.searchRating,
       random: settings.searchRandom,
-      sort: settings.searchSort,
+      sort: settings.searchSorts[_server.id] ?? '',
       // new seed for every new search, kept while loading more pages
       seed: current.clear || current.seed == 0
           ? 1 + _random.nextInt(0x7ffffffe)

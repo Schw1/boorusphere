@@ -17,7 +17,7 @@ class ServerSettingState extends _$ServerSettingState {
       postLimit: repo.get(Setting.serverPostLimit, or: PageOption.defaultLimit),
       searchRating: repo.get(Setting.searchRating, or: BooruRating.safe),
       searchRandom: repo.get(Setting.searchRandom, or: false),
-      searchSort: repo.get(Setting.searchSort, or: ''),
+      searchSorts: _sorts(repo.get<Object?>(Setting.searchSort, or: null)),
     );
   }
 
@@ -45,9 +45,20 @@ class ServerSettingState extends _$ServerSettingState {
     await repo.put(Setting.searchRandom, value);
   }
 
-  Future<void> setSort(String value) async {
+  /// Stored as a map of server id -> sort (Hive returns untyped maps).
+  static Map<String, String> _sorts(Object? value) {
+    if (value is! Map) return const {};
+    return {
+      for (final e in value.entries)
+        if ('${e.value}'.isNotEmpty) '${e.key}': '${e.value}',
+    };
+  }
+
+  Future<void> setSort(String serverId, String value) async {
     final repo = ref.read(settingsRepoProvider);
-    state = state.copyWith(searchSort: value);
-    await repo.put(Setting.searchSort, value);
+    final sorts = {...state.searchSorts, serverId: value}
+      ..removeWhere((_, v) => v.isEmpty);
+    state = state.copyWith(searchSorts: sorts);
+    await repo.put(Setting.searchSort, sorts);
   }
 }
