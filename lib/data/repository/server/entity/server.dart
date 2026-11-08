@@ -28,7 +28,10 @@ abstract class Server with _$Server {
 
   const Server._();
 
-  bool get canSuggestTags => tagSuggestionUrl.contains('{tag-part}');
+  bool get canSuggestTags =>
+      tagSuggestionUrl.contains('{tag-part}') ||
+      // nhentai: suggestions from the downloaded tag list (NhentaiTags)
+      NhentaiJsonParser.isNhentai(this);
 
   String searchUrlOf(PageOption option, {required int page}) {
     final query = option.query.trim();

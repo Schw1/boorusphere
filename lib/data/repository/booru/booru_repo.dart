@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/nhentai_tags.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
@@ -45,6 +46,14 @@ class BooruRepo implements ImageboardRepo {
 
   @override
   Future<Set<Suggestion>> getSuggestion(String word) async {
+    if (NhentaiJsonParser.isNhentai(server)) {
+      final tags = NhentaiTags.instance;
+      await tags.ensureLoaded(client);
+      return {
+        for (final (token, count) in tags.suggest(word)) Suggestion(token, count)
+      };
+    }
+
     var parser = parsers.firstWhere((x) => x.id == server.suggestionParserId,
         orElse: NoParser.new);
 
@@ -73,6 +82,15 @@ class BooruRepo implements ImageboardRepo {
   Future<Set<Post>> getPage(PageOption option, int index) async {
     var parser = parsers.firstWhere((x) => x.id == server.searchParserId,
         orElse: NoParser.new);
+
+    if (parser is NhentaiJsonParser) {
+      // Tag names for the tag ids of the results (blocking, details); wait
+      // a moment for the stored list, the download continues in the
+      // background.
+      await NhentaiTags.instance
+          .ensureLoaded(client)
+          .timeout(const Duration(seconds: 3), onTimeout: () {});
+    }
 
     if (option.random && parser is NhentaiJsonParser) {
       return _nhentaiRandomPage(parser, option, index);

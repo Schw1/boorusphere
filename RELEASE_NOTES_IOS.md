@@ -1,6 +1,10 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **Reading progress:** galleries and Monbooru CBZ archives remember the last page read; the Read button continues there, the thumbnail shows the progress.
+- **nhentai tag suggestions** while typing in the search (also `tag:`, `artist:`, `-tag:` …). Search results now know their tags, so blocked tags hide galleries too.
+
+## In 1.5.4-ios.13
 - **Sort button:** the search bar has a sort button next to rating and random, with what the server supports, e.g. Danbooru rank/score/favorites/oldest, Gelbooru score/oldest, Monbooru oldest/file size. Remembered per server.
 - **nhentai:** can be added as a server (Servers → Add, address `https://nhentai.net`). Galleries open in the reader. The search bar gets a sort button (newest, popular today/this week/this month/all time) instead of the rating; `order:rank` etc. in the search does the same, e.g. `language:english order:rank`. A language button filters English, Japanese or Chinese galleries. Random order shuffles the result pages.
 
