@@ -1,0 +1,65 @@
+name: nhentai tag list
+
+# Weekly refresh of the tag list the app uses for nhentai tag suggestions
+# (tool/nhentai_tags.py). The file lives on the separate `data` branch, so
+# main stays free of generated data; the app downloads it from there.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 0' # Sundays 03:23 UTC
+  push:
+    branches: [main, tags-progress] # TODO: tags-progress only for the first run
+    paths:
+      - tool/nhentai_tags.py
+      - .github/workflows/nhentai-tags.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nhentai-tags
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch tags
+        run: python3 tool/nhentai_tags.py "$RUNNER_TEMP/nhentai-tags.json"
+
+      - name: Publish to the data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/data"
+          url="https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if git ls-remote --exit-code --heads "$url" data >/dev/null; then
+            git clone --quiet --depth 1 --branch data "$url" "$dir"
+          else
+            git init --quiet -b data "$dir"
+            git -C "$dir" remote add origin "$url"
+          fi
+          cp "$RUNNER_TEMP/nhentai-tags.json" "$dir/nhentai-tags.json"
+          cat > "$dir/README.md" <<'MD'
+          Generated data for the app (not source code). Updated weekly by the
+          "nhentai tag list" workflow on `main`.
+          MD
+          cd "$dir"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit --quiet -m "Update nhentai tag list"
+          git push --quiet origin data
