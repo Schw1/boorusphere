@@ -353,7 +353,8 @@
     "group": "Gruppe",
     "language": "Sprache",
     "category": "Kategorie",
-    "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden."
+    "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden.",
+    "related": "Ähnliche Galerien"
   },
   "sort_order": {
     "label": "Sortierung",
@@ -374,5 +375,23 @@
     "english": "Englisch",
     "japanese": "Japanisch",
     "chinese": "Chinesisch"
+  },
+  "continue_reading": {
+    "title": "Weiterlesen",
+    "placeholder": "Galerien und Archive, die du zu lesen beginnst, erscheinen hier.",
+    "remove_finished": "Fertig gelesene entfernen",
+    "remove_all": "Liste leeren",
+    "remove_all_hint": "Die gelesenen Seiten bleiben gespeichert."
+  },
+  "saved_searches": {
+    "title": "Gespeicherte Suchen",
+    "save_current": "Aktuelle Suche speichern",
+    "saved": "Gespeichert: ${query}",
+    "placeholder": "Speichere eine Suche, um zu sehen, wie viele neue Posts seit deinem letzten Besuch dazugekommen sind.",
+    "everything": "Alle Posts",
+    "server_missing": "Server entfernt",
+    "no_count": "keine Neu-Anzeige (eigenes order:)",
+    "new_count": "${n} neu",
+    "remove_title": "Gespeicherte Suche entfernen?"
   }
 }

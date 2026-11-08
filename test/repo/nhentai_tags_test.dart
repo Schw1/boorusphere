@@ -86,5 +86,45 @@ void main() {
       await ReadingProgress.clear(post);
       expect(await ReadingProgress.pageOf(post), isNull);
     });
+
+    test('continue reading: newest first, forget, clear', () async {
+      await ReadingProgress.forgetAll();
+      const a = Post(id: 1, serverId: 'nhentai.net', pageCount: 10, title: 'A');
+      const b = Post(id: 2, serverId: 'Monbooru', pageCount: 3);
+      await ReadingProgress.save(a, 0, now: DateTime(2026, 11, 1));
+      await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 2));
+      expect((await ReadingProgress.recent()).map((it) => it.id), [2, 1]);
+      // reading again moves it up, with the post as stored
+      await ReadingProgress.save(a, 5, now: DateTime(2026, 11, 3));
+      final recent = await ReadingProgress.recent();
+      expect(recent.map((it) => it.id), [1, 2]);
+      expect(recent.first.title, 'A');
+      expect(ReadingProgress.isFinished(b), isTrue);
+      expect(ReadingProgress.isFinished(a), isFalse);
+
+      await ReadingProgress.forget(b);
+      expect((await ReadingProgress.recent()).map((it) => it.id), [1]);
+      expect(await ReadingProgress.pageOf(b), 2, reason: 'page stays');
+
+      await ReadingProgress.clear(a);
+      expect(await ReadingProgress.recent(), isEmpty);
+      expect(await ReadingProgress.pageOf(a), isNull);
+    });
+
+    test('continue reading keeps the newest ${ReadingProgress.recentLimit}',
+        () async {
+      await ReadingProgress.forgetAll();
+      final start = DateTime(2026, 1, 1);
+      for (var i = 0; i < ReadingProgress.recentLimit + 5; i++) {
+        await ReadingProgress.save(
+            Post(id: 1000 + i, serverId: 's', pageCount: 2), 0,
+            now: start.add(Duration(minutes: i)));
+      }
+      final recent = await ReadingProgress.recent();
+      expect(recent, hasLength(ReadingProgress.recentLimit));
+      expect(recent.first.id, 1000 + ReadingProgress.recentLimit + 4);
+      expect(recent.any((it) => it.id < 1005), isFalse);
+      await ReadingProgress.forgetAll();
+    });
   });
 }

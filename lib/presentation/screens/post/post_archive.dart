@@ -113,6 +113,16 @@ class ArchiveReaderPage extends HookConsumerWidget {
     ));
   }
 
+  /// Pages loaded ahead of the current one.
+  static const preloadPages = 3;
+
+  /// Indexes to load in the background while [page] of [total] is shown:
+  /// the next [preloadPages], then the previous one.
+  static List<int> preloadRange(int page, int total) => [
+        for (var i = page + 1; i <= page + preloadPages && i < total; i++) i,
+        if (page - 1 >= 0 && page - 1 < total) page - 1,
+      ];
+
   /// URLs of all pages. Page 1 is the cover the viewer already shows.
   static List<String> pageUrls(String api, Post post) {
     final hash = post.md5.isNotEmpty ? post.md5 : '${post.id}';
@@ -149,6 +159,19 @@ class ArchiveReaderPage extends HookConsumerWidget {
       ReadingProgress.save(post, page.value);
       return null;
     }, [page.value]);
+    // Load the next pages in the background, so turning the page doesn't
+    // wait. Same provider settings as the page view, so the cache matches.
+    useEffect(() {
+      if (urls.isEmpty) return null;
+      for (final i in preloadRange(page.value, urls.length)) {
+        precacheImage(
+          ExtendedNetworkImageProvider(urls[i], headers: headers, cache: true),
+          context,
+          onError: (_, __) {},
+        );
+      }
+      return null;
+    }, [page.value, urls.length]);
 
     return Scaffold(
       backgroundColor: Colors.black,

@@ -1,6 +1,12 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
-## Fixed
+## New
+- **Continue reading:** new list in the menu with the galleries and Monbooru archives you read recently, newest first, with the page you left off. Galleries read before this version show up once you open them again.
+- **Saved searches:** save the current search (menu → Saved searches) and see how many posts are new since you last opened it, for every server. Checked when the app starts and when the list is opened (pull down to check again). Searches with their own `order:` get no count.
+- **Faster reading:** the reader loads the next pages in the background.
+- **nhentai:** related galleries in the gallery details.
+
+## In 1.5.4-ios.15
 - Sending an nhentai gallery to Monbooru added the app's search tokens as extra tags (`tag:_big_breasts`, `language:english`, `category:manga`). Now only the tags gallery-dl reads from the gallery are used.
 
 ## In 1.5.4-ios.14

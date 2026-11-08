@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:async/async.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/booru/suggestion_state.dart';
+import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/screens/home/drawer/home_drawer.dart';
 import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_controller.dart';
@@ -43,6 +46,9 @@ class HomePage extends HookConsumerWidget {
 
     useEffect(() {
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+        // "new" counts of saved searches (throttled, so a few home pages
+        // in a row don't check again)
+        unawaited(ref.read(savedSearchesProvider.notifier).checkAll());
         if (envRepo.appVersion.isNewerThan(appStateRepo.version)) {
           await appStateRepo.storeVersion(envRepo.appVersion);
           if (context.mounted) {

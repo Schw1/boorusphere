@@ -5,6 +5,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
+import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
@@ -100,6 +101,13 @@ class _Footer extends ConsumerWidget {
           onTap: () => context.router.push(FavoritesRoute(session: session)),
         ),
         ListTile(
+          title: Text(context.t.continueReading.title),
+          leading: const Icon(Icons.auto_stories_outlined),
+          onTap: () =>
+              context.router.push(ContinueReadingRoute(session: session)),
+        ),
+        const _SavedSearchesTile(),
+        ListTile(
           title: Text(context.t.servers.title),
           leading: const Icon(Icons.public),
           onTap: () => context.router.push(ServerRoute(session: session)),
@@ -116,6 +124,30 @@ class _Footer extends ConsumerWidget {
         ),
         const AppVersionTile(),
       ],
+    );
+  }
+}
+
+class _SavedSearchesTile extends ConsumerWidget {
+  const _SavedSearchesTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(searchSessionProvider);
+    // rebuilt when a count changes
+    ref.watch(savedSearchesProvider);
+    final total = ref.read(savedSearchesProvider.notifier).totalNew;
+    return ListTile(
+      title: Text(context.t.savedSearches.title),
+      leading: const Icon(Icons.bookmarks_outlined),
+      trailing: total > 0
+          ? Badge(
+              label: Text('$total'),
+              backgroundColor: context.colorScheme.primary,
+              textColor: context.colorScheme.onPrimary,
+            )
+          : null,
+      onTap: () => context.router.push(SavedSearchesRoute(session: session)),
     );
   }
 }

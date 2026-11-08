@@ -8,6 +8,7 @@ import 'package:boorusphere/data/repository/downloads/user_download_repo.dart';
 import 'package:boorusphere/data/repository/favorite_post/entity/favorite_post.dart';
 import 'package:boorusphere/data/repository/favorite_post/user_favorite_post_repo.dart';
 import 'package:boorusphere/data/repository/reading_progress.dart';
+import 'package:boorusphere/data/repository/saved_search.dart';
 import 'package:boorusphere/data/repository/search_history/entity/search_history.dart';
 import 'package:boorusphere/data/repository/search_history/user_search_history.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
@@ -56,6 +57,7 @@ void main() async {
     UserDownloadsRepo.prepare(),
     CurrentAppStateRepo.prepare(),
     ReadingProgress.open(),
+    SavedSearchStore.open(),
   ]);
 
   // Moves a monloader token from older versions out of Hive into the Keychain.

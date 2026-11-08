@@ -212,4 +212,38 @@ void main() {
           'tag:"school uniform"');
     });
   });
+
+  group('related galleries', () {
+    test('a list in the shape of search results', () {
+      final posts = NhentaiJsonParser.parseRelated(server, [_item(7), _item(8)]);
+      expect(posts.map((it) => it.id), [7, 8]);
+      expect(posts.first.previewFile,
+          'https://t.nhentai.net/galleries/1007/thumb.webp');
+      expect(posts.first.title, 'Gallery 7 [English]');
+      expect(posts.first.pageCount, 12);
+    });
+
+    test('wrapped in result, in the shape of full galleries', () {
+      final posts = NhentaiJsonParser.parseRelated(server, {
+        'result': [_gallery, 'junk', null],
+      });
+      expect(posts, hasLength(1));
+      expect(posts.single.id, 5);
+      expect(posts.single.pageCount, 2);
+      expect(posts.single.title, 'Gallery 5 [English]');
+      expect(posts.single.previewFile,
+          'https://t.nhentai.net/galleries/1005/thumb.webp');
+      expect(posts.single.postUrl, 'https://nhentai.net/g/5/');
+    });
+
+    test('anything else is no galleries', () {
+      expect(NhentaiJsonParser.parseRelated(server, null), isEmpty);
+      expect(NhentaiJsonParser.parseRelated(server, {'error': 'x'}), isEmpty);
+    });
+
+    test('URL', () {
+      expect(NhentaiGallery.relatedApiUrl(server, 5),
+          'https://nhentai.net/api/v2/galleries/5/related');
+    });
+  });
 }
