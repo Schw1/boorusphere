@@ -101,6 +101,20 @@ void main() {
       expect(sorted('tag:glasses', ''), isNot(contains('sort=')));
     });
 
+    test('language button, overridden by language: tags', () {
+      Map<String, String> params(String query, String language) =>
+          Uri.parse(server.searchUrlOf(
+                  PageOption(query: query, language: language), page: 1))
+              .queryParameters;
+      expect(params('', 'english')['query'], 'language:english');
+      expect(params('tag:glasses', 'japanese')['query'],
+          'tag:glasses language:japanese');
+      expect(params('language:chinese', 'english')['query'],
+          'language:chinese');
+      expect(params('', '')['query'], 'pages:>0');
+      expect(params('order:rank', 'english')['query'], 'language:english');
+    });
+
     test('random page order is fixed by the seed', () {
       final a = BooruRepo.randomPageOrder(20, 42);
       expect(a, hasLength(20));

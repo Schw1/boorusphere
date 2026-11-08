@@ -16,6 +16,8 @@ abstract class PageOption with _$PageOption {
     // Sort order for servers with one (nhentai: popular-week etc.), '' for
     // their default
     @Default('') String sort,
+    // Language filter for servers with one (nhentai: english, …), '' = all
+    @Default('') String language,
   }) = _PageOption;
   const PageOption._();
 

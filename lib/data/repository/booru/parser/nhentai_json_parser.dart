@@ -52,6 +52,21 @@ class NhentaiJsonParser extends BooruParser {
     'popular',
   ];
 
+  /// Choices of the language button ('' = all languages).
+  static const languages = ['', 'english', 'japanese', 'chinese'];
+
+  /// Adds `language:<language>` unless the search names a language itself.
+  static String withLanguage(String query, String language) {
+    if (language.isEmpty ||
+        RegExp(r'(^|\s)-?language:', caseSensitive: false).hasMatch(query)) {
+      return query;
+    }
+    final token = 'language:$language';
+    return query.trim().isEmpty || query.trim() == '*'
+        ? token
+        : '$query $token';
+  }
+
   static const sortAliases = {
     'rank': 'popular-week',
     'popular-week': 'popular-week',

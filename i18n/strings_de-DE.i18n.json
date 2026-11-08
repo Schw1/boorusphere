@@ -365,5 +365,12 @@
     "favorites": "Favoriten",
     "oldest": "Älteste",
     "size": "Dateigröße"
+  },
+  "language_filter": {
+    "label": "Sprache",
+    "all": "Alle",
+    "english": "Englisch",
+    "japanese": "Japanisch",
+    "chinese": "Chinesisch"
   }
 }

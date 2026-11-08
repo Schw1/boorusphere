@@ -18,6 +18,8 @@ class ServerSettingState extends _$ServerSettingState {
       searchRating: repo.get(Setting.searchRating, or: BooruRating.safe),
       searchRandom: repo.get(Setting.searchRandom, or: false),
       searchSorts: _sorts(repo.get<Object?>(Setting.searchSort, or: null)),
+      searchLanguages:
+          _sorts(repo.get<Object?>(Setting.searchLanguage, or: null)),
     );
   }
 
@@ -60,5 +62,13 @@ class ServerSettingState extends _$ServerSettingState {
       ..removeWhere((_, v) => v.isEmpty);
     state = state.copyWith(searchSorts: sorts);
     await repo.put(Setting.searchSort, sorts);
+  }
+
+  Future<void> setLanguage(String serverId, String value) async {
+    final repo = ref.read(settingsRepoProvider);
+    final languages = {...state.searchLanguages, serverId: value}
+      ..removeWhere((_, v) => v.isEmpty);
+    state = state.copyWith(searchLanguages: languages);
+    await repo.put(Setting.searchLanguage, languages);
   }
 }

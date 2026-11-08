@@ -367,5 +367,12 @@
     "favorites": "Favorites",
     "oldest": "Oldest",
     "size": "File size"
+  },
+  "language_filter": {
+    "label": "Language",
+    "all": "All",
+    "english": "English",
+    "japanese": "Japanese",
+    "chinese": "Chinese"
   }
 }

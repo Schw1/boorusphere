@@ -36,7 +36,8 @@ abstract class Server with _$Server {
     if (searchUrl.contains('api/v2/search')) {
       // nhentai: everything is explicit (no rating), `order:` tags become
       // its sort parameter, and the query must not be empty
-      final split = NhentaiJsonParser.splitQuery(tags);
+      final split = NhentaiJsonParser.splitQuery(
+          NhentaiJsonParser.withLanguage(tags, option.language));
       // an order: tag in the search wins over the sort button
       final order = split.sort.isNotEmpty || split.hadOrder
           ? split.sort
