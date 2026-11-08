@@ -1,7 +1,7 @@
 <div align="center">
     <div><img src="assets/icons/exported/legacy-circle.png" alt="boorusphere icon" height="92"></div>
     <div><h1 align="center">Boorusphere for iOS</h1></div>
-    <div>Unofficial iOS port of Boorusphere, a simple, content-focused booru viewer</div>
+    <div>Unofficial iOS port of Boorusphere, a simple, content-focused booru viewer (with an Android build of the same features)</div>
     <br/>
     <div>
         <a href="https://github.com/Schw1/boorusphere-ios/releases/latest">
@@ -44,8 +44,12 @@ From the original app:
 Added in this fork:
 
 - **iOS support**: unsigned IPA built with GitHub Actions, no Mac needed
+- **Android APK** with the same features, installs next to the original Boorusphere
 - **Native Monbooru support**: browse a [Monbooru](https://github.com/monbooru/monbooru) instance directly through its API (token stored in the iOS Keychain)
-- **Send to Monbooru**: push posts from any booru to Monbooru through monloader
+- **Send to Monbooru**: push posts from any booru to Monbooru through monloader, also several at once (long-press thumbnails), with the result shown afterwards and a check for posts that are already in Monbooru
+- **Monbooru archives**: read CBZ archives page by page
+- **Video seek bar** with elapsed/total time and 10-second jumps
+- **Signature warning**: reminds you two days before a sideloaded app's signature expires
 - **Save to Photos**: optionally add downloads to the iOS Photos app
 - **Automatic backups**: on app start, daily or weekly, keeps the newest backups
 - **Random order**: random sorting toggle for search, for every supported booru type
@@ -72,15 +76,19 @@ With a free Apple ID the signature expires after 7 days; install the IPA again t
 
 Releases marked as **pre-release** are test builds of features that are not finished yet.
 
+# Installation (Android)
+
+Download `boorusphere-arm64-v8a.apk` (most phones) or `boorusphere-universal.apk` from the [latest release](https://github.com/Schw1/boorusphere-ios/releases/latest) and install it. It has its own app ID, so it installs next to the original Boorusphere; move your data over with Backup and Restore. Later updates can be installed from the app (About → update).
+
 # Building
 
-The iOS app is built by the [Build iOS workflow](.github/workflows/build-ios.yml) on GitHub Actions. Details about the build, the iOS-specific changes and the new features are in [IOS_PORT.md](IOS_PORT.md).
+The iOS app and the Android APKs are built by the [Build iOS workflow](.github/workflows/build-ios.yml) on GitHub Actions. Details about the build, the iOS-specific changes and the new features are in [IOS_PORT.md](IOS_PORT.md).
 
 For building the Android app and for general development (code generation, translations), see the [original README](https://github.com/Kropatz/boorusphere#building-from-source).
 
 # Security
 
-Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere-ios/issues?q=label%3Asecurity). API tokens (Monbooru, monloader) are kept in the iOS Keychain. Credentials in a server's URL suffix (e.g. `api_key=…`) are stored in plain app storage and are left out of backups unless you choose "Include login data". See [IOS_PORT.md](IOS_PORT.md#security-notes) for details.
+Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere-ios/issues?q=label%3Asecurity). API tokens (Monbooru, monloader) are kept in the iOS Keychain (Android: Keystore). Credentials in a server's URL suffix (e.g. `api_key=…`) are stored in plain app storage and are left out of backups unless you choose "Include login data". See [IOS_PORT.md](IOS_PORT.md#security-notes) for details.
 
 # License
 
