@@ -8,7 +8,7 @@ on:
   schedule:
     - cron: '23 3 * * 0' # Sundays 03:23 UTC
   push:
-    branches: [main, tags-progress] # TODO: tags-progress only for the first run
+    branches: [main]
     paths:
       - tool/nhentai_tags.py
       - .github/workflows/nhentai-tags.yml

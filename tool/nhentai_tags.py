@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 API = "https://nhentai.net/api/v2/"
 TYPES = ["parody", "character", "tag", "artist", "group", "language", "category"]
 USER_AGENT = "Boorusphere/tag-list (+https://github.com/Schw1/boorusphere-ios)"
-DELAY = 1.0  # seconds between requests; nhentai rate-limits busy clients
+DELAY = 1.5  # seconds between requests; nhentai rate-limits busy clients (429)
 MIN_TAGS = 50_000  # a run with fewer tags is treated as broken
 
 
