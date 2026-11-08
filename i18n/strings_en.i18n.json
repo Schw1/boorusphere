@@ -347,5 +347,12 @@
   "archive": {
     "read": "Read (${n} pages)",
     "page": "Page ${current} of ${total}"
+  },
+  "gallery": {
+    "title": "Title",
+    "group": "Group",
+    "language": "Language",
+    "category": "Category",
+    "tags_failed": "Couldn't load the tags of this gallery."
   }
 }

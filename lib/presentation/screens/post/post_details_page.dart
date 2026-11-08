@@ -1,7 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
+import 'package:boorusphere/presentation/provider/nhentai_gallery.dart';
+import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -29,6 +32,10 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
   Widget build(BuildContext context, WidgetRef ref) {
     final headers = ref.watch(postHeadersFactoryProvider(post));
     final selectedtag = useState(<String>[]);
+    final server = ref.watch(serverStateProvider).findById(post.serverId);
+    final isGallery = NhentaiJsonParser.isNhentai(server);
+    // nhentai: tag names only come with the gallery.
+    final gallery = isGallery ? ref.watch(nhentaiGalleryProvider(post)) : null;
 
     onTagPressed(tag) {
       if (!selectedtag.value.contains(tag)) {
@@ -55,6 +62,14 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
         child: SafeArea(
           child: ListView(
             children: [
+              if (post.title.isNotEmpty)
+                ListTile(
+                  title: Text(context.t.gallery.title),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: SelectableText(post.title),
+                  ),
+                ),
               if (rating.isNotEmpty)
                 ListTile(
                   title: Text(context.t.rating.title),
@@ -103,6 +118,7 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                   ),
                   trailing: _CopyButton(post.sampleFile),
                 ),
+              if (post.originalFile.isNotEmpty)
               ListTile(
                 title: Text(context.t.fileOg),
                 subtitle: _LinkSubtitle(
@@ -119,7 +135,14 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (!post.hasCategorizedTags)
+                      if (gallery != null)
+                        ..._galleryTags(
+                          context,
+                          gallery,
+                          isSelected: selectedtag.value.contains,
+                          onSelected: onTagPressed,
+                        )
+                      else if (!post.hasCategorizedTags)
                         _TagsView(
                           tags: post.tags,
                           isSelected: selectedtag.value.contains,
@@ -225,15 +248,69 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
   }
 }
 
+/// Tags of an nhentai gallery by type. The chips select search tokens like
+/// `tag:"big breasts"`, so searching from here stays within that type.
+List<Widget> _galleryTags(
+  BuildContext context,
+  AsyncValue<NhentaiGallery?> gallery, {
+  required bool Function(String tag) isSelected,
+  required void Function(String tag) onSelected,
+}) {
+  final data = gallery.value;
+  if (data == null) {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(8),
+        child: gallery.isLoading
+            ? const LinearProgressIndicator()
+            : Text(context.t.gallery.tagsFailed),
+      ),
+    ];
+  }
+  final t = context.t;
+  String label(String type) => switch (type) {
+        'artist' => t.artist,
+        'character' => t.character,
+        'parody' => t.copyright,
+        'tag' => t.general,
+        'group' => t.gallery.group,
+        'language' => t.gallery.language,
+        'category' => t.gallery.category,
+        _ => type,
+      };
+  final types = [
+    ...NhentaiGallery.typeOrder,
+    ...data.tags.keys.where((it) => !NhentaiGallery.typeOrder.contains(it)),
+  ];
+  return [
+    for (final type in types)
+      if (data.tags[type]?.isNotEmpty ?? false)
+        _TagsView(
+          label: label(type),
+          tags: [
+            for (final name in data.tags[type]!)
+              NhentaiGallery.searchToken(type, name),
+          ],
+          labelOf: (token) => token
+              .substring(token.indexOf(':') + 1)
+              .replaceAll('"', ''),
+          isSelected: isSelected,
+          onSelected: onSelected,
+        ),
+  ];
+}
+
 class _TagsView extends StatelessWidget {
   const _TagsView({
     required this.tags,
     this.isSelected,
     this.onSelected,
     this.label,
+    this.labelOf,
   });
 
   final List<String> tags;
+  final String Function(String tag)? labelOf;
   final bool Function(String tag)? isSelected;
   final void Function(String tag)? onSelected;
   final String? label;
@@ -255,7 +332,7 @@ class _TagsView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: FilterChip(
-                  label: Text(tag),
+                  label: Text(labelOf?.call(tag) ?? tag),
                   labelPadding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   onSelected: (value) => onSelected?.call(tag),

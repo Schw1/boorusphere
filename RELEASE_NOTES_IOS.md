@@ -1,6 +1,9 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **nhentai:** can be added as a server (Servers → Add, address `https://nhentai.net`). Galleries open in the reader; `order:rank` (or `order:popular-today`, `-month`, `order:popular`) sorts by popularity, e.g. `language:english order:rank`.
+
+## In 1.5.4-ios.12
 - **Android:** APKs for Android, signed with this fork's own key. The app ID is `io.github.schw1.boorusphere`, so it installs next to the original Boorusphere (move your data with Backup and Restore). Updates can be installed from the app.
 - **Send several posts to Monbooru:** long-press a thumbnail (timeline or Favorites) to select posts, then send them in one go.
 - **Result after sending:** the app follows the monloader job and shows whether the post was added, was already in Monbooru, or failed (and why). Needs read scope on the monloader token in addition to write.

@@ -1,7 +1,9 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
+import 'package:boorusphere/presentation/provider/nhentai_gallery.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/post/post_image.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -11,25 +13,66 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// An archive (Monbooru CBZ) in the post viewer: the cover, plus a button
-/// that opens the reader.
-class PostArchive extends StatelessWidget {
+/// An archive (Monbooru CBZ) or gallery (nhentai) in the post viewer: the
+/// cover, plus a button that opens the reader.
+class PostArchive extends HookConsumerWidget {
   const PostArchive({super.key, required this.post});
 
   final Post post;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final server = ref.watch(serverStateProvider).findById(post.serverId);
+    final isGallery = NhentaiJsonParser.isNhentai(server);
+    // nhentai lists only a small thumbnail; the gallery has the real cover.
+    final gallery =
+        isGallery ? ref.watch(nhentaiGalleryProvider(post)).value : null;
+    final headers = ref.watch(postHeadersFactoryProvider(post));
+    final cover = gallery?.cover ?? '';
+
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        PostImage(post: post),
+        if (cover.isEmpty)
+          PostImage(post: post)
+        else
+          ExtendedImage.network(
+            cover,
+            headers: headers,
+            fit: BoxFit.contain,
+            cache: true,
+            mode: ExtendedImageMode.gesture,
+            initGestureConfigHandler: (_) =>
+                GestureConfig(minScale: 1, maxScale: 3, inPageView: true),
+          ),
         Align(
           alignment: const Alignment(0, 0.62),
-          child: FilledButton.icon(
-            onPressed: () => ArchiveReaderPage.open(context, post),
-            icon: const Icon(Icons.menu_book_outlined),
-            label: Text(context.t.archive.read(n: post.pageCount)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (post.title.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    post.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              FilledButton.icon(
+                onPressed: () => ArchiveReaderPage.open(context, post),
+                icon: const Icon(Icons.menu_book_outlined),
+                label: Text(context.t.archive.read(n: post.pageCount)),
+              ),
+            ],
           ),
         ),
       ],
@@ -61,12 +104,19 @@ class ArchiveReaderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final server = ref.watch(serverStateProvider).findById(post.serverId);
+    final isGallery = NhentaiJsonParser.isNhentai(server);
     // Same origin as the cover, so the same headers (incl. token) apply.
     final headers = ref.watch(postHeadersFactoryProvider(post));
-    final urls = useMemoized(
-      () => server == null ? <String>[] : pageUrls(server.apiAddress, post),
-      [server?.apiAddress, post.viewId],
+    final gallery = isGallery ? ref.watch(nhentaiGalleryProvider(post)) : null;
+    final archiveUrls = useMemoized(
+      () => server == null || isGallery
+          ? <String>[]
+          : pageUrls(server.apiAddress, post),
+      [server?.apiAddress, post.viewId, isGallery],
     );
+    // nhentai: the page list comes with the gallery.
+    final urls = isGallery ? gallery?.value?.pages ?? const [] : archiveUrls;
+    final loading = gallery?.isLoading ?? false;
     final page = useState(0);
     final showBars = useState(true);
     final controller = useMemoized(ExtendedPageController.new);
@@ -80,13 +130,16 @@ class ArchiveReaderPage extends HookConsumerWidget {
               backgroundColor: Colors.black54,
               foregroundColor: Colors.white,
               title: Text(context.t.archive.page(
-                  current: page.value + 1, total: urls.length)),
+                  current: page.value + 1,
+                  total: urls.isEmpty ? post.pageCount : urls.length)),
             )
           : null,
       body: urls.isEmpty
           ? Center(
-              child: Text(context.t.loadImageFailed,
-                  style: const TextStyle(color: Colors.white)),
+              child: loading
+                  ? const CircularProgressIndicator()
+                  : Text(context.t.loadImageFailed,
+                      style: const TextStyle(color: Colors.white)),
             )
           : Stack(
               children: [

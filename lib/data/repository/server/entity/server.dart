@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -32,6 +33,17 @@ abstract class Server with _$Server {
   String searchUrlOf(PageOption option, {required int page}) {
     final query = option.query.trim();
     var tags = query.isEmpty ? Server.defaultTag : query;
+    if (searchUrl.contains('api/v2/search')) {
+      // nhentai: everything is explicit (no rating), `order:` tags become
+      // its sort parameter, and the query must not be empty
+      final split = NhentaiJsonParser.splitQuery(tags);
+      final sort = split.sort.isEmpty ? '' : '&sort=${split.sort}';
+      return '$homepage/$searchUrl$urlSuffix$sort'
+          .replaceAll('{tags}', Uri.encodeComponent(split.query))
+          .replaceAll('{page-id}', '$page')
+          .replaceAll('{post-offset}', (page * option.limit).toString())
+          .replaceAll('{post-limit}', '${option.limit}');
+    }
     if (searchUrl.contains('api/v1/images/search')) {
       // Monbooru: no catch-all tag, and its own rating levels
       if (tags == Server.defaultTag) tags = '';

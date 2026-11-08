@@ -16,6 +16,7 @@
 * Read CBZ archives from Monbooru
 * Video seek bar with times and 10-second jumps
 * Backups with "Include login data" also carry the API tokens (to move to another device)
+* nhentai.net can be added as a server (galleries with reader, `order:rank` sorting)
 * iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup
 * Update dependencies

@@ -94,8 +94,11 @@ class PostOpenLinkButton extends ConsumerWidget {
     final needsToken = server != null &&
         ServerAuthStore.tokenOf(server.id).isNotEmpty &&
         ServerAuthStore.isOwnOrigin(server, post.originalFile);
-    final url =
-        needsToken && post.postUrl.isNotEmpty ? post.postUrl : post.originalFile;
+    // Galleries (nhentai) have no single file: open their page.
+    final url = (needsToken || post.originalFile.isEmpty) &&
+            post.postUrl.isNotEmpty
+        ? post.postUrl
+        : post.originalFile;
     return IconButton(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
@@ -153,6 +156,9 @@ class PostDownloadButton extends HookConsumerWidget {
     final progress = ref.watch(downloadProgressStateProvider).getById(entry.id);
 
     final pending = useState(false);
+
+    // Galleries (nhentai) have no single file to download.
+    if (post.originalFile.isEmpty) return const SizedBox.shrink();
 
     return Stack(
       alignment: Alignment.center,

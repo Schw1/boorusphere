@@ -345,5 +345,12 @@
   "archive": {
     "read": "Lesen (${n} Seiten)",
     "page": "Seite ${current} von ${total}"
+  },
+  "gallery": {
+    "title": "Titel",
+    "group": "Gruppe",
+    "language": "Sprache",
+    "category": "Kategorie",
+    "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden."
   }
 }
