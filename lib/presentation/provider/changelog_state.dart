@@ -31,7 +31,8 @@ class ChangelogState extends _$ChangelogState {
     if (version != null) {
       return [
         parsed.firstWhere(
-          (it) => it.version == version,
+          // The changelog lists upstream versions; fork releases share them.
+          (it) => it.version.base == version!.base,
           orElse: () => ChangelogData.empty,
         )
       ];

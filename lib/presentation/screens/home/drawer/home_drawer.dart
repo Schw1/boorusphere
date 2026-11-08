@@ -187,7 +187,7 @@ class AppVersionTile extends ConsumerWidget {
 
     return appVersions.maybeWhen(
       data: (data) {
-        if (!kSupportsInAppUpdate || !data.latest.isNewerThan(data.current)) {
+        if (!data.latest.isNewerThan(data.current)) {
           return currentTile;
         }
         if (updateProgress.status.isDownloading) {
