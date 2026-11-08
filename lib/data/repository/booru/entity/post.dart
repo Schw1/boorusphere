@@ -29,6 +29,10 @@ abstract class Post with _$Post {
     @HiveField(18, defaultValue: []) @Default([]) List<String> tagsGeneral,
     @HiveField(19, defaultValue: []) @Default([]) List<String> tagsMeta,
     @HiveField(20, defaultValue: 0) @Default(0) int score,
+    /// md5 of the original file, '' when the booru doesn't tell.
+    @HiveField(21, defaultValue: '') @Default('') String md5,
+    /// Number of pages for archives (Monbooru CBZ), 0 for single files.
+    @HiveField(22, defaultValue: 0) @Default(0) int pageCount,
   }) = _Post;
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);

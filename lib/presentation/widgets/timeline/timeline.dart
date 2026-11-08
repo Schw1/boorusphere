@@ -9,9 +9,11 @@ import 'package:boorusphere/presentation/utils/entity/content.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
+import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
@@ -32,6 +34,7 @@ class Timeline extends ConsumerWidget {
         .watch(timelineControllerProvider.select((it) => it.scrollController));
     final blurExplicit =
         ref.watch(contentSettingStateProvider.select((it) => it.blurExplicit));
+    final selection = PostSelection.of(context);
 
     return SliverMasonryGrid.count(
       crossAxisCount: flexibleGrid,
@@ -40,15 +43,27 @@ class Timeline extends ConsumerWidget {
       crossAxisSpacing: 8,
       childCount: posts.length,
       itemBuilder: (context, index) {
+        final post = posts.elementAt(index);
         return _ThumbnailCard(
           gridSize: flexibleGrid,
-          postdata: (index, posts.elementAt(index)),
+          postdata: (index, post),
           controller: scrollController,
           blurExplicit: blurExplicit,
+          selected: selection?.contains(post) ?? false,
           onTap: () {
+            if (selection != null && selection.isActive) {
+              selection.toggle(post);
+              return;
+            }
             context.scaffoldMessenger.removeCurrentSnackBar();
             PostViewer.open(context, index: index, posts: posts);
           },
+          onLongPress: selection == null
+              ? null
+              : () {
+                  HapticFeedback.selectionClick();
+                  selection.toggle(post);
+                },
         );
       },
     );
@@ -61,6 +76,8 @@ class _ThumbnailCard extends HookConsumerWidget {
     required this.controller,
     required this.blurExplicit,
     this.onTap,
+    this.onLongPress,
+    this.selected = false,
     required this.gridSize,
   });
 
@@ -68,6 +85,8 @@ class _ThumbnailCard extends HookConsumerWidget {
   final AutoScrollController controller;
   final bool blurExplicit;
   final void Function()? onTap;
+  final void Function()? onLongPress;
+  final bool selected;
   final int gridSize;
 
   @override
@@ -84,7 +103,10 @@ class _ThumbnailCard extends HookConsumerWidget {
         clipBehavior: Clip.hardEdge,
         child: GestureDetector(
           onTap: onTap,
-          child: Hero(
+          onLongPress: onLongPress,
+          child: _SelectionMark(
+            selected: selected,
+            child: Hero(
             tag: post.viewId,
             flightShuttleBuilder: (flightContext, animation, flightDirection,
                 fromHeroContext, toHeroContext) {
@@ -106,6 +128,7 @@ class _ThumbnailCard extends HookConsumerWidget {
             },
             child: _ThumbnailImage(
                 post: post, blurExplicit: blurExplicit, gridSize: gridSize),
+            ),
           ),
         ),
       ),
@@ -254,6 +277,48 @@ class _Placeholder extends StatelessWidget {
         color: Colors.black,
         child: const SizedBox.expand(),
       ),
+    );
+  }
+}
+
+/// Check mark and tint over a selected thumbnail.
+class _SelectionMark extends StatelessWidget {
+  const _SelectionMark({required this.selected, required this.child});
+
+  final bool selected;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!selected) return child;
+    final scheme = context.colorScheme;
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.primary.withAlpha(70),
+                border: Border.all(color: scheme.primary, width: 3),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 6,
+          right: 6,
+          child: IgnorePointer(
+            child: CircleAvatar(
+              radius: 12,
+              backgroundColor: scheme.primary,
+              child: Icon(Icons.check, size: 16, color: scheme.onPrimary),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

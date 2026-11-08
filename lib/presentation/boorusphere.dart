@@ -16,6 +16,7 @@ import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/routes/app_route_observer.dart';
 import 'package:boorusphere/presentation/routes/app_router.dart';
+import 'package:boorusphere/presentation/utils/root_messenger.dart';
 import 'package:boorusphere/presentation/widgets/app_theme_builder.dart';
 import 'package:boorusphere/utils/http/overrides.dart';
 import 'package:flutter/material.dart';
@@ -110,6 +111,7 @@ class Boorusphere extends HookConsumerWidget {
     return AppThemeBuilder(
       builder: (context, appTheme) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
+        scaffoldMessengerKey: rootMessengerKey,
         title: 'Boorusphere',
         theme: appTheme.day,
         darkTheme: isMidnight ? appTheme.midnight : appTheme.night,

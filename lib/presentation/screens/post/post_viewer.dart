@@ -3,6 +3,7 @@ import 'package:boorusphere/presentation/provider/fullscreen_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/routes/slide_page_route.dart';
 import 'package:boorusphere/presentation/screens/post/hooks/precache_posts.dart';
+import 'package:boorusphere/presentation/screens/post/post_archive.dart';
 import 'package:boorusphere/presentation/screens/post/post_image.dart';
 import 'package:boorusphere/presentation/screens/post/post_toolbox.dart';
 import 'package:boorusphere/presentation/screens/post/post_unknown.dart';
@@ -123,7 +124,9 @@ class PostViewer extends HookConsumerWidget {
                   final Widget widget;
                   switch (post.content.type) {
                     case PostType.photo:
-                      widget = PostImage(post: post);
+                      widget = post.isArchive
+                          ? PostArchive(post: post)
+                          : PostImage(post: post);
                       break;
                     case PostType.video:
                       widget = PostVideo(

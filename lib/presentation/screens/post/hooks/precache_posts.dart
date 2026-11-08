@@ -36,7 +36,8 @@ class _PrecachePostsState extends HookState<_Precacher, _PrecachePostsHook> {
   Future<void> _precacheImagePost(Post post, bool og) async {
     if (!post.content.isPhoto || !context.mounted) return;
     final image = ExtendedNetworkImageProvider(
-      og ? post.originalFile : post.content.url,
+      // An archive's original file is the .cbz, not an image.
+      og && !post.isArchive ? post.originalFile : post.content.url,
       headers: hook.ref.read(postHeadersFactoryProvider(post)),
       cache: true,
       retries: 3,

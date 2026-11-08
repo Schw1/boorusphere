@@ -5,12 +5,13 @@ import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
-import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
+import 'package:boorusphere/presentation/provider/monbooru_queue.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
+import 'package:boorusphere/presentation/utils/root_messenger.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
 import 'package:flutter/material.dart';
@@ -191,39 +192,92 @@ class PostMonbooruButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sending = useState(false);
-    final server = ref.watch(serverStateProvider).findById(post.serverId);
+    final queue = MonbooruQueue.instance;
+    final states = useValueListenable(queue.states);
+    final state = states[post.viewId] ?? MonbooruPostState.unknown;
+    final servers = ref.watch(serverStateProvider);
+    final server = servers.findById(post.serverId);
+    final isFromMonbooru =
+        server != null && MonbooruJsonParser.isMonbooru(server);
+
+    // Look the post up in Monbooru once it is shown.
+    useEffect(() {
+      if (!isFromMonbooru) queue.check(post, servers);
+      return null;
+    }, [post.viewId]);
+
     // Posts that already come from Monbooru are not sent back to it.
-    if (server != null && MonbooruJsonParser.isMonbooru(server)) {
-      return const SizedBox.shrink();
+    if (isFromMonbooru) return const SizedBox.shrink();
+
+    final t = context.t.monbooru;
+    final Widget icon;
+    final String tooltip;
+    if (state.isBusy) {
+      icon = const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+      tooltip = t.send;
+    } else if (state.isInMonbooru) {
+      icon = Icon(Icons.cloud_done, color: Colors.lightGreenAccent.shade200);
+      tooltip = t.present;
+    } else if (state.status == MonbooruPostStatus.failed) {
+      icon = Icon(Icons.cloud_off_outlined, color: Colors.redAccent.shade100);
+      tooltip = t.send;
+    } else {
+      icon = const Icon(Icons.cloud_upload_outlined);
+      tooltip = t.send;
     }
+
     return IconButton(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
-      icon: sending.value
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : const Icon(Icons.cloud_upload_outlined),
-      tooltip: context.t.monbooru.send,
-      onPressed: sending.value
+      icon: icon,
+      tooltip: tooltip,
+      onPressed: state.isBusy
           ? null
           : () async {
-              final messenger = ScaffoldMessenger.of(context);
-              sending.value = true;
-              final error = await MonbooruSender.send(post);
+              if (state.isInMonbooru &&
+                  !await confirmSendDuplicate(context)) {
+                return;
+              }
               if (!context.mounted) return;
-              sending.value = false;
+              final messenger = ScaffoldMessenger.of(context);
+              final error = await queue.send(post, onReport: (report) {
+                showRootSnackBar((c) => report.describe(c));
+              });
+              if (!context.mounted) return;
               messenger
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBar(
-                  content: Text(error?.describe(context) ??
-                      context.t.monbooru.sent),
+                  content: Text(error?.describe(context) ?? t.sent),
                   duration: const Duration(seconds: 3),
                 ));
             },
     );
   }
+}
+
+/// Asks before sending a post that is already in Monbooru.
+Future<bool> confirmSendDuplicate(BuildContext context) async {
+  final t = context.t.monbooru.duplicateDialog;
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(t.title),
+      content: Text(t.desc),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(context.t.cancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(t.sendAnyway),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }

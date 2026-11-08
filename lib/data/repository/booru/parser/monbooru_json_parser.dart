@@ -1,5 +1,6 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
+import 'package:boorusphere/data/repository/booru/utils/file_md5.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/presentation/provider/booru/suggestion_state.dart';
 import 'package:deep_pick/deep_pick.dart';
@@ -41,6 +42,14 @@ class MonbooruJsonParser extends BooruParser {
         BooruParserType.suggestion,
       ];
 
+  /// Page [n] (1-based) of an archive. The `name` gives the viewer an image
+  /// extension; Monbooru serves the page in its own format.
+  static String pageUrl(String api, int id, int n, String hash) {
+    final base = api.replaceFirst(RegExp(r'/+$'), '');
+    final name = Uri.encodeQueryComponent('$hash-$n.jpg');
+    return '$base/api/v1/images/$id/page/$n?name=$name';
+  }
+
   static bool isMonbooru(Server server) =>
       server.searchParserId == parserId ||
       server.searchUrl.contains('api/v1/images/search');
@@ -74,6 +83,7 @@ class MonbooruJsonParser extends BooruParser {
     'gif': 'gif',
     'mp4': 'mp4',
     'webm': 'webm',
+    'cbz': 'cbz',
   };
 
   // Flutter cannot decode these; Monbooru renders a WebP still for them.
@@ -98,8 +108,12 @@ class MonbooruJsonParser extends BooruParser {
 
       final fileType = pick(post, 'file_type').asStringOrNull() ?? '';
       final ext = _extByType[fileType];
-      // Archives (cbz) are not supported by the viewer.
       if (ext == null) continue;
+      final isArchive = fileType == 'cbz';
+      final pageCount =
+          isArchive ? (pick(post, 'page_count').asIntOrNull() ?? 0) : 0;
+      // An archive without pages can't be shown.
+      if (isArchive && pageCount <= 0) continue;
 
       final hash = pick(post, 'md5').asStringOrNull() ??
           pick(post, 'sha256').asStringOrNull() ??
@@ -107,9 +121,12 @@ class MonbooruJsonParser extends BooruParser {
       final name = Uri.encodeQueryComponent('$hash.$ext');
       final base = '$api/api/v1/images/$id';
       final original = '$base/file?name=$name';
-      final sample = _needsStill.contains(fileType)
-          ? '$base/still?name=${Uri.encodeQueryComponent('$hash.webp')}'
-          : original;
+      final sample = isArchive
+          // The cover; the reader loads the other pages the same way.
+          ? pageUrl(api, id, 1, hash)
+          : _needsStill.contains(fileType)
+              ? '$base/still?name=${Uri.encodeQueryComponent('$hash.webp')}'
+              : original;
       final preview =
           '$base/thumbnail?name=${Uri.encodeQueryComponent('$hash.jpg')}';
 
@@ -166,6 +183,8 @@ class MonbooruJsonParser extends BooruParser {
           postUrl: server.postUrlOf(id),
           rateValue: _rateValue(rating),
           source: sourceUrl.isNotEmpty ? sourceUrl : originalSource,
+          md5: FileMd5.normalize(pick(post, 'md5').asStringOrNull()),
+          pageCount: pageCount,
         ),
       );
     }

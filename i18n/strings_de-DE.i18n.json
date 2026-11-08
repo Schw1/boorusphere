@@ -89,7 +89,8 @@
     "on_latest": "Sie haben die neueste Version",
     "on_new_version": "Neue Version ist verfügbar",
     "install": "Update installieren",
-    "progress": "Herunterladen: ${progress}%"
+    "progress": "Herunterladen: ${progress}%",
+    "open_release": "Release ${version} öffnen"
   },
   "changelog": {
     "title": "Änderungsprotokoll",
@@ -266,16 +267,17 @@
   },
   "monbooru": {
     "send": "An Monbooru senden",
-    "sent": "An Monbooru gesendet",
+    "sent": "An monloader gesendet, warte auf das Ergebnis…",
     "settings": {
       "title": "Monbooru (monloader)",
       "desc": "Adresse und Token für „An Monbooru senden“",
       "address": "monloader-Adresse",
-      "token": "API-Token (Schreibrecht)",
-      "token_desc": "Liegt nur auf diesem Gerät in der iOS-Keychain und ist nicht Teil von Backups.",
+      "token": "API-Token (Lese- und Schreibrecht)",
+      "token_desc": "Mit Schreibrecht werden Posts gesendet, mit Leserecht wird das Ergebnis angezeigt. Liegt nur auf diesem Gerät im Schlüsselbund des Systems und ist nicht Teil von Backups.",
       "test": "Testen",
       "testing": "Teste…",
-      "ok": "Verbindung OK"
+      "ok": "Verbindung OK",
+      "duplicate_check": "Posts werden mit deinem Monbooru-Server aus der Serverliste auf Doppelte geprüft (per Datei-md5)."
     },
     "error": {
       "not_configured": "Monbooru ist nicht eingerichtet (siehe Einstellungen)",
@@ -289,12 +291,59 @@
     },
     "backup": {
       "title": "Monbooru (monloader)",
-      "desc": "Adresse für „An Monbooru senden“. Der API-Token bleibt in der Keychain und muss nach einer Wiederherstellung auf einem anderen Gerät neu eingegeben werden."
+      "desc": "Adresse für „An Monbooru senden“. Der API-Token bleibt im Schlüsselbund des Systems und muss nach einer Wiederherstellung auf einem anderen Gerät neu eingegeben werden."
+    },
+    "present": "Schon in Monbooru",
+    "result": {
+      "added": "Zu Monbooru hinzugefügt",
+      "duplicate": "Schon in Monbooru (monloader hat ihn übersprungen)",
+      "skipped": "monloader hat den Post übersprungen",
+      "failed": "monloader konnte den Post nicht hinzufügen",
+      "failed_with": "monloader konnte den Post nicht hinzufügen: ${error}",
+      "unconfirmed": "An monloader gesendet. Kein Ergebnis verfügbar (der Token braucht Leserecht, oder der Auftrag läuft noch)."
+    },
+    "batch": {
+      "sending": "Sende ${sent}/${total} an Monbooru…",
+      "added": "${n} hinzugefügt",
+      "already_there": "${n} schon in Monbooru",
+      "skipped": "${n} übersprungen",
+      "failed": "${n} fehlgeschlagen",
+      "unconfirmed": "${n} ohne Ergebnis",
+      "nothing": "Nichts gesendet"
+    },
+    "duplicate_dialog": {
+      "title": "Schon in Monbooru",
+      "desc": "Die Datei dieses Posts ist schon in Monbooru. Trotzdem senden?",
+      "send_anyway": "Trotzdem senden"
+    },
+    "selection": {
+      "count": "${n} ausgewählt",
+      "select_all": "Alle auswählen",
+      "clear": "Auswahl aufheben",
+      "send": "An Monbooru senden",
+      "sending": "Sende…"
     }
   },
   "random_order": {
     "label": "zufällig",
     "on": "an",
     "off": "aus"
+  },
+  "signature": {
+    "expires": "App-Signatur läuft ${when} ab",
+    "desc": "Danach startet die App erst wieder, wenn du sie mit Sideloadly neu installierst (über die bestehende App, deine Daten bleiben erhalten).",
+    "dismiss": "Ausblenden",
+    "in_hours": "in ${n} Std.",
+    "in_days": "in ${n} Tagen",
+    "valid_until": "Signatur gültig bis ${date}"
+  },
+  "video": {
+    "seek_bar": "Spulleiste",
+    "back10": "10 Sekunden zurück",
+    "forward10": "10 Sekunden vor"
+  },
+  "archive": {
+    "read": "Lesen (${n} Seiten)",
+    "page": "Seite ${current} von ${total}"
   }
 }
