@@ -1,6 +1,7 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
+import 'package:boorusphere/data/repository/reading_progress.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/nhentai_gallery.dart';
@@ -29,6 +30,14 @@ class PostArchive extends HookConsumerWidget {
         isGallery ? ref.watch(nhentaiGalleryProvider(post)).value : null;
     final headers = ref.watch(postHeadersFactoryProvider(post));
     final cover = gallery?.cover ?? '';
+    // Last page read; rebuilt when the reader saves a page.
+    useValueListenable(ReadingProgress.changes);
+    final saved = useFuture(
+      useMemoized(() => ReadingProgress.pageOf(post),
+          [post.viewId, ReadingProgress.changes.value]),
+    ).data;
+    final finished = saved != null && saved >= post.pageCount - 1;
+    final resume = saved != null && saved > 0 && !finished;
 
     return Stack(
       fit: StackFit.passthrough,
@@ -68,9 +77,17 @@ class PostArchive extends HookConsumerWidget {
                   ),
                 ),
               FilledButton.icon(
-                onPressed: () => ArchiveReaderPage.open(context, post),
-                icon: const Icon(Icons.menu_book_outlined),
-                label: Text(context.t.archive.read(n: post.pageCount)),
+                onPressed: () => ArchiveReaderPage.open(context, post,
+                    startPage: resume ? saved! : 0),
+                icon: Icon(resume
+                    ? Icons.auto_stories_outlined
+                    : Icons.menu_book_outlined),
+                label: Text(resume
+                    ? context.t.archive
+                        .resume(page: saved! + 1, n: post.pageCount)
+                    : finished
+                        ? context.t.archive.readAgain(n: post.pageCount)
+                        : context.t.archive.read(n: post.pageCount)),
               ),
             ],
           ),
@@ -82,13 +99,17 @@ class PostArchive extends HookConsumerWidget {
 
 /// Reads an archive page by page, left to right, with pinch zoom.
 class ArchiveReaderPage extends HookConsumerWidget {
-  const ArchiveReaderPage({super.key, required this.post});
+  const ArchiveReaderPage({super.key, required this.post, this.startPage = 0});
 
   final Post post;
 
-  static Future<void> open(BuildContext context, Post post) {
+  /// 0-based page to open at (the last page read).
+  final int startPage;
+
+  static Future<void> open(BuildContext context, Post post,
+      {int startPage = 0}) {
     return Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ArchiveReaderPage(post: post),
+      builder: (_) => ArchiveReaderPage(post: post, startPage: startPage),
     ));
   }
 
@@ -117,10 +138,17 @@ class ArchiveReaderPage extends HookConsumerWidget {
     // nhentai: the page list comes with the gallery.
     final urls = isGallery ? gallery?.value?.pages ?? const [] : archiveUrls;
     final loading = gallery?.isLoading ?? false;
-    final page = useState(0);
+    final page = useState(startPage);
     final showBars = useState(true);
-    final controller = useMemoized(ExtendedPageController.new);
+    final controller =
+        useMemoized(() => ExtendedPageController(initialPage: startPage));
     useEffect(() => controller.dispose, [controller]);
+    // Remember the page (also the first one, so a started archive shows up
+    // as such).
+    useEffect(() {
+      ReadingProgress.save(post, page.value);
+      return null;
+    }, [page.value]);
 
     return Scaffold(
       backgroundColor: Colors.black,

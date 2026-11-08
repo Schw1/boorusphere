@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/reading_progress.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
@@ -106,7 +107,7 @@ class _ThumbnailCard extends HookConsumerWidget {
           onLongPress: onLongPress,
           child: _SelectionMark(
             selected: selected,
-            pages: post.pageCount,
+            post: post,
             child: Hero(
             tag: post.viewId,
             flightShuttleBuilder: (flightContext, animation, flightDirection,
@@ -287,14 +288,17 @@ class _SelectionMark extends StatelessWidget {
   const _SelectionMark({
     required this.selected,
     required this.child,
-    this.pages = 0,
+    required this.post,
   });
 
   final bool selected;
   final Widget child;
 
-  /// Page count of an archive or gallery, shown as a badge.
-  final int pages;
+  /// Archives and galleries get a badge with their page count (and the
+  /// last page read).
+  final Post post;
+
+  int get pages => post.pageCount;
 
   @override
   Widget build(BuildContext context) {
@@ -322,9 +326,17 @@ class _SelectionMark extends StatelessWidget {
                     const Icon(Icons.menu_book_outlined,
                         size: 12, color: Colors.white),
                     const SizedBox(width: 3),
-                    Text('$pages',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 11)),
+                    ValueListenableBuilder(
+                      valueListenable: ReadingProgress.changes,
+                      builder: (context, _, __) {
+                        final read = ReadingProgress.pageOfSync(post);
+                        return Text(
+                          read != null && read > 0 ? '${read + 1}/$pages' : '$pages',
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 11),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),

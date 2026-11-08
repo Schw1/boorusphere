@@ -346,7 +346,9 @@
   },
   "archive": {
     "read": "Read (${n} pages)",
-    "page": "Page ${current} of ${total}"
+    "page": "Page ${current} of ${total}",
+    "resume": "Continue (page ${page} of ${n})",
+    "read_again": "Read again (${n} pages)"
   },
   "gallery": {
     "title": "Title",

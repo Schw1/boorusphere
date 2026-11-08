@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/nhentai_tags.dart';
 import 'package:boorusphere/data/repository/booru/parser/booru_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:deep_pick/deep_pick.dart';
@@ -167,6 +168,9 @@ class NhentaiJsonParser extends BooruParser {
         score: pick(post, 'num_favorites').asIntOrNull() ?? 0,
         pageCount: pages,
         title: english.isNotEmpty ? english : japanese,
+        // tag ids -> search tokens, once the tag list is loaded
+        tags: NhentaiTags.instance.tokensOf(
+            pick(post, 'tag_ids').asListOrEmpty((it) => it.asIntOrThrow())),
       ));
     }
     return result;

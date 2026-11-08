@@ -344,7 +344,9 @@
   },
   "archive": {
     "read": "Lesen (${n} Seiten)",
-    "page": "Seite ${current} von ${total}"
+    "page": "Seite ${current} von ${total}",
+    "resume": "Weiterlesen (Seite ${page} von ${n})",
+    "read_again": "Nochmal lesen (${n} Seiten)"
   },
   "gallery": {
     "title": "Titel",
