@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/constant/app.dart';
+import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_pins.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
@@ -301,7 +303,9 @@ class _HomeTile extends ConsumerWidget {
   }
 }
 
-class _ServerSelection extends ConsumerWidget {
+/// Pinned servers and the active one; all others in a list that opens on
+/// tap. Long-press a server (or tap its pin) to pin or unpin it.
+class _ServerSelection extends HookConsumerWidget {
   const _ServerSelection();
 
   @override
@@ -309,12 +313,13 @@ class _ServerSelection extends ConsumerWidget {
     final servers = ref.watch(serverStateProvider);
     final session = ref.watch(searchSessionProvider);
     final serverActive = servers.getById(session.serverId);
+    final pinned = useValueListenable(ServerPins.pinned);
+    final shown = servers
+        .where((it) => pinned.contains(it.id) || it.id == serverActive.id)
+        .toList();
+    final t = context.t.servers;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: servers.map((it) {
-        return Padding(
+    Widget tile(Server it, {bool inList = false}) => Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
           child: ListTile(
             title: Text(it.name),
@@ -323,6 +328,18 @@ class _ServerSelection extends ConsumerWidget {
               shape: BoxShape.circle,
               iconSize: 21,
             ),
+            trailing: inList || pinned.contains(it.id)
+                ? IconButton(
+                    tooltip: pinned.contains(it.id) ? t.unpin : t.pin,
+                    icon: Icon(
+                      pinned.contains(it.id)
+                          ? Icons.push_pin
+                          : Icons.push_pin_outlined,
+                      size: 18,
+                    ),
+                    onPressed: () => ServerPins.toggle(it.id),
+                  )
+                : null,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(30),
@@ -332,6 +349,7 @@ class _ServerSelection extends ConsumerWidget {
             selected: it.id == serverActive.id,
             selectedTileColor: context.colorScheme.primary
                 .withAlpha(context.isLightThemed ? 50 : 25),
+            onLongPress: () => ServerPins.toggle(it.id),
             onTap: () {
               ref.read(homeDrawerControllerProvider).close().then((value) {
                 if (it.id != serverActive.id) {
@@ -346,7 +364,29 @@ class _ServerSelection extends ConsumerWidget {
             },
           ),
         );
-      }).toList(),
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final it in shown) tile(it),
+        if (servers.length > shown.length)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+            child: Theme(
+              // no divider lines around the expanded list
+              data: context.theme.copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.dns_outlined),
+                title: Text(t.all(n: servers.length)),
+                subtitle:
+                    pinned.isEmpty ? Text(t.pinHint) : null,
+                children: [for (final it in servers) tile(it, inList: true)],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -1,6 +1,9 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **Server list in the menu:** only pinned servers and the active one are listed; all servers are in a list that opens on tap. Pin or unpin with the pin icon or a long press.
+
+## In 1.5.4-ios.16
 - **For you:** new feed in the menu with posts of the current server for tags you like, learned from your favorites and what you sent to Monbooru. Each refresh picks other tags and starts at a random result page; the server button switches the server or searches all boorus at once; tap a tag to search it.
 - **Translation notes:** translated Danbooru and yande.re/konachan images, and Monbooru images with annotations (from its booru lookups), show boxes over the speech bubbles; tap one for its text. The translate button in the viewer hides them. Shown while the image isn't zoomed.
 - **Continue reading:** new list in the menu with the galleries and Monbooru archives you read recently, newest first, with the page you left off. Long-press to select entries and remove them from the list. Galleries read before this version show up once you open them again.
@@ -9,9 +12,7 @@ Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideload
 - **Monbooru history:** menu → Monbooru history lists the posts you sent with their result (added, already there, failed and why). Failed ones can be sent again, swipe left to remove an entry (only from the list), or remove all successful ones with the button at the top; sends without a result are asked for again when the list opens. Errors from monloader now include its reason (e.g. `Error 400: …`).
 - **Backups** now also include reading progress, the Continue reading list and saved searches (new checkbox, on by default).
 - **nhentai:** related galleries in the gallery details. Tags are typed like on Danbooru (`big_breasts -netorare english`); the app turns them into nhentai's `tag:"…"` form. Words that aren't tags search titles; put a title in quotes (`"school days"`) to keep it a title search. The old form still works.
-
-## Fixed
-- Posts with more than 64 tags (often rule34) were rejected by monloader (`Error 400: at most 64 tags`); the first 64 are sent now.
+- **Fix:** posts with more than 64 tags (often rule34) were rejected by monloader (`Error 400: at most 64 tags`); the first 64 are sent now.
 
 ## In 1.5.4-ios.15
 - Sending an nhentai gallery to Monbooru added the app's search tokens as extra tags (`tag:_big_breasts`, `language:english`, `category:manga`). Now only the tags gallery-dl reads from the gallery are used.
