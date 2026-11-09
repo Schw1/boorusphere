@@ -2,6 +2,7 @@ import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/post_notes.dart';
+import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,8 @@ final postNotesProvider =
             headers: {
               'Accept': 'application/json',
               'User-Agent': 'Boorusphere/${displayVersion('dev')}',
+              // Monbooru needs its API token
+              ...ServerAuthStore.headersFor(server, url),
             },
             validateStatus: (it) => it == 200,
           ),

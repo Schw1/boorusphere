@@ -1,4 +1,5 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 
 /// A note on an image (mostly a translated speech bubble), in pixels of
@@ -21,7 +22,8 @@ class PostNote {
   final String text;
 }
 
-/// Notes of Danbooru and Moebooru (yande.re, konachan) posts.
+/// Notes of Danbooru and Moebooru (yande.re, konachan) posts, and the
+/// annotations Monbooru keeps (brought in by its booru lookups).
 class PostNotes {
   PostNotes._();
 
@@ -46,8 +48,17 @@ class PostNotes {
 
   /// Where the notes of [post] are, or null if [server] has none.
   static String? urlOf(Server server, Post post) {
-    if (!mayHaveNotes(post)) return null;
     final api = server.apiAddress.replaceFirst(RegExp(r'/+$'), '');
+    if (MonbooruJsonParser.isMonbooru(server)) {
+      // Own server: every image is asked (search results carry no hint),
+      // archives (CBZ covers) aren't.
+      if (post.pageCount > 0) return null;
+      final gallery = _galleryOf(server);
+      final query =
+          gallery == null ? '' : '?gallery=${Uri.encodeQueryComponent(gallery)}';
+      return '$api/api/v1/images/${post.id}$query';
+    }
+    if (!mayHaveNotes(post)) return null;
     if (_isDanbooru(server)) {
       return '$api/notes.json?search[post_id]=${post.id}'
           '&search[is_active]=true&limit=200';
@@ -56,17 +67,36 @@ class PostNotes {
     return null;
   }
 
-  /// Notes of an API answer (both have x, y, width, height, body,
-  /// is_active). Inactive, empty and broken ones are left out.
+  /// `gallery=<name>` of the server's URL suffix (Monbooru), if any.
+  static String? _galleryOf(Server server) {
+    final suffix = server.urlSuffix.trim().replaceFirst(RegExp(r'^[?&]+'), '');
+    if (suffix.isEmpty) return null;
+    try {
+      final gallery = Uri.splitQueryString(suffix)['gallery'];
+      return gallery == null || gallery.isEmpty ? null : gallery;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Notes of an API answer: a list (Danbooru, Moebooru: x, y, width,
+  /// height, body, is_active) or a Monbooru image (`annotations` with x, y,
+  /// w, h, body, body_text). Inactive, empty and broken ones are left out.
   static List<PostNote> parse(Object? data) {
+    if (data is Map && data['annotations'] is List) {
+      data = data['annotations'];
+    }
     if (data is! List) return const [];
     double? n(Object? v) => v is num ? v.toDouble() : double.tryParse('$v');
     final result = <PostNote>[];
     for (final it in data) {
       if (it is! Map || it['is_active'] == false) continue;
       final x = n(it['x']), y = n(it['y']);
-      final w = n(it['width']), h = n(it['height']);
-      final text = toText('${it['body'] ?? ''}');
+      final w = n(it['width'] ?? it['w']), h = n(it['height'] ?? it['h']);
+      final plain = it['body_text'];
+      final text = plain is String && plain.trim().isNotEmpty
+          ? toText(plain)
+          : toText('${it['body'] ?? ''}');
       if (x == null || y == null || w == null || h == null) continue;
       if (w <= 0 || h <= 0 || text.isEmpty) continue;
       result.add(PostNote(x: x, y: y, width: w, height: h, text: text));

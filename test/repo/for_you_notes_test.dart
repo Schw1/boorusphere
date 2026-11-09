@@ -107,6 +107,31 @@ void main() {
       expect(PostNotes.parse({'error': 1}), isEmpty);
     });
 
+    test('Monbooru annotations', () {
+      const monbooru = Server(
+        id: 'Monbooru',
+        homepage: 'https://booru.example',
+        searchUrl: 'api/v1/images/search?q={tags}',
+        urlSuffix: '&gallery=main',
+      );
+      expect(PostNotes.urlOf(monbooru, const Post(id: 9, originalFile: 'x')),
+          'https://booru.example/api/v1/images/9?gallery=main');
+      expect(
+          PostNotes.urlOf(monbooru, const Post(id: 9, pageCount: 20)), isNull,
+          reason: 'archive');
+      final notes = PostNotes.parse({
+        'id': 9,
+        'annotations': [
+          {'site': 'danbooru', 'x': 1, 'y': 2, 'w': 3, 'h': 4,
+            'body': '[b]Hi[/b]', 'body_text': 'Hi'},
+          {'x': 1, 'y': 2, 'w': 3, 'h': 4, 'body': 'plain'},
+        ],
+      });
+      expect(notes.map((it) => it.text), ['Hi', 'plain']);
+      expect(notes.first.width, 3);
+      expect(PostNotes.parse({'id': 9}), isEmpty);
+    });
+
     test('HTML to text', () {
       expect(
           PostNotes.toText(
