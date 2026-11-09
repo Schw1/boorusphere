@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
+import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
+import 'package:boorusphere/data/repository/booru/parser/nhentai_json_parser.dart';
 import 'package:boorusphere/data/repository/for_you.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
@@ -25,29 +29,57 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 /// Posts of the current server for the tags the user is into, taken from
 /// their favorites and what they sent to Monbooru. Each refresh picks a
 /// few of those tags anew.
+/// One search of the feed: a tag on a server, and the next page to load.
+class _Query {
+  _Query(this.tag, this.server, this.page);
+
+  final String tag;
+  final Server server;
+  int page;
+  bool done = false;
+}
+
 @RoutePage()
 class ForYouPage extends HookConsumerWidget {
   const ForYouPage({super.key, required this.session});
   final SearchSession session;
 
-  /// With fewer posts of the current server, all servers' posts count.
+  /// With fewer posts of the chosen server, other servers' posts count.
   static const _minSameServer = 5;
+
+  /// Which servers the feed searches, for this app session: null = the
+  /// current one, [allServers] = every booru, else a server id.
+  static final choice = ValueNotifier<String?>(null);
+  static const allServers = '*';
+
+  /// Result pages a search starts at (one of the first few, at random).
+  static const _startPages = 4;
+
+  /// Boorus for "all servers": not nhentai (other tags) and not Monbooru
+  /// (what's there is already saved).
+  static bool _isBooru(Server server) =>
+      !NhentaiJsonParser.isNhentai(server) &&
+      !MonbooruJsonParser.isMonbooru(server);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final server = ref.watch(serverStateProvider).getById(session.serverId);
+    final servers = ref.watch(serverStateProvider);
+    final chosen = useValueListenable(choice);
+    final all = chosen == allServers;
+    final server = servers.getById(
+        chosen == null || all ? session.serverId : chosen);
     final scrollController = useMemoized(AutoScrollController.new);
     useEffect(() => scrollController.dispose, [scrollController]);
 
-    final tags = useState<List<String>>(const []);
+    final queries = useState<List<_Query>>(const []);
     final posts = useState<List<Post>>(const []);
     final loading = useState(true);
     final error = useState(false);
     final noInterests = useState(false);
-    final page = useRef(0);
-    final ended = useRef(false);
+    final lastPicked = useRef<Set<String>>({});
+    final random = useMemoized(Random.new);
 
-    Set<String> blockedTags() => ref
+    Set<String> blockedTags(Server server) => ref
         .read(tagsBlockerStateProvider)
         .values
         .where((it) => it.serverId.isEmpty || it.serverId == server.id)
@@ -62,65 +94,100 @@ class ForYouPage extends HookConsumerWidget {
       ];
     }
 
+    bool isNhentaiPost(Post post) {
+      final s = servers.findById(post.serverId);
+      return s != null && NhentaiJsonParser.isNhentai(s);
+    }
+
+    Future<List<Post>> fetch(_Query q) async {
+      final settings = ref.read(serverSettingStateProvider);
+      final repo = ref.read(imageboardRepoProvider(q.server));
+      Future<List<Post>> page(int n) async => (await repo.getPage(
+            PageOption(
+              query: q.tag,
+              limit: settings.postLimit,
+              searchRating: settings.searchRating,
+              language: settings.searchLanguages[q.server.id] ?? '',
+            ),
+            n,
+          ))
+              .toList();
+      try {
+        var result = await page(q.page);
+        // fewer pages than the random start: from the first one
+        if (result.isEmpty && q.page > 0) {
+          q.page = 0;
+          result = await page(0);
+        }
+        q.page++;
+        if (result.isEmpty) q.done = true;
+        final blocked = blockedTags(q.server);
+        return result.where((it) => !it.allTags.any(blocked.contains)).toList();
+      } catch (_) {
+        q.done = true;
+        return const [];
+      }
+    }
+
     Future<void> load({bool fresh = false}) async {
-      if ((loading.value && !fresh) || (!fresh && ended.value)) return;
+      if (loading.value && !fresh) return;
       loading.value = true;
       error.value = false;
       try {
         if (fresh) {
-          final all = await source();
-          final same = all.where((it) => it.serverId == server.id).toList();
-          final interests = ForYou.interests(
-            same.length >= _minSameServer ? same : all,
-            blocked: blockedTags(),
-          );
-          noInterests.value = interests.isEmpty;
-          tags.value = ForYou.pick(interests);
-          page.value = 0;
-          ended.value = false;
-          posts.value = const [];
-        }
-        if (tags.value.isEmpty || server == Server.empty) return;
-
-        final settings = ref.read(serverSettingStateProvider);
-        final repo = ref.read(imageboardRepoProvider(server));
-        final results = await Future.wait(tags.value.map((tag) async {
-          try {
-            return (await repo.getPage(
-              PageOption(
-                query: tag,
-                limit: settings.postLimit,
-                searchRating: settings.searchRating,
-                language: settings.searchLanguages[server.id] ?? '',
-              ),
-              page.value,
-            ))
-                .toList();
-          } catch (_) {
-            return <Post>[];
+          final boorus = servers.where(_isBooru).toList();
+          final everything = await source();
+          final List<Post> basis;
+          if (all) {
+            basis = everything.where((it) => !isNhentaiPost(it)).toList();
+          } else if (NhentaiJsonParser.isNhentai(server)) {
+            basis = everything.where(isNhentaiPost).toList();
+          } else {
+            final same =
+                everything.where((it) => it.serverId == server.id).toList();
+            basis = same.length >= _minSameServer
+                ? same
+                : everything.where((it) => !isNhentaiPost(it)).toList();
           }
-        }));
-        if (!context.mounted) return;
-        page.value++;
-        if (results.every((it) => it.isEmpty)) {
-          ended.value = true;
-          error.value = posts.value.isEmpty;
+          final interests =
+              ForYou.interests(basis, blocked: blockedTags(server));
+          noInterests.value = interests.isEmpty;
+          final tags = ForYou.pick(
+            interests,
+            count: all ? 6 : 4,
+            avoid: lastPicked.value,
+            random: random,
+          );
+          lastPicked.value = tags.toSet();
+          posts.value = const [];
+          queries.value = [
+            for (final tag in tags)
+              if (all ? boorus.isNotEmpty : server != Server.empty)
+                _Query(
+                  tag,
+                  all ? boorus[random.nextInt(boorus.length)] : server,
+                  random.nextInt(_startPages),
+                ),
+          ];
+        }
+        final open = queries.value.where((it) => !it.done).toList();
+        if (open.isEmpty) {
+          error.value = posts.value.isEmpty && !noInterests.value;
           return;
         }
-        final blocked = blockedTags();
+        final results = await Future.wait(open.map(fetch));
+        if (!context.mounted) return;
+        // a different order each time, so the same tag doesn't always lead
+        results.shuffle(random);
         final favorites = {
           for (final post in ref.read(favoritePostStateProvider)) post.viewId,
         };
         final next = ForYou.mix(
-          [
-            for (final result in results)
-              result
-                  .where((it) => !it.allTags.any(blocked.contains))
-                  .toList(),
-          ],
+          results,
           seen: {...favorites, for (final it in posts.value) it.viewId},
         );
         posts.value = [...posts.value, ...next];
+        error.value = posts.value.isEmpty;
       } finally {
         if (context.mounted) loading.value = false;
       }
@@ -133,7 +200,7 @@ class ForYouPage extends HookConsumerWidget {
     useEffect(() {
       load(fresh: true);
       return null;
-    }, [server.id]);
+    }, [server.id, chosen]);
 
     final t = context.t.forYou;
     final Widget body;
@@ -188,15 +255,36 @@ class ForYouPage extends HookConsumerWidget {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(t.title),
+          title: Text(all ? '${t.title} · ${t.allServers}'
+              : '${t.title} · ${server.name}'),
           actions: [
+            PopupMenuButton<String>(
+              tooltip: t.servers,
+              icon: const Icon(Icons.dns_outlined),
+              onSelected: (id) =>
+                  choice.value = id == session.serverId ? null : id,
+              itemBuilder: (context) => [
+                CheckedPopupMenuItem(
+                  value: allServers,
+                  checked: all,
+                  child: Text(t.allServers),
+                ),
+                const PopupMenuDivider(),
+                for (final it in servers)
+                  CheckedPopupMenuItem(
+                    value: it.id,
+                    checked: !all && it.id == server.id,
+                    child: Text(it.name),
+                  ),
+              ],
+            ),
             IconButton(
               tooltip: t.refresh,
               icon: const Icon(Icons.refresh),
               onPressed: loading.value ? null : () => load(fresh: true),
             ),
           ],
-          bottom: tags.value.isEmpty
+          bottom: queries.value.isEmpty
               ? null
               : PreferredSize(
                   preferredSize: const Size.fromHeight(48),
@@ -206,14 +294,15 @@ class ForYouPage extends HookConsumerWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       children: [
-                        for (final tag in tags.value)
+                        for (final q in queries.value)
                           Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: ActionChip(
-                              label: Text(tag),
+                              label: Text(
+                                  all ? '${q.tag} · ${q.server.name}' : q.tag),
                               onPressed: () => context.router.push(HomeRoute(
                                 session: SearchSession(
-                                    serverId: server.id, query: tag),
+                                    serverId: q.server.id, query: q.tag),
                               )),
                             ),
                           ),

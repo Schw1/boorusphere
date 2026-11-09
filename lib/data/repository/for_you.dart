@@ -101,24 +101,28 @@ class ForYou {
     return result;
   }
 
-  /// [count] different tags from the [top] interests, more often the ones
-  /// with more posts. A new pick each time, so refreshing shows other
-  /// things.
+  /// [count] different tags from the [top] interests. Tags with more posts
+  /// come up more often, but only by the square root of their count, so
+  /// the top few don't win every time. Tags in [avoid] (the last pick) are
+  /// left out while there are enough others.
   static List<String> pick(
     List<(String, int)> interests, {
     int count = 4,
-    int top = 15,
+    int top = 30,
+    Set<String> avoid = const {},
     Random? random,
   }) {
     final rnd = random ?? Random();
-    final pool = interests.take(top).toList();
+    var pool = interests.take(top).toList();
+    final fresh = pool.where((it) => !avoid.contains(it.$1)).toList();
+    if (fresh.length >= count) pool = fresh;
     final picked = <String>[];
     while (picked.length < count && pool.isNotEmpty) {
-      final total = pool.fold(0, (sum, it) => sum + it.$2);
-      var at = rnd.nextInt(total);
+      final weights = [for (final it in pool) sqrt(it.$2.toDouble())];
+      var at = rnd.nextDouble() * weights.fold(0.0, (a, b) => a + b);
       var index = 0;
-      while (at >= pool[index].$2) {
-        at -= pool[index].$2;
+      while (index < pool.length - 1 && at >= weights[index]) {
+        at -= weights[index];
         index++;
       }
       picked.add(pool.removeAt(index).$1);

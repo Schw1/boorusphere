@@ -417,6 +417,8 @@
     "title": "For you",
     "refresh": "Other tags",
     "no_interests": "Favorite a few posts or send some to Monbooru: the feed learns from their tags what you like.",
-    "nothing_found": "Nothing found for the picked tags. Pull down or tap refresh for other ones."
+    "nothing_found": "Nothing found for the picked tags. Pull down or tap refresh for other ones.",
+    "servers": "Servers",
+    "all_servers": "All servers"
   }
 }

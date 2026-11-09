@@ -52,6 +52,18 @@ void main() {
       expect(ForYou.pick(interests, count: 9, random: Random(2)).toSet(),
           {'a', 'b', 'c'});
       expect(ForYou.pick(const []), isEmpty);
+      // the last pick is avoided while there are enough others
+      final many = [for (var i = 0; i < 10; i++) ('t$i', 10 - i)];
+      for (var seed = 0; seed < 20; seed++) {
+        final next = ForYou.pick(many,
+            count: 4, avoid: {'t0', 't1', 't2', 't3'}, random: Random(seed));
+        expect(next.toSet().intersection({'t0', 't1', 't2', 't3'}), isEmpty);
+      }
+      // too few others: may come again
+      expect(
+          ForYou.pick(interests, count: 3, avoid: {'a'}, random: Random(3))
+              .toSet(),
+          {'a', 'b', 'c'});
     });
 
     test('mix takes turns and skips seen and doubles', () {

@@ -1,7 +1,7 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
-- **For you:** new feed in the menu with posts of the current server for tags you like, learned from your favorites and what you sent to Monbooru. Each refresh picks other tags; tap a tag to search it.
+- **For you:** new feed in the menu with posts of the current server for tags you like, learned from your favorites and what you sent to Monbooru. Each refresh picks other tags and starts at a random result page; the server button switches the server or searches all boorus at once; tap a tag to search it.
 - **Translation notes:** translated Danbooru and yande.re/konachan images, and Monbooru images with annotations (from its booru lookups), show boxes over the speech bubbles; tap one for its text. The translate button in the viewer hides them. Shown while the image isn't zoomed.
 - **Continue reading:** new list in the menu with the galleries and Monbooru archives you read recently, newest first, with the page you left off. Long-press to select entries and remove them from the list. Galleries read before this version show up once you open them again.
 - **Saved searches:** save the current search (menu → Saved searches) and see how many posts are new since you last opened it, for every server. Checked when the app starts and when the list is opened (pull down to check again). Searches with their own `order:` get no count.
