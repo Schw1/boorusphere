@@ -15,6 +15,7 @@ import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
 import 'package:boorusphere/presentation/utils/hooks/markmayneedrebuild.dart';
+import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:extended_image/extended_image.dart' as extended_image;
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -442,6 +443,7 @@ class _ClearCache extends ConsumerWidget {
 
         await DefaultCacheManager().emptyCache();
         await extended_image.clearDiskCachedImages();
+        await FaviconLoader.clear();
         extended_image.clearMemoryImageCache();
 
         if (context.mounted) {

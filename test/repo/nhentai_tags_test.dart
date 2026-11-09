@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/nhentai_tags.dart';
 import 'package:boorusphere/data/repository/reading_progress.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 
@@ -29,6 +30,21 @@ void main() {
     late NhentaiTags tags;
     setUp(() {
       tags = NhentaiTags()..loadJson(_list);
+    });
+
+    test('the stored copy is loaded in the background', () async {
+      final dir = Directory.systemTemp.createTempSync('nhentai_tags');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      File('${dir.path}/nhentai-tags.json').writeAsStringSync(_list);
+
+      // A fresh copy on disk: no download, so the client is never used.
+      final stored = NhentaiTags(directory: dir);
+      await stored.ensureLoaded(Dio());
+
+      expect(stored.length, 7);
+      expect(stored.byId(8378)?.name, 'glasses');
+      expect(stored.toQuery('-big_hat'), tags.toQuery('-big_hat'));
+      expect(stored.suggest('big'), tags.suggest('big'));
     });
 
     test('loads the list', () {

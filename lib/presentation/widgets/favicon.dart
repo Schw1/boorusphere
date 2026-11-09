@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:boorusphere/domain/provider.dart';
@@ -9,6 +10,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 /// Server icon, resolved like a browser does:
 /// 1. `/favicon.ico` of the server;
@@ -17,6 +20,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 ///    otherwise the icons linked in the start page;
 /// 3. only for public hosts, the DuckDuckGo icon service as a last resort.
 /// Local addresses are never sent to DuckDuckGo.
+///
+/// A found icon is kept on disk for [FaviconLoader.maxAge], so the servers
+/// aren't asked again at every app start.
 class Favicon extends ConsumerWidget {
   const Favicon({
     super.key,
@@ -75,6 +81,81 @@ class FaviconLoader {
   static final _cache = <String, Future<Uint8List?>>{};
   static Dio? _dio;
 
+  /// How long an icon on disk is used before the server is asked again.
+  static const maxAge = Duration(days: 7);
+
+  /// Where icons are kept; the app's cache folder if null.
+  @visibleForTesting
+  static Directory? directory;
+
+  /// Client to use instead of the built-in one.
+  @visibleForTesting
+  static set client(Dio? value) => _dio = value;
+
+  /// Forgets the icons loaded in this session (not the ones on disk).
+  @visibleForTesting
+  static void resetMemory() => _cache.clear();
+
+  static Future<Directory?> _directory() async {
+    try {
+      return directory ??
+          Directory(
+              p.join((await getApplicationCacheDirectory()).path, 'favicons'));
+    } catch (_) {
+      return null; // no cache folder: icons are loaded per session
+    }
+  }
+
+  static Future<File?> _fileOf(Uri origin) async {
+    final dir = await _directory();
+    if (dir == null) return null;
+    return File(p.join(dir.path, Uri.encodeComponent('$origin')));
+  }
+
+  /// Removes the icons kept on disk and in memory (Settings → Clear cache).
+  static Future<void> clear() async {
+    _cache.clear();
+    try {
+      final dir = await _directory();
+      if (dir != null && await dir.exists()) await dir.delete(recursive: true);
+    } catch (e) {
+      debugPrint('Favicon.clear: $e');
+    }
+  }
+
+  /// The icon on disk if it is younger than [maxAge], otherwise a new one
+  /// from the server. If the server can't be reached, an older icon on
+  /// disk is better than none.
+  static Future<Uint8List?> _storedOrResolve(Dio dio, Uri origin) async {
+    final file = await _fileOf(origin);
+    Uint8List? stored;
+    if (file != null) {
+      try {
+        if (await file.exists()) {
+          final bytes = await file.readAsBytes();
+          if (_isImage(bytes)) {
+            stored = bytes;
+            final age = DateTime.now().difference(await file.lastModified());
+            if (age < maxAge) return bytes;
+          }
+        }
+      } catch (e) {
+        debugPrint('Favicon($origin): stored icon unreadable: $e');
+      }
+    }
+    final fresh = await _resolve(dio, origin);
+    if (fresh == null) return stored;
+    if (file != null) {
+      try {
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(fresh);
+      } catch (e) {
+        debugPrint('Favicon($origin): icon not stored: $e');
+      }
+    }
+    return fresh;
+  }
+
   /// Own lightweight client: no cookie jar (a login page must not leave a
   /// session cookie behind) and no retries.
   static Dio _client(String userAgent) => _dio ??= Dio(BaseOptions(
@@ -86,7 +167,7 @@ class FaviconLoader {
     final dio = _client(userAgent);
     final origin = '${site.scheme}://${site.authority}';
     return _cache.putIfAbsent(origin, () {
-      final future = _resolve(dio, Uri.parse(origin));
+      final future = _storedOrResolve(dio, Uri.parse(origin));
       // Don't keep a miss forever (server offline, network change).
       future.then((data) {
         if (data == null) {
