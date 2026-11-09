@@ -32,7 +32,7 @@ class MonbooruHistoryEntry {
 
   /// Can be asked again for its result (still running, or no result yet).
   bool get canLookUp =>
-      jobId > 0 && (report == null || report?.unconfirmed == true);
+      jobId > 0 && (report == null || (report?.unconfirmed ?? false));
 
   Map<String, dynamic> toJson() => {
         'post': post.toJson(),

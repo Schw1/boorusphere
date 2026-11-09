@@ -119,7 +119,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
         ],
       ),
     );
-    if (ok == true) await MonbooruHistory.clear();
+    if (ok ?? false) await MonbooruHistory.clear();
   }
 }
 
@@ -147,7 +147,7 @@ class _Tile extends HookConsumerWidget {
           context.colorScheme.onSurfaceVariant
         ),
       _ when entry.isFailed => (Icons.error_outline, Colors.redAccent),
-      _ when report?.unconfirmed == true => (
+      _ when (report?.unconfirmed ?? false) => (
           Icons.help_outline,
           context.colorScheme.onSurfaceVariant
         ),

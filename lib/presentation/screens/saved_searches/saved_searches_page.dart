@@ -167,7 +167,7 @@ class _Tile extends ConsumerWidget {
         ],
       ),
     );
-    if (ok == true) {
+    if (ok ?? false) {
       await ref.read(savedSearchesProvider.notifier).remove(search);
     }
   }

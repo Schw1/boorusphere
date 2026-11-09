@@ -109,7 +109,7 @@ class _Menu extends StatelessWidget {
                 ],
               ),
             );
-            if (ok == true) await ReadingProgress.forgetAll();
+            if (ok ?? false) await ReadingProgress.forgetAll();
         }
       },
       itemBuilder: (context) => [

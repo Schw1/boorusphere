@@ -51,7 +51,7 @@ class RelatedGalleries extends HookConsumerWidget {
               controller: scrollController,
               scrollDirection: Axis.horizontal,
               itemCount: related.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) => AutoScrollTag(
                 key: ValueKey(index),
                 controller: scrollController,

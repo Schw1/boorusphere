@@ -167,7 +167,7 @@ class ArchiveReaderPage extends HookConsumerWidget {
         precacheImage(
           ExtendedNetworkImageProvider(urls[i], headers: headers, cache: true),
           context,
-          onError: (_, __) {},
+          onError: (_, _) {},
         );
       }
       return null;
