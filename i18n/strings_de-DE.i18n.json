@@ -171,7 +171,11 @@
       "label": "API-Token (optional)",
       "desc": "Nötig für Server wie Monbooru (Token mit Leserecht). Wird nur auf diesem Gerät im Schlüsselbund des Systems gespeichert, im Backup nur mit „Zugangsdaten mitsichern“, und nur an diesen Server gesendet.",
       "insecure": "Achtung: Diese Adresse nutzt unverschlüsseltes HTTP außerhalb deines Heimnetzes, der Token würde unverschlüsselt übertragen. Nutze HTTPS."
-    }
+    },
+    "all": "Alle Server (${n})",
+    "pin": "Im Menü anpinnen",
+    "unpin": "Lösen",
+    "pin_hint": "Favoriten mit der Nadel oder langem Drücken anpinnen"
   },
   "server_query": {
     "title": "Abfrage",

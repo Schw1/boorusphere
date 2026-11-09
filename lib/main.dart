@@ -12,6 +12,7 @@ import 'package:boorusphere/data/repository/saved_search.dart';
 import 'package:boorusphere/data/repository/search_history/entity/search_history.dart';
 import 'package:boorusphere/data/repository/search_history/user_search_history.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
+import 'package:boorusphere/data/repository/server/server_pins.dart';
 import 'package:boorusphere/data/repository/server/user_server_repo.dart';
 import 'package:boorusphere/data/repository/setting/user_setting_repo.dart';
 import 'package:boorusphere/data/repository/tags_blocker/booru_tags_blocker_repo.dart';
@@ -60,6 +61,7 @@ void main() async {
     ReadingProgress.open(),
     SavedSearchStore.open(),
     MonbooruHistory.open(),
+    ServerPins.open(),
   ]);
 
   // Moves a monloader token from older versions out of Hive into the Keychain.

@@ -6,6 +6,7 @@ import 'package:boorusphere/data/repository/favorite_post/user_favorite_post_rep
 import 'package:boorusphere/data/repository/reading_backup.dart';
 import 'package:boorusphere/data/repository/search_history/user_search_history.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
+import 'package:boorusphere/data/repository/server/server_pins.dart';
 import 'package:boorusphere/data/repository/server/user_server_repo.dart';
 import 'package:boorusphere/data/repository/setting/user_setting_repo.dart';
 import 'package:boorusphere/data/repository/tags_blocker/booru_tags_blocker_repo.dart';
@@ -67,6 +68,8 @@ Future<String> writeBackupFile(
     if (option.monloader)
       MonbooruSender.exportBackup(withToken: option.credentials),
     if (option.reading) ReadingBackup.export(),
+    if (option.server)
+      Future.value(BackupItem(ServerPins.backupKey, ServerPins.export())),
     // API tokens of servers (Keychain/Keystore) only with login data, e.g.
     // to move to another device.
     if (option.server && option.credentials)
@@ -207,6 +210,9 @@ class DataBackupState extends _$DataBackupState {
           break;
         case ReadingBackup.backupKey:
           await ReadingBackup.import(content);
+          break;
+        case ServerPins.backupKey:
+          await ServerPins.import(jsonDecode(content));
           break;
         default:
           break;
