@@ -6,6 +6,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/provider/monbooru_queue.dart';
+import 'package:boorusphere/presentation/provider/post_notes_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -47,6 +48,7 @@ class PostToolbox extends HookConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          PostNotesButton(post: post),
           PostFavoriteButton(post: post),
           PostDownloadButton(post: post),
           PostMonbooruButton(post: post),
@@ -54,6 +56,28 @@ class PostToolbox extends HookConsumerWidget {
           PostDetailsButton(post: post),
         ],
       ),
+    );
+  }
+}
+
+/// Shows or hides translation notes; only there when the post has some.
+class PostNotesButton extends HookConsumerWidget {
+  const PostNotesButton({super.key, required this.post});
+
+  final Post post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notes = ref.watch(postNotesProvider(post)).value ?? const [];
+    final visible = useValueListenable(postNotesVisible);
+    if (notes.isEmpty) return const SizedBox.shrink();
+    return IconButton(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      tooltip: context.t.notes.toggle,
+      icon: Icon(Icons.translate,
+          color: visible ? Colors.yellowAccent : Colors.white),
+      onPressed: () => postNotesVisible.value = !visible,
     );
   }
 }

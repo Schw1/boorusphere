@@ -96,6 +96,10 @@ class AppRouter extends RootStackRouter {
       customRouteBuilder: _routeBuilder,
     ),
     CustomRoute(
+      page: ForYouRoute.page,
+      customRouteBuilder: _routeBuilder,
+    ),
+    CustomRoute(
       page: MonbooruHistoryRoute.page,
       customRouteBuilder: _routeBuilder,
     ),

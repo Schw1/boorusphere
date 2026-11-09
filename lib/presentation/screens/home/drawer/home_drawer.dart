@@ -103,6 +103,11 @@ class _Footer extends ConsumerWidget {
           onTap: () => context.router.push(FavoritesRoute(session: session)),
         ),
         ListTile(
+          title: Text(context.t.forYou.title),
+          leading: const Icon(Icons.auto_awesome_outlined),
+          onTap: () => context.router.push(ForYouRoute(session: session)),
+        ),
+        ListTile(
           title: Text(context.t.continueReading.title),
           leading: const Icon(Icons.auto_stories_outlined),
           onTap: () =>

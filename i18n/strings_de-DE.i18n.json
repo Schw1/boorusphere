@@ -407,5 +407,14 @@
     "no_count": "keine Neu-Anzeige (eigenes order:)",
     "new_count": "${n} neu",
     "remove_title": "Gespeicherte Suche entfernen?"
+  },
+  "notes": {
+    "toggle": "Übersetzungs-Notizen"
+  },
+  "for_you": {
+    "title": "Für dich",
+    "refresh": "Andere Tags",
+    "no_interests": "Favorisiere ein paar Posts oder schick welche an Monbooru: Aus ihren Tags lernt der Feed, was dir gefällt.",
+    "nothing_found": "Für die gewählten Tags wurde nichts gefunden. Tippe auf Aktualisieren für andere."
   }
 }

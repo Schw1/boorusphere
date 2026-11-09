@@ -409,5 +409,14 @@
     "no_count": "no new count (own order:)",
     "new_count": "${n} new",
     "remove_title": "Remove saved search?"
+  },
+  "notes": {
+    "toggle": "Translation notes"
+  },
+  "for_you": {
+    "title": "For you",
+    "refresh": "Other tags",
+    "no_interests": "Favorite a few posts or send some to Monbooru: the feed learns from their tags what you like.",
+    "nothing_found": "Nothing found for the picked tags. Pull down or tap refresh for other ones."
   }
 }
