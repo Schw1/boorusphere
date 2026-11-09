@@ -243,6 +243,10 @@
         "title": "Zugangsdaten mitsichern",
         "desc": "API-Tokens (Monbooru-Server, monloader) sowie API-Keys und Benutzernamen aus dem URL-Suffix der Server (z. B. api_key=…), z. B. für den Umzug auf ein anderes Gerät. Aus: Sie fehlen im Backup, beim Wiederherstellen auf diesem Gerät bleiben sie erhalten.",
         "warning": "Tokens und Zugangsdaten stehen dann im Klartext in der Backup-Datei, die in der Dateien-App sichtbar ist. Gib sie nur an Personen weiter, denen du vertraust, und lösche sie nach dem Umzug."
+      },
+      "reading": {
+        "title": "Lesen und gespeicherte Suchen",
+        "desc": "Lesefortschritt, die Weiterlesen-Liste und gespeicherte Suchen"
       }
     },
     "restore": {
@@ -322,6 +326,14 @@
       "clear": "Auswahl aufheben",
       "send": "An Monbooru senden",
       "sending": "Sende…"
+    },
+    "history": {
+      "title": "Monbooru-Verlauf",
+      "placeholder": "Posts, die du an Monbooru schickst, erscheinen hier mit ihrem Ergebnis.",
+      "pending": "Wartet auf monloader…",
+      "resend": "Erneut senden",
+      "clear": "Verlauf leeren",
+      "clear_hint": "Nur diese Liste wird geleert, aus Monbooru wird nichts entfernt."
     }
   },
   "random_order": {

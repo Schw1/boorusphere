@@ -5,6 +5,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
+import 'package:boorusphere/presentation/provider/monbooru_history.dart';
 import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
@@ -14,6 +15,7 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -107,6 +109,7 @@ class _Footer extends ConsumerWidget {
               context.router.push(ContinueReadingRoute(session: session)),
         ),
         const _SavedSearchesTile(),
+        const _MonbooruHistoryTile(),
         ListTile(
           title: Text(context.t.servers.title),
           leading: const Icon(Icons.public),
@@ -148,6 +151,23 @@ class _SavedSearchesTile extends ConsumerWidget {
             )
           : null,
       onTap: () => context.router.push(SavedSearchesRoute(session: session)),
+    );
+  }
+}
+
+/// Only shown once something was sent to Monbooru.
+class _MonbooruHistoryTile extends HookConsumerWidget {
+  const _MonbooruHistoryTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    useValueListenable(MonbooruHistory.changes);
+    if (MonbooruHistory.isEmpty) return const SizedBox.shrink();
+    final session = ref.watch(searchSessionProvider);
+    return ListTile(
+      title: Text(context.t.monbooru.history.title),
+      leading: const Icon(Icons.cloud_upload_outlined),
+      onTap: () => context.router.push(MonbooruHistoryRoute(session: session)),
     );
   }
 }

@@ -20,6 +20,7 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/boorusphere.dart';
 import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
+import 'package:boorusphere/presentation/provider/monbooru_history.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/download_quality.dart';
@@ -58,6 +59,7 @@ void main() async {
     CurrentAppStateRepo.prepare(),
     ReadingProgress.open(),
     SavedSearchStore.open(),
+    MonbooruHistory.open(),
   ]);
 
   // Moves a monloader token from older versions out of Hive into the Keychain.

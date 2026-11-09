@@ -245,6 +245,10 @@
         "title": "Include login data",
         "desc": "API tokens (Monbooru servers, monloader) and API keys/user names in the servers' URL suffix (e.g. api_key=…), e.g. to move to another device. Off: they are left out of the backup, restoring on this device keeps them.",
         "warning": "Tokens and login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust and delete it after moving."
+      },
+      "reading": {
+        "title": "Reading and saved searches",
+        "desc": "Reading progress, the Continue reading list and saved searches"
       }
     },
     "restore": {
@@ -324,6 +328,14 @@
       "clear": "Clear selection",
       "send": "Send to Monbooru",
       "sending": "Sending…"
+    },
+    "history": {
+      "title": "Monbooru history",
+      "placeholder": "Posts you send to Monbooru show up here with their result.",
+      "pending": "Waiting for monloader…",
+      "resend": "Send again",
+      "clear": "Clear history",
+      "clear_hint": "Only this list is cleared, nothing is removed from Monbooru."
     }
   },
   "random_order": {

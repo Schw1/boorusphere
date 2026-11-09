@@ -123,6 +123,7 @@ void main() {
       Future<MonbooruJobLookup> Function(int)? jobs,
       Set<String> present = const {},
       _SearchAdapter? adapter,
+      MonbooruRecorder? recorder,
     }) {
       final dio = Dio()..httpClientAdapter = adapter ?? _SearchAdapter(present);
       return MonbooruQueue(
@@ -134,8 +135,36 @@ void main() {
                 MonbooruJobLookup.found(_job('succeeded', created: 1)),
         tokenOf: (id) => id == _monbooru.id ? 'secret' : '',
         client: dio,
+        recorder: recorder ??
+            (post, report, jobId, {isResult = false}) async {},
       );
     }
+
+    test('sends are recorded: queued, then the result', () async {
+      final records = <(int, MonbooruOutcome?, bool, bool)>[];
+      final q = queue(recorder: (post, report, jobId,
+          {isResult = false}) async {
+        records.add((jobId, report?.outcome, report == null, isResult));
+      });
+      final report = Completer<MonbooruSendReport>();
+      await q.send(_post(1), onReport: report.complete);
+      await report.future;
+      expect(records, [
+        (7, null, true, false),
+        (7, MonbooruOutcome.added, false, true),
+      ]);
+
+      records.clear();
+      final failing = queue(
+        sender: (_) async => const MonbooruSendResult.failed(
+            MonbooruError(MonbooruErrorKind.unreachable, 'x')),
+        recorder: (post, report, jobId, {isResult = false}) async {
+          records.add((jobId, report?.outcome, report == null, isResult));
+        },
+      );
+      await failing.send(_post(2));
+      expect(records, [(0, null, false, false)]);
+    });
 
     test('gallery from URL suffix', () {
       expect(MonbooruQueue.galleryOf(_monbooru), isNull);

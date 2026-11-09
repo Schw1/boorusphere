@@ -176,6 +176,21 @@ class SavedSearchStore {
   static Future<void> put(SavedSearch search) async =>
       (await open()).put(search.key, jsonEncode(search.toJson()));
 
+  /// For backups: all searches as JSON.
+  static List<Map<String, dynamic>> export() =>
+      [for (final it in all()) it.toJson()];
+
+  /// Restores [export]ed searches. Ones already here keep their state.
+  static Future<void> import(Object? data) async {
+    if (data is! List) return;
+    final box = await open();
+    for (final json in data) {
+      final search = SavedSearch.fromJson(json);
+      if (search == null || box.containsKey(search.key)) continue;
+      await put(search);
+    }
+  }
+
   static Future<void> remove(SavedSearch search) async =>
       (await open()).delete(search.key);
 }

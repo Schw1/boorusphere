@@ -102,6 +102,39 @@ class ReadingProgress {
     return page != null && post.pageCount > 0 && page >= post.pageCount - 1;
   }
 
+  /// Pages and the "Continue reading" list, for backups.
+  static Future<Map<String, dynamic>> export() async => {
+        'pages': Map<String, int>.from((await _box()).toMap()),
+        'recent': Map<String, String>.from((await _recentBox()).toMap()),
+      };
+
+  /// Restores [export]ed data. Merges: entries of the backup replace the
+  /// same posts here, others stay. Pages read further here are kept.
+  static Future<void> import(Object? data) async {
+    if (data is! Map) return;
+    final pages = data['pages'];
+    if (pages is Map) {
+      final box = await _box();
+      for (final MapEntry(:key, :value) in pages.entries) {
+        if (key is! String || value is! int) continue;
+        final current = box.get(key);
+        if (current == null || current < value) await box.put(key, value);
+      }
+    }
+    final recent = data['recent'];
+    if (recent is Map) {
+      final box = await _recentBox();
+      for (final MapEntry(:key, :value) in recent.entries) {
+        if (key is String && value is String) await box.put(key, value);
+      }
+      if (box.length > recentLimit) {
+        final oldest = _entries(box).skip(recentLimit).map((it) => keyOf(it.post));
+        await box.deleteAll(oldest.toList());
+      }
+    }
+    changes.value++;
+  }
+
   static Future<void> clear(Post post) async {
     await (await _box()).delete(keyOf(post));
     await (await _recentBox()).delete(keyOf(post));
