@@ -393,7 +393,8 @@
     "placeholder": "Galerien und Archive, die du zu lesen beginnst, erscheinen hier.",
     "remove_finished": "Fertig gelesene entfernen",
     "remove_all": "Liste leeren",
-    "remove_all_hint": "Die gelesenen Seiten bleiben gespeichert."
+    "remove_all_hint": "Die gelesenen Seiten bleiben gespeichert.",
+    "remove_selected": "Aus Liste entfernen"
   },
   "saved_searches": {
     "title": "Gespeicherte Suchen",

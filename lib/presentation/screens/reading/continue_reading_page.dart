@@ -5,6 +5,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/widgets/notice_card.dart';
+import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline_controller.dart';
 import 'package:flutter/material.dart';
@@ -58,16 +59,29 @@ class ContinueReadingPage extends HookConsumerWidget {
                     ),
                   )
                 : const SizedBox.shrink()
-            : CustomScrollView(
-                controller: scrollController,
-                slivers: [
-                  SliverSafeArea(
-                    sliver: SliverPadding(
-                      padding: const EdgeInsets.all(10),
-                      sliver: Timeline(posts: posts),
-                    ),
+            : PostSelectionScope(
+                posts: () => posts,
+                actions: [
+                  PostSelectionAction(
+                    icon: Icons.playlist_remove,
+                    tooltip: context.t.continueReading.removeSelected,
+                    onPressed: (context, selected) async {
+                      await ReadingProgress.forgetAll(selected);
+                    },
                   ),
                 ],
+                // long-press a thumbnail to select
+                child: CustomScrollView(
+                  controller: scrollController,
+                  slivers: [
+                    SliverSafeArea(
+                      sliver: SliverPadding(
+                        padding: const EdgeInsets.all(10),
+                        sliver: Timeline(posts: posts),
+                      ),
+                    ),
+                  ],
+                ),
               ),
       ),
     );
@@ -88,9 +102,8 @@ class _Menu extends StatelessWidget {
       onSelected: (action) async {
         switch (action) {
           case _Action.removeFinished:
-            for (final post in posts.where(ReadingProgress.isFinished)) {
-              await ReadingProgress.forget(post);
-            }
+            await ReadingProgress.forgetAll(
+                posts.where(ReadingProgress.isFinished));
           case _Action.removeAll:
             final ok = await showDialog<bool>(
               context: context,

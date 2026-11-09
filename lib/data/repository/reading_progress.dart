@@ -90,9 +90,15 @@ class ReadingProgress {
     changes.value++;
   }
 
-  /// Empties the "Continue reading" list; pages read stay.
-  static Future<void> forgetAll() async {
-    await (await _recentBox()).clear();
+  /// Removes [posts] from the "Continue reading" list, or empties it when
+  /// none are given; pages read stay.
+  static Future<void> forgetAll([Iterable<Post>? posts]) async {
+    final box = await _recentBox();
+    if (posts == null) {
+      await box.clear();
+    } else {
+      await box.deleteAll(posts.map(keyOf).toList());
+    }
     changes.value++;
   }
 

@@ -1,7 +1,7 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
-- **Continue reading:** new list in the menu with the galleries and Monbooru archives you read recently, newest first, with the page you left off. Galleries read before this version show up once you open them again.
+- **Continue reading:** new list in the menu with the galleries and Monbooru archives you read recently, newest first, with the page you left off. Long-press to select entries and remove them from the list. Galleries read before this version show up once you open them again.
 - **Saved searches:** save the current search (menu → Saved searches) and see how many posts are new since you last opened it, for every server. Checked when the app starts and when the list is opened (pull down to check again). Searches with their own `order:` get no count.
 - **Faster reading:** the reader loads the next pages in the background.
 - **Monbooru history:** menu → Monbooru history lists the posts you sent with their result (added, already there, failed and why). Failed ones can be sent again; sends without a result are asked for again when the list opens.

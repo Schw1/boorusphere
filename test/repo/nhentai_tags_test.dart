@@ -106,6 +106,13 @@ void main() {
       expect((await ReadingProgress.recent()).map((it) => it.id), [1]);
       expect(await ReadingProgress.pageOf(b), 2, reason: 'page stays');
 
+      // several at once (selection), pages stay
+      await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 4));
+      await ReadingProgress.forgetAll([a, b]);
+      expect(await ReadingProgress.recent(), isEmpty);
+      expect(await ReadingProgress.pageOf(a), 5);
+      await ReadingProgress.save(a, 5, now: DateTime(2026, 11, 5));
+
       await ReadingProgress.clear(a);
       expect(await ReadingProgress.recent(), isEmpty);
       expect(await ReadingProgress.pageOf(a), isNull);

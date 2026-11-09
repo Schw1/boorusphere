@@ -52,6 +52,21 @@ class _PostSelectionInherited extends InheritedNotifier<PostSelection> {
   }) : super(notifier: selection);
 }
 
+/// An extra button in the selection bar (besides "Send to Monbooru"),
+/// e.g. "Remove from list". The selection is cleared afterwards.
+class PostSelectionAction {
+  const PostSelectionAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final Future<void> Function(BuildContext context, List<Post> posts)
+      onPressed;
+}
+
 /// Enables selecting posts in the [Timeline]s below and shows the action bar
 /// on top while posts are selected.
 class PostSelectionScope extends HookWidget {
@@ -59,11 +74,13 @@ class PostSelectionScope extends HookWidget {
     super.key,
     required this.posts,
     required this.child,
+    this.actions = const [],
   });
 
   /// All posts currently loaded, for "select all".
   final Iterable<Post> Function() posts;
   final Widget child;
+  final List<PostSelectionAction> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +104,11 @@ class PostSelectionScope extends HookWidget {
                 top: 0,
                 left: 0,
                 right: 0,
-                child: _SelectionBar(selection: selection, posts: posts),
+                child: _SelectionBar(
+                  selection: selection,
+                  posts: posts,
+                  actions: actions,
+                ),
               ),
           ],
         ),
@@ -97,10 +118,15 @@ class PostSelectionScope extends HookWidget {
 }
 
 class _SelectionBar extends HookConsumerWidget {
-  const _SelectionBar({required this.selection, required this.posts});
+  const _SelectionBar({
+    required this.selection,
+    required this.posts,
+    required this.actions,
+  });
 
   final PostSelection selection;
   final Iterable<Post> Function() posts;
+  final List<PostSelectionAction> actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -162,6 +188,17 @@ class _SelectionBar extends HookConsumerWidget {
                 onPressed:
                     sending == null ? () => selection.selectAll(posts()) : null,
               ),
+              for (final action in actions)
+                IconButton(
+                  tooltip: action.tooltip,
+                  icon: Icon(action.icon),
+                  onPressed: sending == null
+                      ? () async {
+                          await action.onPressed(context, selection.posts);
+                          selection.clear();
+                        }
+                      : null,
+                ),
               IconButton(
                 tooltip: t.send,
                 icon: sending == null

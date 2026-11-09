@@ -395,7 +395,8 @@
     "placeholder": "Galleries and archives you start reading show up here.",
     "remove_finished": "Remove finished",
     "remove_all": "Clear list",
-    "remove_all_hint": "The pages you read stay saved."
+    "remove_all_hint": "The pages you read stay saved.",
+    "remove_selected": "Remove from list"
   },
   "saved_searches": {
     "title": "Saved searches",
