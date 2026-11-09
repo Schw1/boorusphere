@@ -92,6 +92,22 @@ void main() {
       expect(entry.report?.outcome, MonbooruOutcome.duplicate);
     });
 
+    test('remove successful ones, keep failed and pending', () async {
+      Future<void> add(int id, MonbooruSendReport? report) =>
+          MonbooruHistory.record(Post(id: id, serverId: 's'), report: report);
+      await add(1, const MonbooruSendReport(outcome: MonbooruOutcome.added));
+      await add(2,
+          const MonbooruSendReport(outcome: MonbooruOutcome.duplicate));
+      await add(3, const MonbooruSendReport(outcome: MonbooruOutcome.failed));
+      await add(4, const MonbooruSendReport(
+          error: MonbooruError(MonbooruErrorKind.http, '400')));
+      await add(5, null);
+      await add(6, const MonbooruSendReport(unconfirmed: true));
+      await MonbooruHistory.removeSuccessful();
+      expect((await MonbooruHistory.all()).map((it) => it.post.id).toSet(),
+          {3, 4, 5, 6});
+    });
+
     test('remove', () async {
       await MonbooruHistory.record(_post);
       await MonbooruHistory.remove(_post);

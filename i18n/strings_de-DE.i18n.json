@@ -333,7 +333,8 @@
       "pending": "Wartet auf monloader…",
       "resend": "Erneut senden",
       "clear": "Verlauf leeren",
-      "clear_hint": "Nur diese Liste wird geleert, aus Monbooru wird nichts entfernt."
+      "clear_hint": "Nur diese Liste wird geleert, aus Monbooru wird nichts entfernt.",
+      "remove_successful": "Erfolgreiche entfernen"
     }
   },
   "random_order": {

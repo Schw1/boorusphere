@@ -62,6 +62,12 @@ class MonbooruHistoryPage extends HookConsumerWidget {
         appBar: AppBar(
           title: Text(t.title),
           actions: [
+            if (list.any((it) => it.isSuccess))
+              IconButton(
+                tooltip: t.removeSuccessful,
+                icon: const Icon(Icons.done_all),
+                onPressed: MonbooruHistory.removeSuccessful,
+              ),
             if (list.isNotEmpty)
               IconButton(
                 tooltip: t.clear,

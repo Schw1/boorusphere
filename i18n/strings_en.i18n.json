@@ -335,7 +335,8 @@
       "pending": "Waiting for monloader…",
       "resend": "Send again",
       "clear": "Clear history",
-      "clear_hint": "Only this list is cleared, nothing is removed from Monbooru."
+      "clear_hint": "Only this list is cleared, nothing is removed from Monbooru.",
+      "remove_successful": "Remove successful"
     }
   },
   "random_order": {

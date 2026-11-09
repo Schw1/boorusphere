@@ -30,6 +30,11 @@ class MonbooruHistoryEntry {
   bool get isFailed =>
       report?.error != null || report?.outcome == MonbooruOutcome.failed;
 
+  /// Ended well: added, or already in Monbooru.
+  bool get isSuccess =>
+      report?.outcome == MonbooruOutcome.added ||
+      report?.outcome == MonbooruOutcome.duplicate;
+
   /// Can be asked again for its result (still running, or no result yet).
   bool get canLookUp =>
       jobId > 0 && (report == null || (report?.unconfirmed ?? false));
@@ -193,6 +198,18 @@ class MonbooruHistory {
 
   static Future<void> remove(Post post) async {
     await (await open()).delete(post.viewId);
+    changes.value++;
+  }
+
+  /// Removes the entries that ended well; failed, pending and unknown
+  /// ones stay.
+  static Future<void> removeSuccessful() async {
+    final box = await open();
+    final keys = [
+      for (final entry in _entries(box))
+        if (entry.isSuccess) entry.post.viewId,
+    ];
+    await box.deleteAll(keys);
     changes.value++;
   }
 
