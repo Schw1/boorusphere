@@ -8,6 +8,7 @@ import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/booru/entity/fetch_result.dart';
 import 'package:boorusphere/presentation/provider/booru/entity/page_data.dart';
+import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/search_history_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
@@ -111,6 +112,7 @@ class PageState extends _$PageState {
 
     try {
       final repo = ref.read(imageboardRepoProvider(_server));
+      final firstPage = _page == 0;
       var skipCount = 0;
       while (skipCount <= 3) {
         final res = await repo.getPage(option, _page);
@@ -131,6 +133,7 @@ class PageState extends _$PageState {
           _filteredPosts.addAll(displayedPosts);
           state = FetchResult.data(state.data
               .copyWith(posts: _posts, filteredPosts: _filteredPosts));
+          if (firstPage) _markSeen(option, res);
           break;
         }
 
@@ -140,6 +143,16 @@ class PageState extends _$PageState {
       if (!ref.mounted) return;
       state = FetchResult.error(state.data, error: err, stackTrace: stack);
     }
+  }
+
+  /// Opening a saved search shows its new posts, so they count as seen.
+  void _markSeen(PageOption option, Iterable<Post> posts) {
+    final newestFirst = !option.random && option.sort.isEmpty;
+    unawaited(ref.read(savedSearchesProvider.notifier).markSeen(
+          _server.id,
+          option.query,
+          newestFirst ? posts.map((it) => it.id) : const [],
+        ));
   }
 
   Future<void> loadMore() async {

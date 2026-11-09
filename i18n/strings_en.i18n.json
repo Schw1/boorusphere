@@ -245,6 +245,10 @@
         "title": "Include login data",
         "desc": "API tokens (Monbooru servers, monloader) and API keys/user names in the servers' URL suffix (e.g. api_key=…), e.g. to move to another device. Off: they are left out of the backup, restoring on this device keeps them.",
         "warning": "Tokens and login data will be stored in plain text in the backup file, which is visible in the Files app. Only share it with people you trust and delete it after moving."
+      },
+      "reading": {
+        "title": "Reading and saved searches",
+        "desc": "Reading progress, the Continue reading list and saved searches"
       }
     },
     "restore": {
@@ -324,6 +328,15 @@
       "clear": "Clear selection",
       "send": "Send to Monbooru",
       "sending": "Sending…"
+    },
+    "history": {
+      "title": "Monbooru history",
+      "placeholder": "Posts you send to Monbooru show up here with their result.",
+      "pending": "Waiting for monloader…",
+      "resend": "Send again",
+      "clear": "Clear history",
+      "clear_hint": "Only this list is cleared, nothing is removed from Monbooru.",
+      "remove_successful": "Remove successful"
     }
   },
   "random_order": {
@@ -355,7 +368,8 @@
     "group": "Group",
     "language": "Language",
     "category": "Category",
-    "tags_failed": "Couldn't load the tags of this gallery."
+    "tags_failed": "Couldn't load the tags of this gallery.",
+    "related": "Related galleries"
   },
   "sort_order": {
     "label": "Sort",
@@ -376,5 +390,35 @@
     "english": "English",
     "japanese": "Japanese",
     "chinese": "Chinese"
+  },
+  "continue_reading": {
+    "title": "Continue reading",
+    "placeholder": "Galleries and archives you start reading show up here.",
+    "remove_finished": "Remove finished",
+    "remove_all": "Clear list",
+    "remove_all_hint": "The pages you read stay saved.",
+    "remove_selected": "Remove from list"
+  },
+  "saved_searches": {
+    "title": "Saved searches",
+    "save_current": "Save current search",
+    "saved": "Saved: ${query}",
+    "placeholder": "Save a search to see how many new posts it has since you last opened it.",
+    "everything": "All posts",
+    "server_missing": "Server removed",
+    "no_count": "no new count (own order:)",
+    "new_count": "${n} new",
+    "remove_title": "Remove saved search?"
+  },
+  "notes": {
+    "toggle": "Translation notes"
+  },
+  "for_you": {
+    "title": "For you",
+    "refresh": "Other tags",
+    "no_interests": "Favorite a few posts or send some to Monbooru: the feed learns from their tags what you like.",
+    "nothing_found": "Nothing found for the picked tags. Pull down or tap refresh for other ones.",
+    "servers": "Servers",
+    "all_servers": "All servers"
   }
 }

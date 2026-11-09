@@ -89,12 +89,16 @@ class NhentaiJsonParser extends BooruParser {
 
   /// Splits the app's search into nhentai's `query` and `sort`. `*` (the
   /// app's "everything") and rating tags are dropped; nhentai has neither.
+  /// Words of a search; a quoted part (`tag:"big breasts"`, `"two words"`)
+  /// is one word.
+  static final _words = RegExp(r'-?[^\s"]*"[^"]*"?|\S+');
+
   static ({String query, String sort, bool hadOrder}) splitQuery(
       String tags) {
     var sort = '';
     var hadOrder = false;
     final words = <String>[];
-    for (final word in tags.split(RegExp(r'\s+'))) {
+    for (final word in _words.allMatches(tags).map((it) => it.group(0)!)) {
       if (word.isEmpty || word == '*' || word.startsWith('rating:')) continue;
       final m = RegExp(r'^(?:order|sort):(.+)$', caseSensitive: false)
           .firstMatch(word);
@@ -106,7 +110,7 @@ class NhentaiJsonParser extends BooruParser {
           continue;
         }
       }
-      words.add(word);
+      words.add(NhentaiTags.instance.toQuery(word));
     }
     final query = words.join(' ');
     return (
@@ -134,46 +138,85 @@ class NhentaiJsonParser extends BooruParser {
   bool canParsePage(Response res) => _isPage(res.data);
 
   @override
-  Iterable<Post> parsePage(Server server, Response res) {
-    final entries = List.from(res.data['result']);
+  Iterable<Post> parsePage(Server server, Response res) => postsOf(
+        server,
+        res.data['result'] is List ? res.data['result'] as List : const [],
+      );
+
+  /// Posts of a list of galleries, in the shape of search results. Also
+  /// takes the shape of a full gallery (thumbnail as `{path, width,
+  /// height}`, title as `{english, japanese, pretty}`, a `pages` list), so
+  /// related galleries work in either form.
+  static List<Post> postsOf(Server server, Iterable<Object?> entries) {
     final result = <Post>[];
-    final home = server.homepage.replaceFirst(RegExp(r'/+$'), '');
-    for (final post in entries.whereType<Map<String, dynamic>>()) {
-      if (pick(post, 'blacklisted').asBoolOrFalse()) continue;
-      final id = pick(post, 'id').asIntOrNull() ?? -1;
-      final pages = pick(post, 'num_pages').asIntOrNull() ?? 0;
-      final thumb = mediaUrl(thumbHost, pick(post, 'thumbnail').value);
-      if (id < 0 || pages <= 0 || thumb.isEmpty) continue;
-
-      final width = pick(post, 'thumbnail_width').asIntOrNull() ?? -1;
-      final height = pick(post, 'thumbnail_height').asIntOrNull() ?? -1;
-      final english = pick(post, 'english_title').asStringOrNull() ?? '';
-      final japanese = pick(post, 'japanese_title').asStringOrNull() ?? '';
-
-      result.add(Post(
-        id: id,
-        // No single original file; the pages come from the gallery.
-        originalFile: '',
-        sampleFile: thumb,
-        previewFile: thumb,
-        width: width,
-        height: height,
-        sampleWidth: width,
-        sampleHeight: height,
-        previewWidth: width,
-        previewHeight: height,
-        serverId: server.id,
-        postUrl: '$home/g/$id/',
-        rateValue: 'e',
-        score: pick(post, 'num_favorites').asIntOrNull() ?? 0,
-        pageCount: pages,
-        title: english.isNotEmpty ? english : japanese,
-        // tag ids -> search tokens, once the tag list is loaded
-        tags: NhentaiTags.instance.tokensOf(
-            pick(post, 'tag_ids').asListOrEmpty((it) => it.asIntOrThrow())),
-      ));
+    for (final entry in entries) {
+      if (entry is! Map) continue;
+      final post = postOf(server, Map<String, dynamic>.from(entry));
+      if (post != null) result.add(post);
     }
     return result;
+  }
+
+  static Post? postOf(Server server, Map<String, dynamic> post) {
+    if (pick(post, 'blacklisted').asBoolOrFalse()) return null;
+    final id = pick(post, 'id').asIntOrNull() ?? -1;
+    final pages = pick(post, 'num_pages').asIntOrNull() ??
+        (post['pages'] is List ? (post['pages'] as List).length : 0);
+    final thumbData = post['thumbnail'];
+    final thumbPath = thumbData is Map ? thumbData['path'] : thumbData;
+    final thumb = mediaUrl(thumbHost, thumbPath);
+    if (id < 0 || pages <= 0 || thumb.isEmpty) return null;
+
+    int size(String flat, String nested) =>
+        pick(post, flat).asIntOrNull() ??
+        (thumbData is Map ? pick(thumbData, nested).asIntOrNull() : null) ??
+        -1;
+    final width = size('thumbnail_width', 'width');
+    final height = size('thumbnail_height', 'height');
+
+    final titles = post['title'] is Map ? post['title'] as Map : const {};
+    String text(Object? v) => v is String ? v : '';
+    final title = [
+      text(post['english_title']),
+      text(titles['english']),
+      text(titles['pretty']),
+      text(post['japanese_title']),
+      text(titles['japanese']),
+    ].firstWhere((it) => it.isNotEmpty, orElse: () => '');
+
+    final home = server.homepage.replaceFirst(RegExp(r'/+$'), '');
+    return Post(
+      id: id,
+      // No single original file; the pages come from the gallery.
+      originalFile: '',
+      sampleFile: thumb,
+      previewFile: thumb,
+      width: width,
+      height: height,
+      sampleWidth: width,
+      sampleHeight: height,
+      previewWidth: width,
+      previewHeight: height,
+      serverId: server.id,
+      postUrl: '$home/g/$id/',
+      rateValue: 'e',
+      score: pick(post, 'num_favorites').asIntOrNull() ?? 0,
+      pageCount: pages,
+      title: title,
+      // tag ids -> search tokens, once the tag list is loaded
+      tags: NhentaiTags.instance.tokensOf(
+          pick(post, 'tag_ids').asListOrEmpty((it) => it.asIntOrNull() ?? -1)),
+    );
+  }
+
+  /// Related galleries: a plain list or `{result: [...]}`.
+  static List<Post> parseRelated(Server server, Object? data) {
+    final list = data is List
+        ? data
+        : data is Map && data['result'] is List
+            ? data['result'] as List
+            : const [];
+    return postsOf(server, list);
   }
 }
 
@@ -251,12 +294,22 @@ class NhentaiGallery {
     'category',
   ];
 
-  /// A search token for [name] of [type], e.g. `tag:"big breasts"`.
+  /// How a tag of the gallery is searched for in the app, e.g.
+  /// `big_breasts` or `artist:some_one` (see [NhentaiTags.displayOf]).
   static String searchToken(String type, String name) =>
-      name.contains(' ') ? '$type:"$name"' : '$type:$name';
+      NhentaiTags.instance.displayOf(type, name);
+
+  /// Readable name of such a word: `artist:some_one` -> `some one`.
+  static String labelOf(String token) => token
+      .replaceFirst(RegExp('^-?(${nhentaiTagTypes.join('|')}):'), '')
+      .replaceAll('"', '')
+      .replaceAll('_', ' ');
 
   static String galleryApiUrl(Server server, int id) {
     final api = server.apiAddress.replaceFirst(RegExp(r'/+$'), '');
     return '$api/api/v2/galleries/$id';
   }
+
+  static String relatedApiUrl(Server server, int id) =>
+      '${galleryApiUrl(server, id)}/related';
 }

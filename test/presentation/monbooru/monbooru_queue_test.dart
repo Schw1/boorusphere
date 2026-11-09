@@ -95,6 +95,18 @@ void main() {
       expect(MonbooruSender.jobIdOf('nope'), isNull);
     });
 
+    test('at most 64 tags to monloader', () {
+      final post = Post(
+        id: 1,
+        originalFile: 'https://x/a.jpg',
+        tags: [for (var i = 0; i < 100; i++) 'tag$i', 'tag0', ''],
+      );
+      final tags = MonbooruSender.tagsFor(post);
+      expect(tags, hasLength(MonbooruSender.maxTags));
+      expect(tags.first, 'tag0');
+      expect(tags.toSet(), hasLength(tags.length));
+    });
+
     test('tags sent to monloader', () {
       const booruPost = Post(
           tags: ['cat', 'blue_eyes'], originalFile: 'https://x/1.jpg');
@@ -114,6 +126,24 @@ void main() {
       expect(MonbooruSender.errorOf(403).kind, MonbooruErrorKind.noWriteScope);
       expect(MonbooruSender.errorOf(409).kind, MonbooruErrorKind.unavailable);
       expect(MonbooruSender.errorOf(500).kind, MonbooruErrorKind.http);
+      expect(MonbooruSender.errorOf(400).detail, '400');
+      expect(MonbooruSender.errorOf(400, 'unsupported URL').detail,
+          '400: unsupported URL');
+    });
+
+    test('reason of an error answer', () {
+      expect(MonbooruSender.messageOf({'error': 'unsupported URL'}),
+          'unsupported URL');
+      expect(MonbooruSender.messageOf('{"message": "bad request"}'),
+          'bad request');
+      expect(
+          MonbooruSender.messageOf({
+            'error': {'code': 'invalid_url', 'message': 'no extractor'}
+          }),
+          'no extractor');
+      expect(MonbooruSender.messageOf('plain reason'), 'plain reason');
+      expect(MonbooruSender.messageOf('<html>…</html>'), '');
+      expect(MonbooruSender.messageOf(null), '');
     });
   });
 
@@ -123,6 +153,7 @@ void main() {
       Future<MonbooruJobLookup> Function(int)? jobs,
       Set<String> present = const {},
       _SearchAdapter? adapter,
+      MonbooruRecorder? recorder,
     }) {
       final dio = Dio()..httpClientAdapter = adapter ?? _SearchAdapter(present);
       return MonbooruQueue(
@@ -134,8 +165,36 @@ void main() {
                 MonbooruJobLookup.found(_job('succeeded', created: 1)),
         tokenOf: (id) => id == _monbooru.id ? 'secret' : '',
         client: dio,
+        recorder: recorder ??
+            (post, report, jobId, {isResult = false}) async {},
       );
     }
+
+    test('sends are recorded: queued, then the result', () async {
+      final records = <(int, MonbooruOutcome?, bool, bool)>[];
+      final q = queue(recorder: (post, report, jobId,
+          {isResult = false}) async {
+        records.add((jobId, report?.outcome, report == null, isResult));
+      });
+      final report = Completer<MonbooruSendReport>();
+      await q.send(_post(1), onReport: report.complete);
+      await report.future;
+      expect(records, [
+        (7, null, true, false),
+        (7, MonbooruOutcome.added, false, true),
+      ]);
+
+      records.clear();
+      final failing = queue(
+        sender: (_) async => const MonbooruSendResult.failed(
+            MonbooruError(MonbooruErrorKind.unreachable, 'x')),
+        recorder: (post, report, jobId, {isResult = false}) async {
+          records.add((jobId, report?.outcome, report == null, isResult));
+        },
+      );
+      await failing.send(_post(2));
+      expect(records, [(0, null, false, false)]);
+    });
 
     test('gallery from URL suffix', () {
       expect(MonbooruQueue.galleryOf(_monbooru), isNull);

@@ -87,5 +87,21 @@ class AppRouter extends RootStackRouter {
       page: FavoritesRoute.page,
       customRouteBuilder: _routeBuilder,
     ),
+    CustomRoute(
+      page: ContinueReadingRoute.page,
+      customRouteBuilder: _routeBuilder,
+    ),
+    CustomRoute(
+      page: SavedSearchesRoute.page,
+      customRouteBuilder: _routeBuilder,
+    ),
+    CustomRoute(
+      page: ForYouRoute.page,
+      customRouteBuilder: _routeBuilder,
+    ),
+    CustomRoute(
+      page: MonbooruHistoryRoute.page,
+      customRouteBuilder: _routeBuilder,
+    ),
   ];
 }

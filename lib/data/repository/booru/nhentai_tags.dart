@@ -17,10 +17,22 @@ class NhentaiTag {
   /// parody, character, tag, artist, group, language or category.
   final String type;
 
-  /// Search token for the tag, e.g. `tag:"big breasts"`.
+  /// Search token for the tag as nhentai wants it, e.g. `tag:"big breasts"`.
   String get token =>
       name.contains(' ') ? '$type:"$name"' : '$type:$name';
 }
+
+/// nhentai's tag types, in the order a bare name is looked up in when it
+/// exists in several (e.g. a tag and a character of the same name).
+const nhentaiTagTypes = [
+  'tag',
+  'parody',
+  'character',
+  'artist',
+  'group',
+  'language',
+  'category',
+];
 
 /// nhentai's tag list (id, name, count, type), for tag suggestions and for
 /// naming the tag ids of search results.
@@ -43,6 +55,12 @@ class NhentaiTags {
 
   List<NhentaiTag> _tags = const [];
   Map<int, NhentaiTag> _byId = const {};
+
+  /// name -> tag, the first type in [nhentaiTagTypes] wins
+  Map<String, NhentaiTag> _byName = const {};
+
+  /// `type\nname` -> tag
+  Map<String, NhentaiTag> _byTypeName = const {};
   Future<void>? _loading;
 
   bool get isLoaded => _tags.isNotEmpty;
@@ -113,22 +131,88 @@ class NhentaiTags {
     tags.sort((a, b) => b.count.compareTo(a.count));
     _tags = tags;
     _byId = {for (final tag in tags) tag.id: tag};
+    _byTypeName = {for (final tag in tags) '${tag.type}\n${tag.name}': tag};
+    int rank(String type) {
+      final i = nhentaiTagTypes.indexOf(type);
+      return i < 0 ? nhentaiTagTypes.length : i;
+    }
+
+    final byName = <String, NhentaiTag>{};
+    for (final tag in tags) {
+      final other = byName[tag.name];
+      if (other == null || rank(tag.type) < rank(other.type)) {
+        byName[tag.name] = tag;
+      }
+    }
+    _byName = byName;
   }
 
   NhentaiTag? byId(int id) => _byId[id];
 
-  /// Search tokens of the tag ids of a search result (unknown ids skipped).
+  /// Tags of the tag ids of a search result (unknown ids skipped), as typed
+  /// in the app (`big_breasts`) and as nhentai writes them
+  /// (`tag:"big breasts"`), so blocked tags of either form match.
   List<String> tokensOf(Iterable<int> ids) => [
         for (final id in ids)
-          if (_byId[id] case final tag?) tag.token,
+          if (_byId[id] case final tag?) ...{display(tag), tag.token},
       ];
+
+  static String underscored(String name) => name.replaceAll(' ', '_');
+
+  /// How a tag is typed in the app: its name with underscores, like on
+  /// Danbooru (`big_breasts`). With its type in front (`artist:some_one`)
+  /// when the bare name means another tag, or the list isn't loaded.
+  String displayOf(String type, String name) {
+    final bare = _byName[name];
+    return bare != null && bare.type == type
+        ? underscored(name)
+        : '$type:${underscored(name)}';
+  }
+
+  String display(NhentaiTag tag) => displayOf(tag.type, tag.name);
+
+  NhentaiTag? _find(String value, {String? type}) {
+    final lower = value.toLowerCase();
+    for (final name in {lower, lower.replaceAll('_', ' ')}) {
+      final tag = type == null ? _byName[name] : _byTypeName['$type\n$name'];
+      if (tag != null) return tag;
+    }
+    return null;
+  }
+
+  static final _prefixed = RegExp(
+      '^(-?)(${nhentaiTagTypes.join('|')}):(.+)\$',
+      caseSensitive: false);
+
+  /// One word of a search as nhentai wants it: known tag names become
+  /// `type:"name"` tokens (`-big_breasts` -> `-tag:"big breasts"`),
+  /// `artist:some_one` gets quoted. Quoted words (`"school days"`) and
+  /// unknown words stay as they are: nhentai searches those in titles.
+  String toQuery(String word) {
+    if (word.startsWith('"') || word.startsWith('-"')) return word;
+    final m = _prefixed.firstMatch(word);
+    if (m != null) {
+      final minus = m.group(1)!;
+      final type = m.group(2)!.toLowerCase();
+      final value = m.group(3)!;
+      if (value.startsWith('"')) return word;
+      final tag = _find(value, type: type) ??
+          NhentaiTag(0, value.toLowerCase().replaceAll('_', ' '), 0, type);
+      return '$minus${tag.token}';
+    }
+    final minus = word.startsWith('-') ? '-' : '';
+    final value = word.substring(minus.length);
+    if (value.isEmpty) return word;
+    final tag = _find(value);
+    return tag == null ? word : '$minus${tag.token}';
+  }
 
   static final _typed = RegExp(r'^(-?)([a-z]+):"?(.*)$');
 
-  /// Tags for the last word typed: `big`, `tag:big`, `-artist:"some` …
-  /// Names starting with the word come first, then names containing it,
-  /// each by popularity. Returns `(token, count)` pairs; a leading `-` is
-  /// kept.
+  /// Tags for the last word typed: `big`, `big_br`, `tag:big`,
+  /// `-artist:some` … Names starting with the word come first, then names
+  /// containing it, each by popularity. Returns `(word, count)` pairs as
+  /// typed in the app (`big_breasts`); a leading `-` is kept.
   List<(String, int)> suggest(String word, {int limit = 30}) {
     if (_tags.isEmpty) return const [];
     var text = word.trim().toLowerCase();
@@ -157,9 +241,15 @@ class NhentaiTags {
         contains.add(tag);
       }
     }
+    // as typed in the app; with the type when it was typed
     return [
       for (final tag in [...starts, ...contains].take(limit))
-        ('$minus${tag.token}', tag.count),
+        (
+          type != null
+              ? '$minus${tag.type}:${underscored(tag.name)}'
+              : '$minus${display(tag)}',
+          tag.count
+        ),
     ];
   }
 }

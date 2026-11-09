@@ -5,6 +5,8 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
+import 'package:boorusphere/presentation/provider/monbooru_history.dart';
+import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
@@ -13,6 +15,7 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -100,6 +103,19 @@ class _Footer extends ConsumerWidget {
           onTap: () => context.router.push(FavoritesRoute(session: session)),
         ),
         ListTile(
+          title: Text(context.t.forYou.title),
+          leading: const Icon(Icons.auto_awesome_outlined),
+          onTap: () => context.router.push(ForYouRoute(session: session)),
+        ),
+        ListTile(
+          title: Text(context.t.continueReading.title),
+          leading: const Icon(Icons.auto_stories_outlined),
+          onTap: () =>
+              context.router.push(ContinueReadingRoute(session: session)),
+        ),
+        const _SavedSearchesTile(),
+        const _MonbooruHistoryTile(),
+        ListTile(
           title: Text(context.t.servers.title),
           leading: const Icon(Icons.public),
           onTap: () => context.router.push(ServerRoute(session: session)),
@@ -116,6 +132,47 @@ class _Footer extends ConsumerWidget {
         ),
         const AppVersionTile(),
       ],
+    );
+  }
+}
+
+class _SavedSearchesTile extends ConsumerWidget {
+  const _SavedSearchesTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(searchSessionProvider);
+    // rebuilt when a count changes
+    ref.watch(savedSearchesProvider);
+    final total = ref.read(savedSearchesProvider.notifier).totalNew;
+    return ListTile(
+      title: Text(context.t.savedSearches.title),
+      leading: const Icon(Icons.bookmarks_outlined),
+      trailing: total > 0
+          ? Badge(
+              label: Text('$total'),
+              backgroundColor: context.colorScheme.primary,
+              textColor: context.colorScheme.onPrimary,
+            )
+          : null,
+      onTap: () => context.router.push(SavedSearchesRoute(session: session)),
+    );
+  }
+}
+
+/// Only shown once something was sent to Monbooru.
+class _MonbooruHistoryTile extends HookConsumerWidget {
+  const _MonbooruHistoryTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    useValueListenable(MonbooruHistory.changes);
+    if (MonbooruHistory.isEmpty) return const SizedBox.shrink();
+    final session = ref.watch(searchSessionProvider);
+    return ListTile(
+      title: Text(context.t.monbooru.history.title),
+      leading: const Icon(Icons.cloud_upload_outlined),
+      onTap: () => context.router.push(MonbooruHistoryRoute(session: session)),
     );
   }
 }

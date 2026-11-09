@@ -19,6 +19,11 @@
 * nhentai.net can be added as a server (galleries with reader, sort button and `order:rank`, random order, language filter)
 * Fix: nhentai galleries sent to Monbooru no longer get the app's search tokens as tags (e.g. `tag:_big_breasts`, `language:english`)
 * nhentai tag suggestions while typing; reading progress for galleries and Monbooru archives
+* Continue reading list; saved searches with a count of new posts; reader preloads the next pages; nhentai related galleries
+* Monbooru send history with results and resend; backups include reading progress and saved searches
+* "For you" feed from favorites and Monbooru sends; translation notes over Danbooru/Moebooru images
+* Fix: posts with more than 64 tags were rejected by monloader
+* nhentai: tags typed like on Danbooru (`big_breasts`), converted to nhentai's search syntax; Continue reading: select entries to remove
 * Sort button in the search bar for boorus that support it (e.g. Danbooru: rank, score, favorites, oldest), remembered per server
 * iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup

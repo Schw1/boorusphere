@@ -8,6 +8,7 @@ import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
+import 'package:boorusphere/presentation/screens/post/related_galleries.dart';
 import 'package:boorusphere/presentation/utils/entity/pixel_size.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
@@ -128,6 +129,7 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                 ),
                 trailing: _CopyButton(post.originalFile),
               ),
+              if (isGallery) RelatedGalleries(post: post, session: session),
               ListTile(
                 title: Text(context.t.tags),
                 subtitle: Padding(
@@ -248,8 +250,9 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
   }
 }
 
-/// Tags of an nhentai gallery by type. The chips select search tokens like
-/// `tag:"big breasts"`, so searching from here stays within that type.
+/// Tags of an nhentai gallery by type. The chips select words like
+/// `big_breasts` (or `artist:some_one` where the bare name is ambiguous),
+/// turned into nhentai's `tag:"big breasts"` when searching.
 List<Widget> _galleryTags(
   BuildContext context,
   AsyncValue<NhentaiGallery?> gallery, {
@@ -291,9 +294,7 @@ List<Widget> _galleryTags(
             for (final name in data.tags[type]!)
               NhentaiGallery.searchToken(type, name),
           ],
-          labelOf: (token) => token
-              .substring(token.indexOf(':') + 1)
-              .replaceAll('"', ''),
+          labelOf: NhentaiGallery.labelOf,
           isSelected: isSelected,
           onSelected: onSelected,
         ),

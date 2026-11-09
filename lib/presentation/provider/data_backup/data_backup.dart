@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:archive/archive_io.dart';
 import 'package:boorusphere/data/repository/favorite_post/user_favorite_post_repo.dart';
+import 'package:boorusphere/data/repository/reading_backup.dart';
 import 'package:boorusphere/data/repository/search_history/user_search_history.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
 import 'package:boorusphere/data/repository/server/user_server_repo.dart';
@@ -13,6 +14,7 @@ import 'package:boorusphere/presentation/provider/data_backup/entity/backup_opti
 import 'package:boorusphere/presentation/provider/data_backup/entity/backup_result.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
+import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/search_history_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
@@ -63,6 +65,7 @@ Future<String> writeBackupFile(
     if (option.searchHistory) ref.read(searchHistoryRepoProvider).export(),
     if (option.monloader)
       MonbooruSender.exportBackup(withToken: option.credentials),
+    if (option.reading) ReadingBackup.export(),
     // API tokens of servers (Keychain/Keystore) only with login data, e.g.
     // to move to another device.
     if (option.server && option.credentials)
@@ -123,6 +126,7 @@ class DataBackupState extends _$DataBackupState {
     ref.invalidate(contentSettingStateProvider);
     ref.invalidate(downloadSettingStateProvider);
     ref.invalidate(serverSettingStateProvider);
+    ref.invalidate(savedSearchesProvider);
   }
 
   Future<void> restore({Future<bool?> Function()? onConfirm}) async {
@@ -178,6 +182,9 @@ class DataBackupState extends _$DataBackupState {
           break;
         case ServerAuthStore.backupKey:
           await ServerAuthStore.importBackup(content);
+          break;
+        case ReadingBackup.backupKey:
+          await ReadingBackup.import(content);
           break;
         default:
           break;

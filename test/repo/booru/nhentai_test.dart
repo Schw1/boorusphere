@@ -129,6 +129,14 @@ void main() {
       expect(split.sort, '');
     });
 
+    test('quoted words stay together, typed tags get quoted', () {
+      final split = NhentaiJsonParser.splitQuery(
+          '"school days" tag:"big hat" artist:some_one order:rank');
+      expect(split.query,
+          '"school days" tag:"big hat" artist:"some one"');
+      expect(split.sort, 'popular-week');
+    });
+
     test('unknown order values stay in the query', () {
       expect(NhentaiJsonParser.splitQuery('order:foo').query, 'order:foo');
     });
@@ -207,9 +215,48 @@ void main() {
     });
 
     test('search tokens', () {
+      // tag list not loaded here: with the type, underscores for spaces
       expect(NhentaiGallery.searchToken('tag', 'glasses'), 'tag:glasses');
       expect(NhentaiGallery.searchToken('tag', 'school uniform'),
-          'tag:"school uniform"');
+          'tag:school_uniform');
+      expect(NhentaiGallery.labelOf('tag:school_uniform'), 'school uniform');
+      expect(NhentaiGallery.labelOf('big_breasts'), 'big breasts');
+      expect(NhentaiGallery.labelOf('artist:"some one"'), 'some one');
+      expect(NhentaiGallery.labelOf('re:zero'), 're:zero');
+    });
+  });
+
+  group('related galleries', () {
+    test('a list in the shape of search results', () {
+      final posts = NhentaiJsonParser.parseRelated(server, [_item(7), _item(8)]);
+      expect(posts.map((it) => it.id), [7, 8]);
+      expect(posts.first.previewFile,
+          'https://t.nhentai.net/galleries/1007/thumb.webp');
+      expect(posts.first.title, 'Gallery 7 [English]');
+      expect(posts.first.pageCount, 12);
+    });
+
+    test('wrapped in result, in the shape of full galleries', () {
+      final posts = NhentaiJsonParser.parseRelated(server, {
+        'result': [_gallery, 'junk', null],
+      });
+      expect(posts, hasLength(1));
+      expect(posts.single.id, 5);
+      expect(posts.single.pageCount, 2);
+      expect(posts.single.title, 'Gallery 5 [English]');
+      expect(posts.single.previewFile,
+          'https://t.nhentai.net/galleries/1005/thumb.webp');
+      expect(posts.single.postUrl, 'https://nhentai.net/g/5/');
+    });
+
+    test('anything else is no galleries', () {
+      expect(NhentaiJsonParser.parseRelated(server, null), isEmpty);
+      expect(NhentaiJsonParser.parseRelated(server, {'error': 'x'}), isEmpty);
+    });
+
+    test('URL', () {
+      expect(NhentaiGallery.relatedApiUrl(server, 5),
+          'https://nhentai.net/api/v2/galleries/5/related');
     });
   });
 }

@@ -7,6 +7,7 @@ import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dar
 import 'package:boorusphere/presentation/provider/fullscreen_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/entity/booru_rating.dart';
+import 'package:boorusphere/presentation/screens/post/post_notes_overlay.dart';
 import 'package:boorusphere/presentation/screens/post/post_placeholder_image.dart';
 import 'package:boorusphere/presentation/screens/post/quickbar.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -36,6 +37,9 @@ class PostImage extends HookConsumerWidget {
     final zoomAnimator =
         useAnimationController(duration: const Duration(milliseconds: 150));
     final imageLoadState = useStreamController<ExtendedImageState>();
+    // Notes are only drawn while the image isn't zoomed.
+    final zoomed = useMemoized(() => ValueNotifier(false));
+    useEffect(() => zoomed.dispose, [zoomed]);
 
     useEffect(() {
       if (post.rating != BooruRating.explicit || !shouldBlurExplicit) {
@@ -73,6 +77,9 @@ class PostImage extends HookConsumerWidget {
                 return GestureConfig(
                   maxScale: scaleRatio * 5,
                   inPageView: true,
+                  gestureDetailsIsChanged: (details) {
+                    zoomed.value = (details?.totalScale ?? 1) > 1.01;
+                  },
                 );
               },
               handleLoadingProgress: true,
@@ -127,6 +134,10 @@ class PostImage extends HookConsumerWidget {
               },
             ),
           ),
+          if (!isBlur.value)
+            Positioned.fill(
+              child: PostNotesOverlay(post: post, zoomed: zoomed),
+            ),
           if (!isBlur.value)
             Positioned(
               bottom: QuickBar.preferredBottomPosition(context),

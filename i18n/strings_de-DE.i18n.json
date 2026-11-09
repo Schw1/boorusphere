@@ -243,6 +243,10 @@
         "title": "Zugangsdaten mitsichern",
         "desc": "API-Tokens (Monbooru-Server, monloader) sowie API-Keys und Benutzernamen aus dem URL-Suffix der Server (z. B. api_key=…), z. B. für den Umzug auf ein anderes Gerät. Aus: Sie fehlen im Backup, beim Wiederherstellen auf diesem Gerät bleiben sie erhalten.",
         "warning": "Tokens und Zugangsdaten stehen dann im Klartext in der Backup-Datei, die in der Dateien-App sichtbar ist. Gib sie nur an Personen weiter, denen du vertraust, und lösche sie nach dem Umzug."
+      },
+      "reading": {
+        "title": "Lesen und gespeicherte Suchen",
+        "desc": "Lesefortschritt, die Weiterlesen-Liste und gespeicherte Suchen"
       }
     },
     "restore": {
@@ -322,6 +326,15 @@
       "clear": "Auswahl aufheben",
       "send": "An Monbooru senden",
       "sending": "Sende…"
+    },
+    "history": {
+      "title": "Monbooru-Verlauf",
+      "placeholder": "Posts, die du an Monbooru schickst, erscheinen hier mit ihrem Ergebnis.",
+      "pending": "Wartet auf monloader…",
+      "resend": "Erneut senden",
+      "clear": "Verlauf leeren",
+      "clear_hint": "Nur diese Liste wird geleert, aus Monbooru wird nichts entfernt.",
+      "remove_successful": "Erfolgreiche entfernen"
     }
   },
   "random_order": {
@@ -353,7 +366,8 @@
     "group": "Gruppe",
     "language": "Sprache",
     "category": "Kategorie",
-    "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden."
+    "tags_failed": "Die Tags dieser Galerie konnten nicht geladen werden.",
+    "related": "Ähnliche Galerien"
   },
   "sort_order": {
     "label": "Sortierung",
@@ -374,5 +388,35 @@
     "english": "Englisch",
     "japanese": "Japanisch",
     "chinese": "Chinesisch"
+  },
+  "continue_reading": {
+    "title": "Weiterlesen",
+    "placeholder": "Galerien und Archive, die du zu lesen beginnst, erscheinen hier.",
+    "remove_finished": "Fertig gelesene entfernen",
+    "remove_all": "Liste leeren",
+    "remove_all_hint": "Die gelesenen Seiten bleiben gespeichert.",
+    "remove_selected": "Aus Liste entfernen"
+  },
+  "saved_searches": {
+    "title": "Gespeicherte Suchen",
+    "save_current": "Aktuelle Suche speichern",
+    "saved": "Gespeichert: ${query}",
+    "placeholder": "Speichere eine Suche, um zu sehen, wie viele neue Posts seit deinem letzten Besuch dazugekommen sind.",
+    "everything": "Alle Posts",
+    "server_missing": "Server entfernt",
+    "no_count": "keine Neu-Anzeige (eigenes order:)",
+    "new_count": "${n} neu",
+    "remove_title": "Gespeicherte Suche entfernen?"
+  },
+  "notes": {
+    "toggle": "Übersetzungs-Notizen"
+  },
+  "for_you": {
+    "title": "Für dich",
+    "refresh": "Andere Tags",
+    "no_interests": "Favorisiere ein paar Posts oder schick welche an Monbooru: Aus ihren Tags lernt der Feed, was dir gefällt.",
+    "nothing_found": "Für die gewählten Tags wurde nichts gefunden. Tippe auf Aktualisieren für andere.",
+    "servers": "Server",
+    "all_servers": "Alle Server"
   }
 }

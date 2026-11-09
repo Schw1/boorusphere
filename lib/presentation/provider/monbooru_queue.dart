@@ -5,6 +5,7 @@ import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
+import 'package:boorusphere/presentation/provider/monbooru_history.dart';
 import 'package:boorusphere/presentation/provider/monbooru_sender.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
 import 'package:dio/dio.dart';
@@ -99,6 +100,15 @@ class MonbooruBatchReport {
   final MonbooruError? error;
 }
 
+/// Keeps a send in the history ([MonbooruHistory]); `report` null = sent,
+/// result pending.
+typedef MonbooruRecorder = Future<void> Function(
+  Post post,
+  MonbooruSendReport? report,
+  int jobId, {
+  bool isResult,
+});
+
 /// Sends posts to monloader, follows the jobs and checks for duplicates.
 ///
 /// Lives for the whole app session; widgets listen to [states].
@@ -110,7 +120,9 @@ class MonbooruQueue {
     Future<MonbooruJobLookup> Function(int id)? jobFetcher,
     String Function(String serverId)? tokenOf,
     Dio? client,
+    MonbooruRecorder? recorder,
   })  : _pollInterval = pollInterval,
+        _record = recorder ?? MonbooruHistory.recordSafely,
         _tokenOf = tokenOf ?? ServerAuthStore.tokenOf,
         _pollTimeout = pollTimeout,
         _send = sender ?? MonbooruSender.send,
@@ -124,6 +136,7 @@ class MonbooruQueue {
   final Future<MonbooruSendResult> Function(Post post) _send;
   final Future<MonbooruJobLookup> Function(int id) _fetchJob;
   final String Function(String serverId) _tokenOf;
+  final MonbooruRecorder _record;
   Dio? _client;
 
   /// Per post ([Post.viewId]).
@@ -252,11 +265,16 @@ class MonbooruQueue {
     final error = result.error;
     if (error != null) {
       _set(post, MonbooruPostState(MonbooruPostStatus.failed, error: error));
-      onReport?.call(MonbooruSendReport(error: error));
+      final report = MonbooruSendReport(error: error);
+      unawaited(_record(post, report, 0));
+      onReport?.call(report);
       return error;
     }
     _set(post, const MonbooruPostState(MonbooruPostStatus.queued));
-    unawaited(_follow(post, result.jobId ?? 0).then((report) {
+    final jobId = result.jobId ?? 0;
+    unawaited(_record(post, null, jobId));
+    unawaited(_follow(post, jobId).then((report) {
+      unawaited(_record(post, report, jobId, isResult: true));
       onReport?.call(report);
     }));
     return null;
