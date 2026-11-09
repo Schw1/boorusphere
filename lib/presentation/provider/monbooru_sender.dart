@@ -216,7 +216,7 @@ class MonbooruSender {
       if (code == 200 || code == 202) {
         return MonbooruSendResult.queued(jobIdOf(res.data) ?? 0);
       }
-      return MonbooruSendResult.failed(errorOf(code));
+      return MonbooruSendResult.failed(errorOf(code, messageOf(res.data)));
     } catch (e) {
       return MonbooruSendResult.failed(MonbooruError(
           MonbooruErrorKind.unreachable,
@@ -224,14 +224,43 @@ class MonbooruSender {
     }
   }
 
+  /// [message] is monloader's reason, shown with other HTTP errors (e.g.
+  /// `400: unsupported URL`).
   @visibleForTesting
-  static MonbooruError errorOf(int code) => switch (code) {
+  static MonbooruError errorOf(int code, [String message = '']) =>
+      switch (code) {
         401 => const MonbooruError(MonbooruErrorKind.invalidToken),
         403 => const MonbooruError(MonbooruErrorKind.noWriteScope),
         409 => const MonbooruError(MonbooruErrorKind.unavailable),
         503 => const MonbooruError(MonbooruErrorKind.apiDisabled),
-        _ => MonbooruError(MonbooruErrorKind.http, '$code'),
+        _ => MonbooruError(MonbooruErrorKind.http,
+            message.isEmpty ? '$code' : '$code: $message'),
       };
+
+  /// The reason in an error answer: `error`/`message`/`detail` of a JSON
+  /// body, or a short plain-text body. Empty if there is none.
+  @visibleForTesting
+  static String messageOf(Object? data) {
+    final body = data is String ? (_tryJson(data) ?? data) : data;
+    String text(Object? v) => v is String ? v.trim() : '';
+    if (body is Map) {
+      for (final key in ['error', 'message', 'detail']) {
+        final value = body[key];
+        if (value is Map) {
+          final nested = text(value['message']).isNotEmpty
+              ? text(value['message'])
+              : text(value['code']);
+          if (nested.isNotEmpty) return nested;
+        }
+        if (text(value).isNotEmpty) return text(value);
+      }
+      return '';
+    }
+    final plain = text(body);
+    // an HTML error page says nothing useful
+    if (plain.isEmpty || plain.startsWith('<')) return '';
+    return plain.length > 200 ? '${plain.substring(0, 200)}…' : plain;
+  }
 
   /// `job_id` of a 202 answer, or `id` of a job returned inline (200).
   @visibleForTesting

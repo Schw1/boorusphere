@@ -37,7 +37,12 @@ class MonbooruHistoryPage extends HookConsumerWidget {
       MonbooruHistory.all,
       [MonbooruHistory.changes.value],
     ));
-    final list = entries.data ?? const <MonbooruHistoryEntry>[];
+    // Swiped away: hidden at once, before the store has caught up (a
+    // dismissed item must leave the list in the same frame).
+    final removed = useState(<String>{});
+    final list = (entries.data ?? const <MonbooruHistoryEntry>[])
+        .where((it) => !removed.value.contains(it.post.viewId))
+        .toList();
     final scrollController = useMemoized(AutoScrollController.new);
     useEffect(() => scrollController.dispose, [scrollController]);
     useEffect(() {
@@ -87,11 +92,28 @@ class MonbooruHistoryPage extends HookConsumerWidget {
                     key: ValueKey(list[index].post.viewId),
                     controller: scrollController,
                     index: index,
-                    child: _Tile(
-                      entry: list[index],
-                      onTap: () => PostViewer.open(context,
-                          index: index,
-                          posts: [for (final it in list) it.post]),
+                    child: Dismissible(
+                      key: ValueKey('dismiss-${list[index].post.viewId}'),
+                      // only this entry; nothing is removed from Monbooru
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        color: context.colorScheme.error,
+                        child: Icon(Icons.delete_outline,
+                            color: context.colorScheme.onError),
+                      ),
+                      onDismissed: (_) {
+                        final post = list[index].post;
+                        removed.value = {...removed.value, post.viewId};
+                        MonbooruHistory.remove(post);
+                      },
+                      child: _Tile(
+                        entry: list[index],
+                        onTap: () => PostViewer.open(context,
+                            index: index,
+                            posts: [for (final it in list) it.post]),
+                      ),
                     ),
                   ),
                 ),

@@ -114,6 +114,24 @@ void main() {
       expect(MonbooruSender.errorOf(403).kind, MonbooruErrorKind.noWriteScope);
       expect(MonbooruSender.errorOf(409).kind, MonbooruErrorKind.unavailable);
       expect(MonbooruSender.errorOf(500).kind, MonbooruErrorKind.http);
+      expect(MonbooruSender.errorOf(400).detail, '400');
+      expect(MonbooruSender.errorOf(400, 'unsupported URL').detail,
+          '400: unsupported URL');
+    });
+
+    test('reason of an error answer', () {
+      expect(MonbooruSender.messageOf({'error': 'unsupported URL'}),
+          'unsupported URL');
+      expect(MonbooruSender.messageOf('{"message": "bad request"}'),
+          'bad request');
+      expect(
+          MonbooruSender.messageOf({
+            'error': {'code': 'invalid_url', 'message': 'no extractor'}
+          }),
+          'no extractor');
+      expect(MonbooruSender.messageOf('plain reason'), 'plain reason');
+      expect(MonbooruSender.messageOf('<html>…</html>'), '');
+      expect(MonbooruSender.messageOf(null), '');
     });
   });
 
