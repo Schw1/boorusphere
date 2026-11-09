@@ -27,11 +27,19 @@ class FavoritePostState extends _$FavoritePostState {
   }
 
   Future<void> save(Post post) async {
-    if (state.contains(post)) return;
+    if (state.containsPost(post)) return;
 
     final repo = ref.read(favoritePostRepoProvider);
     await repo.save(post);
     if (!ref.mounted) return;
     state = repo.get();
   }
+}
+
+extension FavoritePostsExt on Iterable<Post> {
+  /// Whether [post] is a favorite. Posts are the same by id and server:
+  /// score, tags or file URLs of a favorite change on the server over
+  /// time, so comparing whole posts would miss it.
+  bool containsPost(Post post) =>
+      any((it) => it.id == post.id && it.serverId == post.serverId);
 }

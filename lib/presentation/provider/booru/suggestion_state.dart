@@ -60,11 +60,15 @@ class SuggestionState extends _$SuggestionState {
           await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
       // Riverpod 3: using ref/state after the provider was disposed throws.
       if (!ref.mounted) return;
-      final blockedTags = ref.read(tagsBlockerRepoProvider);
-      final result = res
-          .where(
-              (it) => !blockedTags.get().values.map((e) => e.name).contains(it))
-          .toList();
+      // Blocked everywhere or on this server, as in the timeline.
+      final blocked = ref
+          .read(tagsBlockerRepoProvider)
+          .get()
+          .values
+          .where((it) => it.serverId.isEmpty || it.serverId == server.id)
+          .map((it) => it.name)
+          .toSet();
+      final result = res.where((it) => !blocked.contains(it.name)).toList();
       result.sort((a, b) => b.count.compareTo(a.count));
       if (word != _lastWord) return;
 

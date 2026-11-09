@@ -6,10 +6,10 @@ import 'package:boorusphere/presentation/screens/post/post_placeholder_image.dar
 import 'package:boorusphere/presentation/screens/post/quickbar.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
+import 'package:boorusphere/presentation/utils/open_url.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class PostUnknown extends ConsumerWidget {
   const PostUnknown({super.key, required this.post});
@@ -45,8 +45,7 @@ class PostUnknown extends ConsumerWidget {
             ),
             actionTitle: Text(context.t.openExternally),
             onPressed: () {
-              launchUrlString(post.originalFile,
-                  mode: LaunchMode.externalApplication);
+              openWebUrl(post.originalFile);
             },
           ),
         ),

@@ -95,6 +95,10 @@ extension DownloadEntriesExt on Iterable<DownloadEntry> {
   }
 
   DownloadEntry getByPost(Post post) {
-    return firstWhere((x) => x.post == post, orElse: () => DownloadEntry.empty);
+    // By id and server: score or tags of a downloaded post change over time.
+    return firstWhere(
+      (x) => x.post.id == post.id && x.post.serverId == post.serverId,
+      orElse: () => DownloadEntry.empty,
+    );
   }
 }
