@@ -95,6 +95,18 @@ void main() {
       expect(MonbooruSender.jobIdOf('nope'), isNull);
     });
 
+    test('at most 64 tags to monloader', () {
+      final post = Post(
+        id: 1,
+        originalFile: 'https://x/a.jpg',
+        tags: [for (var i = 0; i < 100; i++) 'tag$i', 'tag0', ''],
+      );
+      final tags = MonbooruSender.tagsFor(post);
+      expect(tags, hasLength(MonbooruSender.maxTags));
+      expect(tags.first, 'tag0');
+      expect(tags.toSet(), hasLength(tags.length));
+    });
+
     test('tags sent to monloader', () {
       const booruPost = Post(
           tags: ['cat', 'blue_eyes'], originalFile: 'https://x/1.jpg');

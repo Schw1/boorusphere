@@ -308,11 +308,19 @@ class MonbooruSender {
   /// their tags in the app are search tokens like `tag:"big breasts"` or
   /// `language:english`, which monloader would store verbatim, and
   /// gallery-dl already reads the gallery's tags with their categories.
+  ///
+  /// monloader takes at most [maxTags] tags (`400: at most 64 tags`);
+  /// posts with more (rule34 often) send the first ones, gallery-dl reads
+  /// the full list from the post anyway.
   @visibleForTesting
   static List<String> tagsFor(Post post) {
     final isGallery = post.pageCount > 0 && post.originalFile.isEmpty;
-    return isGallery ? const [] : post.tags;
+    if (isGallery) return const [];
+    final tags = post.tags.toSet().where((it) => it.isNotEmpty).toList();
+    return tags.length > maxTags ? tags.sublist(0, maxTags) : tags;
   }
+
+  static const maxTags = 64;
 
   static Future<Response> _post(
     MonbooruConfig config,

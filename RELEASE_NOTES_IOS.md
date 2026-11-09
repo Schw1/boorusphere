@@ -8,6 +8,9 @@ Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideload
 - **Backups** now also include reading progress, the Continue reading list and saved searches (new checkbox, on by default).
 - **nhentai:** related galleries in the gallery details. Tags are typed like on Danbooru (`big_breasts -netorare english`); the app turns them into nhentai's `tag:"…"` form. Words that aren't tags search titles; put a title in quotes (`"school days"`) to keep it a title search. The old form still works.
 
+## Fixed
+- Posts with more than 64 tags (often rule34) were rejected by monloader (`Error 400: at most 64 tags`); the first 64 are sent now.
+
 ## In 1.5.4-ios.15
 - Sending an nhentai gallery to Monbooru added the app's search tokens as extra tags (`tag:_big_breasts`, `language:english`, `category:manga`). Now only the tags gallery-dl reads from the gallery are used.
 
