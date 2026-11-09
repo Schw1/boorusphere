@@ -23,6 +23,22 @@ class ServerPins {
     };
   }
 
+  /// Backup entry (`server_pins.json`), with the server list.
+  static const backupKey = 'server_pins';
+
+  static List<String> export() => pinned.value.toList()..sort();
+
+  /// Restores [export]ed pins (added to the ones here).
+  static Future<void> import(Object? data) async {
+    if (data is! List) return;
+    final box = await _box();
+    final ids = {for (final id in data) if (id is String && id.isNotEmpty) id};
+    for (final id in ids) {
+      await box.put(id, true);
+    }
+    pinned.value = {...pinned.value, ...ids};
+  }
+
   static bool isPinned(String id) => pinned.value.contains(id);
 
   static Future<void> toggle(String id) async {

@@ -1,7 +1,7 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
-- **Server list in the menu:** only pinned servers and the active one are listed; all servers are in a list that opens on tap. Pin or unpin with the pin icon or a long press.
+- **Server list in the menu:** only pinned servers and the active one are listed; all servers are in a list that opens on tap. Pin or unpin with the pin icon or a long press. Pins are in backups (with the server list).
 
 ## In 1.5.4-ios.16
 - **For you:** new feed in the menu with posts of the current server for tags you like, learned from your favorites and what you sent to Monbooru. Each refresh picks other tags and starts at a random result page; the server button switches the server or searches all boorus at once; tap a tag to search it.
