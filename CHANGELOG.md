@@ -21,6 +21,7 @@
 * nhentai tag suggestions while typing; reading progress for galleries and Monbooru archives
 * Continue reading list; saved searches with a count of new posts; reader preloads the next pages; nhentai related galleries
 * Monbooru send history with results and resend; backups include reading progress and saved searches
+* nhentai: tags typed like on Danbooru (`big_breasts`), converted to nhentai's search syntax; Continue reading: select entries to remove
 * Sort button in the search bar for boorus that support it (e.g. Danbooru: rank, score, favorites, oldest), remembered per server
 * iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup

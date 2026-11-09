@@ -129,6 +129,14 @@ void main() {
       expect(split.sort, '');
     });
 
+    test('quoted words stay together, typed tags get quoted', () {
+      final split = NhentaiJsonParser.splitQuery(
+          '"school days" tag:"big hat" artist:some_one order:rank');
+      expect(split.query,
+          '"school days" tag:"big hat" artist:"some one"');
+      expect(split.sort, 'popular-week');
+    });
+
     test('unknown order values stay in the query', () {
       expect(NhentaiJsonParser.splitQuery('order:foo').query, 'order:foo');
     });
@@ -207,9 +215,14 @@ void main() {
     });
 
     test('search tokens', () {
+      // tag list not loaded here: with the type, underscores for spaces
       expect(NhentaiGallery.searchToken('tag', 'glasses'), 'tag:glasses');
       expect(NhentaiGallery.searchToken('tag', 'school uniform'),
-          'tag:"school uniform"');
+          'tag:school_uniform');
+      expect(NhentaiGallery.labelOf('tag:school_uniform'), 'school uniform');
+      expect(NhentaiGallery.labelOf('big_breasts'), 'big breasts');
+      expect(NhentaiGallery.labelOf('artist:"some one"'), 'some one');
+      expect(NhentaiGallery.labelOf('re:zero'), 're:zero');
     });
   });
 

@@ -250,8 +250,9 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
   }
 }
 
-/// Tags of an nhentai gallery by type. The chips select search tokens like
-/// `tag:"big breasts"`, so searching from here stays within that type.
+/// Tags of an nhentai gallery by type. The chips select words like
+/// `big_breasts` (or `artist:some_one` where the bare name is ambiguous),
+/// turned into nhentai's `tag:"big breasts"` when searching.
 List<Widget> _galleryTags(
   BuildContext context,
   AsyncValue<NhentaiGallery?> gallery, {
@@ -293,9 +294,7 @@ List<Widget> _galleryTags(
             for (final name in data.tags[type]!)
               NhentaiGallery.searchToken(type, name),
           ],
-          labelOf: (token) => token
-              .substring(token.indexOf(':') + 1)
-              .replaceAll('"', ''),
+          labelOf: NhentaiGallery.labelOf,
           isSelected: isSelected,
           onSelected: onSelected,
         ),

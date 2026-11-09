@@ -19,6 +19,7 @@ final _list = jsonEncode({
     [100, 'bigfoot', 50, 2],
     [8847, 'someone big', 68, 3],
     [33172, 'doujinshi', 500000, 6],
+    [9000, 'glasses', 10, 1],
     ['bad', 'row', 1, 2],
   ],
 });
@@ -31,24 +32,30 @@ void main() {
     });
 
     test('loads the list', () {
-      expect(tags.length, 6);
+      expect(tags.length, 7);
       expect(tags.byId(8378)?.name, 'glasses');
       expect(tags.byId(8378)?.type, 'tag');
     });
 
     test('tokens for tag ids', () {
+      // as typed in the app, and as nhentai writes them (old blocked tags)
       expect(tags.tokensOf([2937, 12227, 999]),
-          ['tag:"big hat"', 'language:english']);
+          ['big_hat', 'tag:"big hat"', 'english', 'language:english']);
+      expect(tags.tokensOf([9000]), ['character:glasses']);
     });
 
     test('suggestions: prefix first, then contains, by count', () {
       final names = tags.suggest('big').map((it) => it.$1).toList();
-      expect(names, ['tag:"big hat"', 'tag:bigfoot', 'artist:"someone big"']);
+      expect(names, ['big_hat', 'bigfoot', 'someone_big']);
+      expect(tags.suggest('big_h').single.$1, 'big_hat');
+      // same name as a tag: with its type
+      expect(tags.suggest('glass').map((it) => it.$1),
+          ['glasses', 'character:glasses']);
     });
 
     test('suggestions with type and minus', () {
       expect(tags.suggest('artist:som').map((it) => it.$1),
-          ['artist:"someone big"']);
+          ['artist:someone_big']);
       expect(tags.suggest('-tag:gla').single, ('-tag:glasses', 80000));
       expect(tags.suggest('language:').map((it) => it.$1),
           ['language:english']);
@@ -56,7 +63,30 @@ void main() {
 
     test('empty word: most used', () {
       expect(tags.suggest('', limit: 2).map((it) => it.$1),
-          ['category:doujinshi', 'tag:"big hat"']);
+          ['doujinshi', 'big_hat']);
+    });
+
+    test('words typed in the app become nhentai tokens', () {
+      expect(tags.toQuery('big_hat'), 'tag:"big hat"');
+      expect(tags.toQuery('-glasses'), '-tag:glasses');
+      expect(tags.toQuery('english'), 'language:english');
+      expect(tags.toQuery('someone_big'), 'artist:"someone big"');
+      expect(tags.toQuery('character:glasses'), 'character:glasses');
+      expect(tags.toQuery('artist:someone_big'), 'artist:"someone big"');
+      // unknown names with a type are still quoted for nhentai
+      expect(tags.toQuery('artist:new_guy'), 'artist:"new guy"');
+      // already nhentai's form, quoted, other filters, title words: as is
+      expect(tags.toQuery('tag:"big hat"'), 'tag:"big hat"');
+      expect(tags.toQuery('"big hat"'), '"big hat"');
+      expect(tags.toQuery('pages:>0'), 'pages:>0');
+      expect(tags.toQuery('summer'), 'summer');
+    });
+
+    test('how gallery tags are shown and searched', () {
+      expect(tags.displayOf('tag', 'big hat'), 'big_hat');
+      expect(tags.displayOf('tag', 'glasses'), 'glasses');
+      expect(tags.displayOf('character', 'glasses'), 'character:glasses');
+      expect(tags.displayOf('tag', 'not listed'), 'tag:not_listed');
     });
 
     test('rejects other files', () {

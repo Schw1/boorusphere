@@ -89,12 +89,16 @@ class NhentaiJsonParser extends BooruParser {
 
   /// Splits the app's search into nhentai's `query` and `sort`. `*` (the
   /// app's "everything") and rating tags are dropped; nhentai has neither.
+  /// Words of a search; a quoted part (`tag:"big breasts"`, `"two words"`)
+  /// is one word.
+  static final _words = RegExp(r'-?[^\s"]*"[^"]*"?|\S+');
+
   static ({String query, String sort, bool hadOrder}) splitQuery(
       String tags) {
     var sort = '';
     var hadOrder = false;
     final words = <String>[];
-    for (final word in tags.split(RegExp(r'\s+'))) {
+    for (final word in _words.allMatches(tags).map((it) => it.group(0)!)) {
       if (word.isEmpty || word == '*' || word.startsWith('rating:')) continue;
       final m = RegExp(r'^(?:order|sort):(.+)$', caseSensitive: false)
           .firstMatch(word);
@@ -106,7 +110,7 @@ class NhentaiJsonParser extends BooruParser {
           continue;
         }
       }
-      words.add(word);
+      words.add(NhentaiTags.instance.toQuery(word));
     }
     final query = words.join(' ');
     return (
@@ -290,9 +294,16 @@ class NhentaiGallery {
     'category',
   ];
 
-  /// A search token for [name] of [type], e.g. `tag:"big breasts"`.
+  /// How a tag of the gallery is searched for in the app, e.g.
+  /// `big_breasts` or `artist:some_one` (see [NhentaiTags.displayOf]).
   static String searchToken(String type, String name) =>
-      name.contains(' ') ? '$type:"$name"' : '$type:$name';
+      NhentaiTags.instance.displayOf(type, name);
+
+  /// Readable name of such a word: `artist:some_one` -> `some one`.
+  static String labelOf(String token) => token
+      .replaceFirst(RegExp('^-?(${nhentaiTagTypes.join('|')}):'), '')
+      .replaceAll('"', '')
+      .replaceAll('_', ' ');
 
   static String galleryApiUrl(Server server, int id) {
     final api = server.apiAddress.replaceFirst(RegExp(r'/+$'), '');

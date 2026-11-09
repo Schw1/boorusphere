@@ -6,7 +6,7 @@ Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideload
 - **Faster reading:** the reader loads the next pages in the background.
 - **Monbooru history:** menu → Monbooru history lists the posts you sent with their result (added, already there, failed and why). Failed ones can be sent again; sends without a result are asked for again when the list opens.
 - **Backups** now also include reading progress, the Continue reading list and saved searches (new checkbox, on by default).
-- **nhentai:** related galleries in the gallery details.
+- **nhentai:** related galleries in the gallery details. Tags are typed like on Danbooru (`big_breasts -netorare english`); the app turns them into nhentai's `tag:"…"` form. Words that aren't tags search titles; put a title in quotes (`"school days"`) to keep it a title search. The old form still works.
 
 ## In 1.5.4-ios.15
 - Sending an nhentai gallery to Monbooru added the app's search tokens as extra tags (`tag:_big_breasts`, `language:english`, `category:manga`). Now only the tags gallery-dl reads from the gallery are used.
