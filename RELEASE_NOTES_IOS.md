@@ -2,6 +2,12 @@ Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideload
 
 ## New
 - **Server list in the menu:** only pinned servers and the active one are listed; all servers are in a list that opens on tap. Pin or unpin with the pin icon or a long press. Pins are in backups (with the server list).
+- **Fix:** blocked tags no longer show up in the tag suggestions while typing.
+- **Fix:** the favorite heart and the download mark stay on a post after its score or tags changed on the server.
+- **Restore:** a backup only replaces favorites, servers, blocked tags, search history and settings once that part of the backup could be read; a broken entry is skipped instead of leaving the data half restored.
+- **Faster:** pages load quicker with many blocked tags; the first nhentai search no longer stutters; following jobs after "Send to Monbooru" reuses one connection.
+- **Caches:** server icons are kept between app starts (for 7 days). Cached images older than 7 days are removed when the app starts; "Clear cache" also removes the server icons.
+- **Privacy:** API requests no longer send their own address (with login data from the URL suffix) as Referer, only the server's address. Links in the post details only open web addresses; a source that is plain text is shown as text.
 
 ## In 1.5.4-ios.16
 - **For you:** new feed in the menu with posts of the current server for tags you like, learned from your favorites and what you sent to Monbooru. Each refresh picks other tags and starts at a random result page; the server button switches the server or searches all boorus at once; tap a tag to search it.

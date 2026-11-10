@@ -31,15 +31,24 @@ class BooruTagsBlockerRepo implements TagsBlockerRepo {
   @override
   Future<void> import(String src) async {
     final List maps = jsonDecode(src);
-    if (maps.isEmpty) return;
-    await box.deleteAll(box.keys);
+    // Read the whole backup first: the list here is only replaced once
+    // there is something to replace it with.
+    final tags = <BooruTag>[];
     for (final data in maps) {
-      if (data is Map) {
-        final tag = BooruTag.fromJson(Map.from(data));
-        await push(tag);
-      } else if (data is String) {
-        await push(BooruTag(name: data));
+      try {
+        if (data is Map) {
+          tags.add(BooruTag.fromJson(Map<String, dynamic>.from(data)));
+        } else if (data is String) {
+          tags.add(BooruTag(name: data));
+        }
+      } catch (_) {
+        // a broken entry is skipped, the others are still restored
       }
+    }
+    if (tags.isEmpty) return;
+    await box.clear();
+    for (final tag in tags) {
+      await push(tag);
     }
   }
 

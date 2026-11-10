@@ -13,6 +13,7 @@ import 'package:boorusphere/presentation/utils/entity/pixel_size.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/images.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
+import 'package:boorusphere/presentation/utils/open_url.dart';
 import 'package:boorusphere/presentation/widgets/styled_overlay_region.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:extended_image/extended_image.dart';
@@ -21,7 +22,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 @RoutePage()
 class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
@@ -357,8 +357,11 @@ class _LinkSubtitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final labelText = label;
+    // A source can be free text; only web addresses open (and look like
+    // a link).
+    final isLink = webUriOf(url) != null;
     return InkWell(
-      onTap: () => launchUrlString(url, mode: LaunchMode.externalApplication),
+      onTap: isLink ? () => openWebUrl(url) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -369,7 +372,7 @@ class _LinkSubtitle extends StatelessWidget {
             ),
           DefaultTextStyle(
             style: DefaultTextStyle.of(context).style.copyWith(
-                  color: context.colorScheme.primary,
+                  color: isLink ? context.colorScheme.primary : null,
                 ),
             child: Padding(
               padding: const EdgeInsets.only(top: 8),

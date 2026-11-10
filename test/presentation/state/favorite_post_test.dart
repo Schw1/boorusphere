@@ -35,6 +35,28 @@ void main() async {
       expect(state().length, 3);
     });
 
+    test('a favorite is recognized after its score and tags changed',
+        () async {
+      // what the server returns for the same post some days later
+      final later = posts.first.copyWith(
+        score: posts.first.score + 25,
+        tags: [...posts.first.tags, 'new_tag'],
+      );
+      expect(state().contains(later), false);
+      expect(state().containsPost(later), true);
+      expect(state().containsPost(posts.first), true);
+
+      // saving it again doesn't add a second entry
+      await notifier().save(later);
+      expect(state().length, 3);
+
+      // the same id on another server is another post
+      expect(
+        state().containsPost(posts.first.copyWith(serverId: 'Elsewhere')),
+        false,
+      );
+    });
+
     test('remove last', () async {
       await notifier().remove(posts.last);
       expect(state().length, 2);

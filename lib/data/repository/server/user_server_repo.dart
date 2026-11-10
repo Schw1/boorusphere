@@ -76,13 +76,24 @@ class UserServerRepo implements ServerRepo {
   @override
   Future<void> import(String src) async {
     final List maps = jsonDecode(src);
-    if (maps.isEmpty) return;
     final previous = {for (final s in box.values) s.id: s};
-    await box.deleteAll(box.keys);
+    // Read the whole backup first: the server list is only replaced once
+    // there is something to replace it with.
+    final servers = <Server>[];
     for (final map in maps) {
-      if (map is Map<String, dynamic>) {
-        await add(_keepCredentials(Server.fromJson(map), previous));
+      if (map is! Map) continue;
+      try {
+        final server = Server.fromJson(Map<String, dynamic>.from(map));
+        if (server.id.isEmpty) continue;
+        servers.add(_keepCredentials(server, previous));
+      } catch (_) {
+        // a broken entry is skipped, the others are still restored
       }
+    }
+    if (servers.isEmpty) return;
+    await box.clear();
+    for (final server in servers) {
+      await add(server);
     }
   }
 

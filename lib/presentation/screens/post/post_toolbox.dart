@@ -13,13 +13,13 @@ import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
+import 'package:boorusphere/presentation/utils/open_url.dart';
 import 'package:boorusphere/presentation/utils/root_messenger.dart';
 import 'package:boorusphere/presentation/widgets/download_dialog.dart';
 import 'package:boorusphere/utils/extensions/number.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class PostToolbox extends HookConsumerWidget {
   const PostToolbox(this.post, {super.key});
@@ -127,8 +127,7 @@ class PostOpenLinkButton extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.link_outlined),
-      onPressed: () =>
-          launchUrlString(url, mode: LaunchMode.externalApplication),
+      onPressed: () => openWebUrl(url),
     );
   }
 }
@@ -143,13 +142,13 @@ class PostFavoriteButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final favorites = ref.watch(favoritePostStateProvider);
+    final isFav = ref.watch(
+        favoritePostStateProvider.select((it) => it.containsPost(post)));
     final animator =
         useAnimationController(duration: const Duration(milliseconds: 300));
     final animation = useAnimation(
         ColorTween(begin: Colors.white, end: Colors.pink.shade300)
             .animate(animator));
-    final isFav = favorites.contains(post);
     isFav ? animator.forward() : animator.reverse();
 
     return IconButton(

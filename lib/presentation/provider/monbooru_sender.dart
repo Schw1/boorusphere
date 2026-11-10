@@ -124,7 +124,14 @@ class MonbooruSender {
     }
   }
 
-  static Future<MonbooruConfig> load() async {
+  /// The settings as last read. Following a job asks for them every 2 s
+  /// per post; without this each of those reads the box and the Keychain.
+  /// Dropped whenever they are written ([save], [importBackup]).
+  static MonbooruConfig? _cached;
+
+  static Future<MonbooruConfig> load() async => _cached ??= await _read();
+
+  static Future<MonbooruConfig> _read() async {
     final box = await _box();
     final token = await _migrateLegacyToken(box, await _readToken());
     return MonbooruConfig(
@@ -134,6 +141,7 @@ class MonbooruSender {
   }
 
   static Future<void> save(String url, String token) async {
+    _cached = null;
     final box = await _box();
     await box.put('url', normalizeUrl(url));
     await _writeToken(token.trim());
@@ -141,6 +149,7 @@ class MonbooruSender {
       await box.delete('token');
       await box.compact();
     }
+    _cached = null;
   }
 
   static const backupKey = 'monloader';
@@ -165,23 +174,29 @@ class MonbooruSender {
     final url = '${data['url'] ?? ''}';
     final token = '${data['token'] ?? ''}'.trim();
     if (url.isEmpty && token.isEmpty) return;
+    _cached = null;
     final box = await _box();
     if (url.isNotEmpty) await box.put('url', normalizeUrl(url));
     if (token.isNotEmpty) await _writeToken(token);
+    _cached = null;
   }
 
-  static Dio _dio() => Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 20),
-        validateStatus: (_) => true,
-        // The app strips Dart's default User-Agent (see CustomHttpClient).
-        headers: {'User-Agent': 'Boorusphere/${displayVersion('dev')}'},
-      ));
+  /// One client for all requests to monloader, so its connection is kept
+  /// open and reused. A client per request (as before) connects anew every
+  /// time, which adds up when the jobs of a batch are polled every 2 s.
+  /// Address and token are passed per request, so it never goes stale.
+  static final Dio _client = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 20),
+    validateStatus: (_) => true,
+    // The app strips Dart's default User-Agent (see CustomHttpClient).
+    headers: {'User-Agent': 'Boorusphere/${displayVersion('dev')}'},
+  ));
 
   /// Returns null when reachable, otherwise the error.
   static Future<MonbooruError?> testConnection(String url) async {
     try {
-      final res = await _dio().get('${normalizeUrl(url)}/health');
+      final res = await _client.get('${normalizeUrl(url)}/health');
       if (res.statusCode == 200) return null;
       return MonbooruError(MonbooruErrorKind.http, '${res.statusCode}');
     } catch (e) {
@@ -285,7 +300,7 @@ class MonbooruSender {
     final config = await load();
     if (!config.isComplete) return const MonbooruJobLookup.error();
     try {
-      final res = await _dio().get(
+      final res = await _client.get(
         '${config.url}/api/v1/queue/$id',
         options: Options(
           headers: {'Authorization': 'Bearer ${config.token}'},
@@ -333,7 +348,7 @@ class MonbooruSender {
       if (tagsFor(post) case final tags when tags.isNotEmpty) 'tags': tags,
       if (pageUrl.isNotEmpty) 'page_url': pageUrl,
     };
-    return _dio().post(
+    return _client.post(
       '${config.url}/api/v1/queue',
       data: {'url': url, 'options': options},
       options: Options(

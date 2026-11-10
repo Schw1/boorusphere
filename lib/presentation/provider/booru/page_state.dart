@@ -74,7 +74,9 @@ class PageState extends _$PageState {
   Future<void> load() async {
     if (_server == Server.empty) return;
     final query = state.data.option.query;
-    if (query.toWordList().any(blockedTags.contains)) {
+    // Collected once per load; the getter walks the whole block list.
+    final blocked = blockedTags.toSet();
+    if (query.toWordList().any(blocked.contains)) {
       state = FetchResult.error(state.data, error: BooruError.tagsBlocked);
       return;
     }
@@ -114,6 +116,7 @@ class PageState extends _$PageState {
       final repo = ref.read(imageboardRepoProvider(_server));
       final firstPage = _page == 0;
       var skipCount = 0;
+      final knownIds = {for (final post in _posts) post.id};
       while (skipCount <= 3) {
         final res = await repo.getPage(option, _page);
         if (!ref.mounted) return;
@@ -123,11 +126,10 @@ class PageState extends _$PageState {
         }
         _page++;
 
-        final posts =
-            res.where((it) => !_posts.any((post) => post.id == it.id));
+        final posts = res.where((it) => knownIds.add(it.id)).toList();
         final displayedPosts = <Post>[];
         displayedPosts
-            .addAll(posts.where((it) => !it.allTags.any(blockedTags.contains)));
+            .addAll(posts.where((it) => !it.allTags.any(blocked.contains)));
         if (displayedPosts.isNotEmpty) {
           _posts.addAll(posts);
           _filteredPosts.addAll(displayedPosts);

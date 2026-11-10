@@ -33,14 +33,20 @@ class UserSearchHistoryRepo implements SearchHistoryRepo {
   @override
   Future<void> import(String src) async {
     final List maps = jsonDecode(src);
-    if (maps.isEmpty) return;
-    await box.deleteAll(box.keys);
+    // Read the whole backup first: the history here is only replaced once
+    // there is something to replace it with.
+    final entries = <SearchHistory>[];
     for (final map in maps) {
-      if (map is Map) {
-        final history = SearchHistory.fromJson(Map.from(map));
-        await box.add(history);
+      if (map is! Map) continue;
+      try {
+        entries.add(SearchHistory.fromJson(Map<String, dynamic>.from(map)));
+      } catch (_) {
+        // a broken entry is skipped, the others are still restored
       }
     }
+    if (entries.isEmpty) return;
+    await box.clear();
+    await box.addAll(entries);
   }
 
   @override

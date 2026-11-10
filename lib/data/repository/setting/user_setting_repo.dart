@@ -21,17 +21,23 @@ class UserSettingsRepo implements SettingsRepo {
   @override
   Future<void> import(String src) async {
     final Map map = jsonDecode(src);
-    if (map.isEmpty) return;
-    await box.deleteAll(box.keys);
-    map.forEach((key, value) async {
+    // Read the whole backup first: the settings here are only replaced
+    // once there is something to replace them with. The writes are awaited,
+    // so a failure reaches the restore instead of getting lost.
+    final settings = <String, Object?>{};
+    for (final MapEntry(:key, :value) in map.entries) {
+      if (key is! String) continue;
       if (key == Setting.downloadsQuality.name) {
-        await box.put(key, DownloadQuality.fromName(value));
+        if (value is String) settings[key] = DownloadQuality.fromName(value);
       } else if (key == Setting.searchRating.name) {
-        await box.put(key, BooruRating.fromName(value));
+        if (value is String) settings[key] = BooruRating.fromName(value);
       } else {
-        await box.put(key, value);
+        settings[key] = value;
       }
-    });
+    }
+    if (settings.isEmpty) return;
+    await box.clear();
+    await box.putAll(settings);
   }
 
   @override

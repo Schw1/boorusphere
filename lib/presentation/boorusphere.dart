@@ -19,6 +19,7 @@ import 'package:boorusphere/presentation/routes/app_router.dart';
 import 'package:boorusphere/presentation/utils/root_messenger.dart';
 import 'package:boorusphere/presentation/widgets/app_theme_builder.dart';
 import 'package:boorusphere/utils/http/overrides.dart';
+import 'package:boorusphere/utils/image_cache_cleaner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -43,6 +44,7 @@ class Boorusphere extends HookConsumerWidget {
 
     onCompleted();
     unawaited(ref.read(autoBackupProvider).runIfDue());
+    unawaited(ImageCacheCleaner.run());
   }
 
   @override

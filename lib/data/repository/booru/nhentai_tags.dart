@@ -22,6 +22,60 @@ class NhentaiTag {
       name.contains(' ') ? '$type:"$name"' : '$type:$name';
 }
 
+/// A parsed tag list with its lookup tables.
+typedef NhentaiTagList = ({
+  List<NhentaiTag> tags,
+  Map<int, NhentaiTag> byId,
+  Map<String, NhentaiTag> byName,
+  Map<String, NhentaiTag> byTypeName,
+});
+
+/// Parses the list format written by tool/nhentai_tags.py and builds the
+/// lookup tables; throws on anything else.
+///
+/// A top-level function, so it can run in a background isolate: the list
+/// is a few MB of JSON, and parsing it on the UI isolate made the first
+/// search stutter.
+NhentaiTagList parseNhentaiTagList(String source) {
+  final data = jsonDecode(source);
+  if (data is! Map || data['tags'] is! List || data['types'] is! List) {
+    throw const FormatException('not an nhentai tag list');
+  }
+  final types = [for (final t in data['types'] as List) '$t'];
+  final tags = <NhentaiTag>[];
+  for (final row in data['tags'] as List) {
+    if (row is! List || row.length < 4) continue;
+    final id = row[0], name = row[1], count = row[2], type = row[3];
+    if (id is! int || name is! String || type is! int) continue;
+    if (type < 0 || type >= types.length) continue;
+    tags.add(NhentaiTag(id, name, count is int ? count : 0, types[type]));
+  }
+  if (tags.isEmpty) throw const FormatException('empty tag list');
+  tags.sort((a, b) => b.count.compareTo(a.count));
+  int rank(String type) {
+    final i = nhentaiTagTypes.indexOf(type);
+    return i < 0 ? nhentaiTagTypes.length : i;
+  }
+
+  final byName = <String, NhentaiTag>{};
+  for (final tag in tags) {
+    final other = byName[tag.name];
+    if (other == null || rank(tag.type) < rank(other.type)) {
+      byName[tag.name] = tag;
+    }
+  }
+  return (
+    tags: tags,
+    byId: {for (final tag in tags) tag.id: tag},
+    byName: byName,
+    byTypeName: {for (final tag in tags) '${tag.type}\n${tag.name}': tag},
+  );
+}
+
+/// Reads and parses the stored copy at [path] (for a background isolate).
+NhentaiTagList _readTagList(String path) =>
+    parseNhentaiTagList(File(path).readAsStringSync());
+
 /// nhentai's tag types, in the order a bare name is looked up in when it
 /// exists in several (e.g. a tag and a character of the same name).
 const nhentaiTagTypes = [
@@ -84,7 +138,7 @@ class NhentaiTags {
     var stale = true;
     if (await file.exists()) {
       try {
-        loadJson(await file.readAsString());
+        _apply(await compute(_readTagList, file.path));
         final age = DateTime.now().difference(await file.lastModified());
         stale = age > maxAge;
       } catch (e) {
@@ -101,7 +155,7 @@ class NhentaiTags {
         ),
       );
       final body = res.data ?? '';
-      loadJson(body);
+      _apply(await compute(parseNhentaiTagList, body));
       await file.parent.create(recursive: true);
       await file.writeAsString(body);
     } catch (e) {
@@ -111,40 +165,16 @@ class NhentaiTags {
   }
 
   /// Reads the list format written by tool/nhentai_tags.py. Throws on
-  /// anything else.
+  /// anything else. The app itself parses in a background isolate (see
+  /// [_load]); this is the same parser, run right here.
   @visibleForTesting
-  void loadJson(String source) {
-    final data = jsonDecode(source);
-    if (data is! Map || data['tags'] is! List || data['types'] is! List) {
-      throw const FormatException('not an nhentai tag list');
-    }
-    final types = [for (final t in data['types'] as List) '$t'];
-    final tags = <NhentaiTag>[];
-    for (final row in data['tags'] as List) {
-      if (row is! List || row.length < 4) continue;
-      final id = row[0], name = row[1], count = row[2], type = row[3];
-      if (id is! int || name is! String || type is! int) continue;
-      if (type < 0 || type >= types.length) continue;
-      tags.add(NhentaiTag(id, name, count is int ? count : 0, types[type]));
-    }
-    if (tags.isEmpty) throw const FormatException('empty tag list');
-    tags.sort((a, b) => b.count.compareTo(a.count));
-    _tags = tags;
-    _byId = {for (final tag in tags) tag.id: tag};
-    _byTypeName = {for (final tag in tags) '${tag.type}\n${tag.name}': tag};
-    int rank(String type) {
-      final i = nhentaiTagTypes.indexOf(type);
-      return i < 0 ? nhentaiTagTypes.length : i;
-    }
+  void loadJson(String source) => _apply(parseNhentaiTagList(source));
 
-    final byName = <String, NhentaiTag>{};
-    for (final tag in tags) {
-      final other = byName[tag.name];
-      if (other == null || rank(tag.type) < rank(other.type)) {
-        byName[tag.name] = tag;
-      }
-    }
-    _byName = byName;
+  void _apply(NhentaiTagList list) {
+    _tags = list.tags;
+    _byId = list.byId;
+    _byName = list.byName;
+    _byTypeName = list.byTypeName;
   }
 
   NhentaiTag? byId(int id) => _byId[id];

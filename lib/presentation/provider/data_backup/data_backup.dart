@@ -25,6 +25,7 @@ import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart' show Ref;
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
@@ -132,7 +133,28 @@ class DataBackupState extends _$DataBackupState {
     ref.invalidate(savedSearchesProvider);
   }
 
+  /// Restores a backup picked by the user. If a file in it can't be read,
+  /// the restore stops with an error instead of hanging; what was restored
+  /// up to then is shown, and each kind of data is only replaced once its
+  /// file turned out readable (see the `import` of the repositories).
   Future<void> restore({Future<bool?> Function()? onConfirm}) async {
+    try {
+      await _restore(onConfirm: onConfirm);
+    } catch (e, s) {
+      debugPrint('Restore failed: $e\n$s');
+      if (!ref.mounted) return;
+      try {
+        _invalidateProviders();
+        await ref.read(serverStateProvider.notifier).populate();
+      } catch (e) {
+        debugPrint('Restore: reloading failed: $e');
+      }
+      if (!ref.mounted) return;
+      state = BackupResult.error(error: e, stackTrace: s);
+    }
+  }
+
+  Future<void> _restore({Future<bool?> Function()? onConfirm}) async {
     final backupsDir = await _backupDir();
     await FilePicker.clearTemporaryFiles();
 

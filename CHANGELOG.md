@@ -25,6 +25,10 @@
 * "For you" feed from favorites and Monbooru sends; translation notes over Danbooru/Moebooru images
 * Fix: posts with more than 64 tags were rejected by monloader
 * nhentai: tags typed like on Danbooru (`big_breasts`), converted to nhentai's search syntax; Continue reading: select entries to remove
+* Fix: blocked tags no longer show up in tag suggestions; favorites and downloads are recognized after a post's score or tags changed
+* Restoring a backup only replaces data once its file could be read; a broken entry is skipped instead of stopping the restore
+* Faster: pages with many blocked tags, the first nhentai search, following monloader jobs; server icons are kept between app starts; cached images older than 7 days are removed at start
+* Privacy: the Referer of API requests is only the server's address (no login data from the URL suffix); post links only open web addresses
 * Sort button in the search bar for boorus that support it (e.g. Danbooru: rank, score, favorites, oldest), remembered per server
 * iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup
