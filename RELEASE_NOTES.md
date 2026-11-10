@@ -2,6 +2,7 @@ Unofficial fork of Boorusphere 1.5.4 for iOS and Android: an unsigned IPA for si
 
 ## New
 <!-- Changes for the next release go here, one '- ' entry each. -->
+- **Fix:** scrolling quickly through some boorus (e.g. rule34.xxx) sometimes stopped with "HTTP 403" and needed a tap on Retry. The app now asks again by itself a few times, with short pauses, before it shows the error.
 
 ## In 1.5.4-ios.19
 - **New home:** the project is now at github.com/Schw1/boorusphere (formerly boorusphere-ios), as it is no longer iOS-only. Update checks and the nhentai tag list use the new address; older versions keep working through GitHub's redirect.
