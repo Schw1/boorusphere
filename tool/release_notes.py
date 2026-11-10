@@ -9,11 +9,16 @@ only there. The release workflow uses this script to
       "## New" headed "## New in <version>". Fails when "## New" has no
       entry, unless --allow-empty (test builds).
 
+  changelog <tag>
+      before building: add the "## New" entries (plain text) to the
+      CHANGELOG.md section of the app's base version, so the app built for
+      <tag> shows them in its changelog. Only the build's working copy is
+      changed; nothing when "## New" is empty.
+
   rotate <tag>
       after publishing: move the "## New" entries under "## In <version>",
-      start an empty "## New", and add the entries (plain text) to the
-      CHANGELOG.md section of the app's base version, which the in-app
-      changelog shows.
+      start an empty "## New", and add the entries to CHANGELOG.md like
+      `changelog` does, for main.
 
 <tag> is the release tag, e.g. v1.5.4-ios.18 (version 1.5.4-ios.18, base
 version 1.5.4).
@@ -99,17 +104,29 @@ def rotate(tag: str) -> None:
         + after
     )
     NOTES.write_text(re.sub(r"\n{3,}", "\n\n", "\n".join(lines)))
+    add_to_changelog(tag, entries)
 
+
+def changelog(tag: str) -> None:
+    _, section, _ = split_new(NOTES.read_text())
+    entries = entries_of(section)
+    if entries:
+        add_to_changelog(tag, entries)
+
+
+def add_to_changelog(tag: str, entries) -> None:
+    """Adds [entries] as plain text at the top of the base version's
+    CHANGELOG.md section (the section is created when missing)."""
     base = base_version_of(tag)
-    changelog = CHANGELOG.read_text().split("\n")
+    lines = CHANGELOG.read_text().split("\n")
     heading = f"## {base}"
     added = [f"* {plain(entry)}" for entry in entries]
-    if heading in changelog:
-        at = changelog.index(heading) + 1
-        changelog[at:at] = added
+    if heading in lines:
+        at = lines.index(heading) + 1
+        lines[at:at] = added
     else:
-        changelog[0:0] = [heading] + added + [""]
-    CHANGELOG.write_text("\n".join(changelog))
+        lines[0:0] = [heading] + added + [""]
+    CHANGELOG.write_text("\n".join(lines))
 
 
 def main(args) -> None:
@@ -117,6 +134,8 @@ def main(args) -> None:
         body(args[1], args[2], "--allow-empty" in args[3:])
     elif len(args) == 2 and args[0] == "rotate":
         rotate(args[1])
+    elif len(args) == 2 and args[0] == "changelog":
+        changelog(args[1])
     else:
         raise SystemExit(__doc__)
 
