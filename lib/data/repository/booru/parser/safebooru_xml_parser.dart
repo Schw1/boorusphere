@@ -78,6 +78,8 @@ class SafebooruXmlParser extends BooruParser {
       final source = pick(post, 'source').asStringOrNull() ?? '';
       final score = pick(post, 'score').asIntOrNull() ?? 0;
       final md5 = FileMd5.normalize(pick(post, 'hash').asStringOrNull());
+      final parentId = BooruUtil.parentIdOf(pick(post, 'parent_id').value);
+      final hasChildren = BooruUtil.isTrue(pick(post, 'has_children').value);
 
       final hasFile = originalFile.isNotEmpty && previewFile.isNotEmpty;
       final hasContent = width > 0 && height > 0;
@@ -103,6 +105,8 @@ class SafebooruXmlParser extends BooruParser {
             source: source,
             score: score,
             md5: md5,
+            parentId: parentId,
+            hasChildren: hasChildren,
           ),
         );
       }

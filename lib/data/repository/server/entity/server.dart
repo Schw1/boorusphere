@@ -133,9 +133,44 @@ abstract class Server with _$Server {
   }
 
   static final _typedOrder = RegExp(
-    r'(^|\s)-?(order|sort):',
+    r'(^|\s)-?(order|sort|ordpool):',
     caseSensitive: false,
   );
+
+  /// Search for the post with [id], or null where the booru has no such
+  /// search.
+  String? postQuery(int id) => _hasRelations ? 'id:$id' : null;
+
+  /// Search for the child posts of [id] (on Danbooru and Moebooru also the
+  /// post itself), or null.
+  String? childrenQuery(int id) => _hasRelations ? 'parent:$id' : null;
+
+  /// Search for the posts of pool [id], in the pool's order where the
+  /// booru has one, or null.
+  String? poolQuery(int id) => switch (_engine) {
+    'danbooru' => 'ordpool:$id',
+    'e621' || 'moebooru' || 'danbooru1' => 'pool:$id',
+    _ => null,
+  };
+
+  bool get _hasRelations => switch (_engine) {
+    'danbooru' || 'e621' || 'moebooru' || 'danbooru1' || 'gelbooru' => true,
+    _ => false,
+  };
+
+  /// API address listing the pools a post is in: by the post id on
+  /// Danbooru, by the pool ids the post lists on e621. Null where the
+  /// booru has no such API or the post is in no pool.
+  String? poolsUrlOf(int postId, List<int> poolIds) {
+    final api = apiAddress.replaceFirst(RegExp(r'/+$'), '');
+    return switch (_engine) {
+      'danbooru' =>
+        '$api/pools.json?search[post_ids_include_all]=$postId&limit=20',
+      'e621' when poolIds.isNotEmpty =>
+        '$api/pools.json?search[id]=${poolIds.join(',')}&limit=20',
+      _ => null,
+    };
+  }
 
   /// Booru engine, as far as sorting is concerned.
   String get _engine {

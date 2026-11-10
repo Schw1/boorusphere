@@ -422,5 +422,17 @@
     "nothing_found": "Für die gewählten Tags wurde nichts gefunden. Tippe auf Aktualisieren für andere.",
     "servers": "Server",
     "all_servers": "Alle Server"
+  },
+  "relations": {
+    "title": "Verwandte Posts",
+    "parent": "Übergeordneter Post #${id}",
+    "children": "Untergeordnete Posts",
+    "siblings": "Weitere Versionen",
+    "pools": "Pools",
+    "pool_posts": {
+      "one": "${n} Post",
+      "other": "${n} Posts"
+    },
+    "pools_failed": "Die Pools dieses Posts konnten nicht geladen werden."
   }
 }

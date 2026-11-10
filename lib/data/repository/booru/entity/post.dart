@@ -38,6 +38,16 @@ abstract class Post with _$Post {
 
     /// Title of a gallery (nhentai), '' for ordinary posts.
     @HiveField(23, defaultValue: '') @Default('') String title,
+
+    /// Id of the parent post, 0 when there is none.
+    @HiveField(24, defaultValue: 0) @Default(0) int parentId,
+
+    /// The post has child posts (other versions, the rest of a set).
+    @HiveField(25, defaultValue: false) @Default(false) bool hasChildren,
+
+    /// Pools the post is in, when the booru lists them with the post
+    /// (e621). Danbooru's are loaded with the details.
+    @HiveField(26, defaultValue: <int>[]) @Default(<int>[]) List<int> poolIds,
   }) = _Post;
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);

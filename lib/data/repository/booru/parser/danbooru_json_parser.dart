@@ -61,6 +61,8 @@ class DanbooruJsonParser extends BooruParser {
       final tagsMeta = pick(post, 'tag_string_meta').toWordList();
       final score = pick(post, 'score').asIntOrNull() ?? 0;
       final md5 = FileMd5.normalize(pick(post, 'md5').asStringOrNull());
+      final parentId = BooruUtil.parentIdOf(pick(post, 'parent_id').value);
+      final hasChildren = BooruUtil.isTrue(pick(post, 'has_children').value);
 
       final hasFile = originalFile.isNotEmpty && previewFile.isNotEmpty;
       final hasContent = width > 0 && height > 0;
@@ -87,6 +89,8 @@ class DanbooruJsonParser extends BooruParser {
             tagsMeta: tagsMeta.map(BooruUtil.decodeTag).toList(),
             score: score,
             md5: md5,
+            parentId: parentId,
+            hasChildren: hasChildren,
           ),
         );
       }

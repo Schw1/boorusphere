@@ -424,5 +424,17 @@
     "nothing_found": "Nothing found for the picked tags. Pull down or tap refresh for other ones.",
     "servers": "Servers",
     "all_servers": "All servers"
+  },
+  "relations": {
+    "title": "Related posts",
+    "parent": "Parent post #${id}",
+    "children": "Child posts",
+    "siblings": "Other versions",
+    "pools": "Pools",
+    "pool_posts": {
+      "one": "${n} post",
+      "other": "${n} posts"
+    },
+    "pools_failed": "Couldn't load the pools of this post."
   }
 }

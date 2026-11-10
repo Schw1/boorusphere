@@ -47,7 +47,7 @@ class SavedSearch {
       '$serverId\n${normalize(query)}';
 
   static final _typedOrder = RegExp(
-    r'(^|\s)-?(order|sort):',
+    r'(^|\s)-?(order|sort|ordpool):',
     caseSensitive: false,
   );
 
