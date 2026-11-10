@@ -1,4 +1,11 @@
 ## 1.5.4
+* Related posts: the post details show the parent post, other versions and child posts, and the pools the post is in (Danbooru, e621), each opening a search. Pools open in their reading order on Danbooru. Shown for Danbooru, e621, Gelbooru, Safebooru and Moebooru (yande.re, Konachan).
+* App data out of sight (iOS): favorites, servers, settings and the other app data were stored in the folder the Files app shows (Files → On My iPhone → Boorusphere), where they could be deleted by accident and showed login data. They are now kept where only the app sees them; the first start of this version moves them over. Downloads and backups stay in the Files app.
+* Fix: downloads with a % in the file name failed; names in other scripts (e.g. Japanese) became ____.jpg. Names are now kept readable, with the post id when nothing readable is left.
+* Fix: very large originals (e.g. 10000 × 10000 px) with "Load original" could close the app. Pictures larger than 4096 px are now shown at 4096 px on their longest side.
+* Restore: a server whose address in the backup differs from the one on this device loses its stored API token, so it is never sent to another address. Enter it again in the server settings.
+* Local network: addresses like nas, *.fritz.box, *.internal and local IPv6 addresses count as local: no plain-HTTP warning for their token, and their icons are not looked up at DuckDuckGo.
+* Settings dialogs (sort, language, rating, parser, download quality and filter) use the current Flutter radio buttons; under the hood the app was tidied up (no analyzer findings, more tests).
 * iOS port (unofficial): unsigned IPA built with GitHub Actions; videos via media_kit (incl. WebM); downloads and backups in the Files app
 * iOS: native Monbooru support (browse a Monbooru instance with an API token stored in the iOS Keychain)
 * iOS: "Send to Monbooru" button (via monloader) for images and videos
