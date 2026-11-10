@@ -3,7 +3,8 @@ import 'package:hooks_riverpod/legacy.dart';
 
 final homeDrawerControllerProvider =
     ChangeNotifierProvider.autoDispose<HomeDrawerController>(
-        (ref) => throw UnimplementedError());
+      (ref) => throw UnimplementedError(),
+    );
 
 class HomeDrawerController extends ChangeNotifier {
   AnimationController? _animator;

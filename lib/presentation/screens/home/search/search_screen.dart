@@ -12,12 +12,16 @@ class SearchScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isOpen =
-        ref.watch(searchBarControllerProvider.select((it) => it.isOpen));
-    final animator =
-        useAnimationController(duration: const Duration(milliseconds: 300));
-    final animation =
-        CurvedAnimation(parent: animator, curve: Curves.easeInOutCubic);
+    final isOpen = ref.watch(
+      searchBarControllerProvider.select((it) => it.isOpen),
+    );
+    final animator = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
+    final animation = CurvedAnimation(
+      parent: animator,
+      curve: Curves.easeInOutCubic,
+    );
 
     useEffect(() {
       isOpen ? animator.forward() : animator.reverse();
@@ -27,10 +31,7 @@ class SearchScreen extends HookConsumerWidget {
       alignment: Alignment.bottomCenter,
       children: [
         FadeTransition(
-          opacity: Tween<double>(
-            begin: 0.5,
-            end: 1,
-          ).animate(animation),
+          opacity: Tween<double>(begin: 0.5, end: 1).animate(animation),
           child: SlideTransition(
             position: Tween(
               begin: const Offset(0, 1),

@@ -41,8 +41,8 @@ class Favicon extends ConsumerWidget {
     final iconSize = this.iconSize ?? context.iconTheme.size;
     final fallbackWidget = Icon(Icons.public, size: iconSize);
     final uri = url.toUri();
-    final valid = uri.hasAuthority &&
-        (uri.scheme == 'http' || uri.scheme == 'https');
+    final valid =
+        uri.hasAuthority && (uri.scheme == 'http' || uri.scheme == 'https');
 
     return SizedBox(
       width: size ?? context.iconTheme.size,
@@ -52,7 +52,9 @@ class Favicon extends ConsumerWidget {
             ? fallbackWidget
             : FutureBuilder<Uint8List?>(
                 future: FaviconLoader.load(
-                    'Boorusphere/${ref.read(versionRepoProvider).current}', uri),
+                  'Boorusphere/${ref.read(versionRepoProvider).current}',
+                  uri,
+                ),
                 builder: (context, snapshot) {
                   final data = snapshot.data;
                   if (data == null) return fallbackWidget;
@@ -99,7 +101,8 @@ class FaviconLoader {
     try {
       return directory ??
           Directory(
-              p.join((await getApplicationCacheDirectory()).path, 'favicons'));
+            p.join((await getApplicationCacheDirectory()).path, 'favicons'),
+          );
     } catch (_) {
       return null; // no cache folder: icons are loaded per session
     }
@@ -157,10 +160,12 @@ class FaviconLoader {
 
   /// Own lightweight client: no cookie jar (a login page must not leave a
   /// session cookie behind) and no retries.
-  static Dio _client(String userAgent) => _dio ??= Dio(BaseOptions(
-        headers: {'User-Agent': userAgent},
-        connectTimeout: const Duration(seconds: 8),
-      ));
+  static Dio _client(String userAgent) => _dio ??= Dio(
+    BaseOptions(
+      headers: {'User-Agent': userAgent},
+      connectTimeout: const Duration(seconds: 8),
+    ),
+  );
 
   static Future<Uint8List?> load(String userAgent, Uri site) {
     final dio = _client(userAgent);
@@ -196,8 +201,10 @@ class FaviconLoader {
       }
 
       if (!ServerAuthStore.isLocalHost(origin.host)) {
-        final ddg = await _get(dio,
-            Uri.parse('https://icons.duckduckgo.com/ip3/${origin.host}.ico'));
+        final ddg = await _get(
+          dio,
+          Uri.parse('https://icons.duckduckgo.com/ip3/${origin.host}.ico'),
+        );
         if (ddg != null && _isImage(ddg.data)) return ddg.data;
       }
     } catch (e) {
@@ -248,16 +255,19 @@ class FaviconLoader {
   }
 
   static bool _isHtml(Uint8List b) {
-    final head =
-        String.fromCharCodes(b.take(512)).trimLeft().toLowerCase();
+    final head = String.fromCharCodes(b.take(512)).trimLeft().toLowerCase();
     return head.startsWith('<!doctype html') || head.startsWith('<html');
   }
 
   static final _linkTag = RegExp(r'<link\b[^>]*>', caseSensitive: false);
-  static final _rel = RegExp(r'''rel\s*=\s*["']([^"']*)["']''',
-      caseSensitive: false);
-  static final _href = RegExp(r'''href\s*=\s*["']([^"']+)["']''',
-      caseSensitive: false);
+  static final _rel = RegExp(
+    r'''rel\s*=\s*["']([^"']*)["']''',
+    caseSensitive: false,
+  );
+  static final _href = RegExp(
+    r'''href\s*=\s*["']([^"']+)["']''',
+    caseSensitive: false,
+  );
 
   /// `<link rel="icon|shortcut icon|apple-touch-icon" href=…>`, SVGs skipped.
   static List<String> _iconLinks(String html) {

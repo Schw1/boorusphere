@@ -33,24 +33,20 @@ class HomeStatus extends HookConsumerWidget {
         switch (pageState) {
           IdleFetchResult() => const SizedBox.shrink(),
           DataFetchResult() => Container(
-              height: 50,
-              alignment: Alignment.topCenter,
-              child: ElevatedButton(
-                onPressed: ref.read(pageStateProvider.notifier).loadMore,
-                child: Text(context.t.loadMore),
-              ),
+            height: 50,
+            alignment: Alignment.topCenter,
+            child: ElevatedButton(
+              onPressed: ref.read(pageStateProvider.notifier).loadMore,
+              child: Text(context.t.loadMore),
             ),
+          ),
           LoadingFetchResult() => Container(
-              height: 50,
-              alignment: Alignment.topCenter,
-              child: const RefreshProgressIndicator(),
-            ),
+            height: 50,
+            alignment: Alignment.topCenter,
+            child: const RefreshProgressIndicator(),
+          ),
           ErrorFetchResult(:final data, :final error, :final stackTrace) =>
-            _ErrorStatus(
-              data: data,
-              error: error,
-              stackTrace: stackTrace,
-            ),
+            _ErrorStatus(data: data, error: error, stackTrace: stackTrace),
         },
       ],
     );
@@ -58,11 +54,7 @@ class HomeStatus extends HookConsumerWidget {
 }
 
 class _ErrorStatus extends ConsumerWidget {
-  const _ErrorStatus({
-    required this.data,
-    this.error,
-    this.stackTrace,
-  });
+  const _ErrorStatus({required this.data, this.error, this.stackTrace});
 
   final PageData data;
   final Object? error;
@@ -77,8 +69,10 @@ class _ErrorStatus extends ConsumerWidget {
     } else if (e == BooruError.empty) {
       return data.option.query.isEmpty
           ? context.t.pageStatus.noResult(n: data.posts.length)
-          : context.t.pageStatus
-              .noResultForQuery(n: data.posts.length, query: data.option.query);
+          : context.t.pageStatus.noResultForQuery(
+              n: data.posts.length,
+              query: data.option.query,
+            );
     } else if (e == BooruError.tagsBlocked) {
       return context.t.pageStatus.blocked(query: data.option.query);
     } else {
@@ -110,8 +104,9 @@ class _ErrorStatus extends ConsumerWidget {
                     if (e is DioException && e.response?.statusCode == 401) {
                       return ElevatedButton(
                         onPressed: () {
-                          context.router
-                              .push(ServerEditorRoute(server: server));
+                          context.router.push(
+                            ServerEditorRoute(server: server),
+                          );
                         },
                         child: Text(context.t.servers.addApiKey),
                       );
@@ -123,7 +118,8 @@ class _ErrorStatus extends ConsumerWidget {
                               .setRating(BooruRating.all);
                           if (context.mounted) {
                             unawaited(
-                                ref.read(pageStateProvider.notifier).load());
+                              ref.read(pageStateProvider.notifier).load(),
+                            );
                           }
                         },
                         child: Text(context.t.rating.disableRatingSafe),

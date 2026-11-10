@@ -26,15 +26,18 @@ class PostArchive extends HookConsumerWidget {
     final server = ref.watch(serverStateProvider).findById(post.serverId);
     final isGallery = NhentaiJsonParser.isNhentai(server);
     // nhentai lists only a small thumbnail; the gallery has the real cover.
-    final gallery =
-        isGallery ? ref.watch(nhentaiGalleryProvider(post)).value : null;
+    final gallery = isGallery
+        ? ref.watch(nhentaiGalleryProvider(post)).value
+        : null;
     final headers = ref.watch(postHeadersFactoryProvider(post));
     final cover = gallery?.cover ?? '';
     // Last page read; rebuilt when the reader saves a page.
     useValueListenable(ReadingProgress.changes);
     final saved = useFuture(
-      useMemoized(() => ReadingProgress.pageOf(post),
-          [post.viewId, ReadingProgress.changes.value]),
+      useMemoized(() => ReadingProgress.pageOf(post), [
+        post.viewId,
+        ReadingProgress.changes.value,
+      ]),
     ).data;
     final finished = saved != null && saved >= post.pageCount - 1;
     final resume = saved != null && saved > 0 && !finished;
@@ -62,8 +65,10 @@ class PostArchive extends HookConsumerWidget {
               if (post.title.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(8),
@@ -77,17 +82,26 @@ class PostArchive extends HookConsumerWidget {
                   ),
                 ),
               FilledButton.icon(
-                onPressed: () => ArchiveReaderPage.open(context, post,
-                    startPage: resume ? saved : 0),
-                icon: Icon(resume
-                    ? Icons.auto_stories_outlined
-                    : Icons.menu_book_outlined),
-                label: Text(resume
-                    ? context.t.archive
-                        .resume(page: saved + 1, n: post.pageCount)
-                    : finished
-                        ? context.t.archive.readAgain(n: post.pageCount)
-                        : context.t.archive.read(n: post.pageCount)),
+                onPressed: () => ArchiveReaderPage.open(
+                  context,
+                  post,
+                  startPage: resume ? saved : 0,
+                ),
+                icon: Icon(
+                  resume
+                      ? Icons.auto_stories_outlined
+                      : Icons.menu_book_outlined,
+                ),
+                label: Text(
+                  resume
+                      ? context.t.archive.resume(
+                          page: saved + 1,
+                          n: post.pageCount,
+                        )
+                      : finished
+                      ? context.t.archive.readAgain(n: post.pageCount)
+                      : context.t.archive.read(n: post.pageCount),
+                ),
               ),
             ],
           ),
@@ -106,11 +120,16 @@ class ArchiveReaderPage extends HookConsumerWidget {
   /// 0-based page to open at (the last page read).
   final int startPage;
 
-  static Future<void> open(BuildContext context, Post post,
-      {int startPage = 0}) {
-    return Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ArchiveReaderPage(post: post, startPage: startPage),
-    ));
+  static Future<void> open(
+    BuildContext context,
+    Post post, {
+    int startPage = 0,
+  }) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ArchiveReaderPage(post: post, startPage: startPage),
+      ),
+    );
   }
 
   /// Pages loaded ahead of the current one.
@@ -119,9 +138,9 @@ class ArchiveReaderPage extends HookConsumerWidget {
   /// Indexes to load in the background while [page] of [total] is shown:
   /// the next [preloadPages], then the previous one.
   static List<int> preloadRange(int page, int total) => [
-        for (var i = page + 1; i <= page + preloadPages && i < total; i++) i,
-        if (page - 1 >= 0 && page - 1 < total) page - 1,
-      ];
+    for (var i = page + 1; i <= page + preloadPages && i < total; i++) i,
+    if (page - 1 >= 0 && page - 1 < total) page - 1,
+  ];
 
   /// URLs of all pages. Page 1 is the cover the viewer already shows.
   static List<String> pageUrls(String api, Post post) {
@@ -150,8 +169,9 @@ class ArchiveReaderPage extends HookConsumerWidget {
     final loading = gallery?.isLoading ?? false;
     final page = useState(startPage);
     final showBars = useState(true);
-    final controller =
-        useMemoized(() => ExtendedPageController(initialPage: startPage));
+    final controller = useMemoized(
+      () => ExtendedPageController(initialPage: startPage),
+    );
     useEffect(() => controller.dispose, [controller]);
     // Remember the page (also the first one, so a started archive shows up
     // as such).
@@ -180,17 +200,22 @@ class ArchiveReaderPage extends HookConsumerWidget {
           ? AppBar(
               backgroundColor: Colors.black54,
               foregroundColor: Colors.white,
-              title: Text(context.t.archive.page(
+              title: Text(
+                context.t.archive.page(
                   current: page.value + 1,
-                  total: urls.isEmpty ? post.pageCount : urls.length)),
+                  total: urls.isEmpty ? post.pageCount : urls.length,
+                ),
+              ),
             )
           : null,
       body: urls.isEmpty
           ? Center(
               child: loading
                   ? const CircularProgressIndicator()
-                  : Text(context.t.loadImageFailed,
-                      style: const TextStyle(color: Colors.white)),
+                  : Text(
+                      context.t.loadImageFailed,
+                      style: const TextStyle(color: Colors.white),
+                    ),
             )
           : Stack(
               children: [
@@ -211,20 +236,20 @@ class ArchiveReaderPage extends HookConsumerWidget {
                         maxScale: 5,
                         inPageView: true,
                       ),
-                      loadStateChanged: (state) => switch (
-                          state.extendedImageLoadState) {
-                        LoadState.loading => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        LoadState.failed => Center(
-                            child: TextButton.icon(
-                              onPressed: state.reLoadImage,
-                              icon: const Icon(Icons.refresh),
-                              label: Text(context.t.retry),
+                      loadStateChanged: (state) =>
+                          switch (state.extendedImageLoadState) {
+                            LoadState.loading => const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                          ),
-                        LoadState.completed => null,
-                      },
+                            LoadState.failed => Center(
+                              child: TextButton.icon(
+                                onPressed: state.reLoadImage,
+                                icon: const Icon(Icons.refresh),
+                                label: Text(context.t.retry),
+                              ),
+                            ),
+                            LoadState.completed => null,
+                          },
                     ),
                   ),
                 ),

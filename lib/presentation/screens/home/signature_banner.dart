@@ -43,8 +43,10 @@ class SignatureBanner extends HookConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.timer_outlined,
-                    color: context.colorScheme.onErrorContainer),
+                Icon(
+                  Icons.timer_outlined,
+                  color: context.colorScheme.onErrorContainer,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

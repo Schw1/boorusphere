@@ -10,7 +10,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'suggestion_state.g.dart';
 
 class Suggestion {
-
   const Suggestion(this.name, this.count);
   final String name;
   final int count;
@@ -54,8 +53,9 @@ class SuggestionState extends _$SuggestionState {
     state = FetchResult.loading(state.data);
     _lastWord = word;
     try {
-      final res =
-          await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
+      final res = await ref
+          .read(imageboardRepoProvider(server))
+          .getSuggestion(word);
       // Riverpod 3: using ref/state after the provider was disposed throws.
       if (!ref.mounted) return;
       // Blocked everywhere or on this server, as in the timeline.

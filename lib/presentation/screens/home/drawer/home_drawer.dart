@@ -48,8 +48,9 @@ class HomeDrawer extends StatelessWidget {
                   child: ListTileTheme(
                     data: context.theme.listTileTheme.copyWith(
                       dense: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 24),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                      ),
                     ),
                     child: const Column(
                       children: [
@@ -57,10 +58,7 @@ class HomeDrawer extends StatelessWidget {
                           alignment: Alignment.topLeft,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _Header(),
-                              _ServerSelection(),
-                            ],
+                            children: [_Header(), _ServerSelection()],
                           ),
                         ),
                         Expanded(
@@ -191,10 +189,7 @@ class _Header extends StatelessWidget {
         children: [
           const Text(
             'Boorusphere!',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w200,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w200),
           ),
           _ThemeSwitcherButton(),
         ],
@@ -217,8 +212,9 @@ class _ThemeSwitcherButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.themeMode));
+    final theme = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.themeMode),
+    );
 
     return IconButton(
       icon: Icon(themeIconOf(theme)),
@@ -261,7 +257,8 @@ class AppVersionTile extends ConsumerWidget {
               ),
             ),
             subtitle: Text(
-                context.t.updater.progress(progress: updateProgress.progress)),
+              context.t.updater.progress(progress: updateProgress.progress),
+            ),
             onTap: () => context.router.push(const AboutRoute()),
           );
         }
@@ -295,8 +292,9 @@ class _HomeTile extends ConsumerWidget {
         onTap: () {
           ref.read(homeDrawerControllerProvider).close();
           context.router.pushAndPopUntil(
-              HomeRoute(session: session.copyWith(query: '')),
-              predicate: (r) => false);
+            HomeRoute(session: session.copyWith(query: '')),
+            predicate: (r) => false,
+          );
         },
       ),
     );
@@ -320,50 +318,52 @@ class _ServerSelection extends HookConsumerWidget {
     final t = context.t.servers;
 
     Widget tile(Server it, {bool inList = false}) => Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
-          child: ListTile(
-            title: Text(it.name),
-            leading: Favicon(
-              url: it.homepage,
-              shape: BoxShape.circle,
-              iconSize: 21,
-            ),
-            trailing: inList || pinned.contains(it.id)
-                ? IconButton(
-                    tooltip: pinned.contains(it.id) ? t.unpin : t.pin,
-                    icon: Icon(
-                      pinned.contains(it.id)
-                          ? Icons.push_pin
-                          : Icons.push_pin_outlined,
-                      size: 18,
-                    ),
-                    onPressed: () => ServerPins.toggle(it.id),
-                  )
-                : null,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            selected: it.id == serverActive.id,
-            selectedTileColor: context.colorScheme.primary
-                .withAlpha(context.isLightThemed ? 50 : 25),
-            onLongPress: () => ServerPins.toggle(it.id),
-            onTap: () {
-              ref.read(homeDrawerControllerProvider).close().then((value) {
-                if (it.id != serverActive.id) {
-                  context.router.push(
-                      HomeRoute(session: session.copyWith(serverId: it.id)));
-                } else {
-                  ref
-                      .read(pageStateProvider.notifier)
-                      .update((it) => it.copyWith(clear: true));
-                }
-              });
-            },
+      padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+      child: ListTile(
+        title: Text(it.name),
+        leading: Favicon(
+          url: it.homepage,
+          shape: BoxShape.circle,
+          iconSize: 21,
+        ),
+        trailing: inList || pinned.contains(it.id)
+            ? IconButton(
+                tooltip: pinned.contains(it.id) ? t.unpin : t.pin,
+                icon: Icon(
+                  pinned.contains(it.id)
+                      ? Icons.push_pin
+                      : Icons.push_pin_outlined,
+                  size: 18,
+                ),
+                onPressed: () => ServerPins.toggle(it.id),
+              )
+            : null,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(30),
+            bottomRight: Radius.circular(30),
           ),
-        );
+        ),
+        selected: it.id == serverActive.id,
+        selectedTileColor: context.colorScheme.primary.withAlpha(
+          context.isLightThemed ? 50 : 25,
+        ),
+        onLongPress: () => ServerPins.toggle(it.id),
+        onTap: () {
+          ref.read(homeDrawerControllerProvider).close().then((value) {
+            if (it.id != serverActive.id) {
+              context.router.push(
+                HomeRoute(session: session.copyWith(serverId: it.id)),
+              );
+            } else {
+              ref
+                  .read(pageStateProvider.notifier)
+                  .update((it) => it.copyWith(clear: true));
+            }
+          });
+        },
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,8 +380,7 @@ class _ServerSelection extends HookConsumerWidget {
                 tilePadding: const EdgeInsets.symmetric(horizontal: 24),
                 leading: const Icon(Icons.dns_outlined),
                 title: Text(t.all(n: servers.length)),
-                subtitle:
-                    pinned.isEmpty ? Text(t.pinHint) : null,
+                subtitle: pinned.isEmpty ? Text(t.pinHint) : null,
                 children: [for (final it in servers) tile(it, inList: true)],
               ),
             ),

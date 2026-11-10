@@ -88,16 +88,17 @@ class ForYou {
       }
     }
     final total = unique.length;
-    final result = [
-      for (final MapEntry(:key, :value) in counts.entries)
-        if (value >= minCount &&
-            !blocked.contains(key) &&
-            !(total >= _commonSample && value > total * _commonShare))
-          (key, value),
-    ]..sort((a, b) {
-        final byCount = b.$2.compareTo(a.$2);
-        return byCount != 0 ? byCount : a.$1.compareTo(b.$1);
-      });
+    final result =
+        [
+          for (final MapEntry(:key, :value) in counts.entries)
+            if (value >= minCount &&
+                !blocked.contains(key) &&
+                !(total >= _commonSample && value > total * _commonShare))
+              (key, value),
+        ]..sort((a, b) {
+          final byCount = b.$2.compareTo(a.$2);
+          return byCount != 0 ? byCount : a.$1.compareTo(b.$1);
+        });
     return result;
   }
 

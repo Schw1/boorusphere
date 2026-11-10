@@ -54,20 +54,25 @@ class _ServerEditor extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
-    final imeIncognito =
-        ref.watch(uiSettingStateProvider.select((it) => it.imeIncognito));
+    final imeIncognito = ref.watch(
+      uiSettingStateProvider.select((it) => it.imeIncognito),
+    );
     final server = useState(_server);
     final useApiAddr = useState(_server.apiAddr.isNotEmpty);
     final homepage = useTextEditingController(
-        text: isEditing ? _server.homepage : 'https://');
+      text: isEditing ? _server.homepage : 'https://',
+    );
     final apiAddr = useTextEditingController(
-        text: _server.apiAddr.isEmpty ? 'https://' : _server.apiAddr);
+      text: _server.apiAddr.isEmpty ? 'https://' : _server.apiAddr,
+    );
     final cUrlSuffix = useTextEditingController(text: _server.urlSuffix);
     final cToken = useTextEditingController(
-        text: isEditing ? ServerAuthStore.tokenOf(_server.id) : '');
+      text: isEditing ? ServerAuthStore.tokenOf(_server.id) : '',
+    );
     useListenable(homepage);
     useListenable(cToken);
-    final insecureToken = cToken.text.trim().isNotEmpty &&
+    final insecureToken =
+        cToken.text.trim().isNotEmpty &&
         ServerAuthStore.isInsecureRemote(homepage.text);
 
     validateAddress(String? value) {
@@ -126,10 +131,11 @@ class _ServerEditor extends HookConsumerWidget {
                     controller: cUrlSuffix,
                     enableIMEPersonalizedLearning: !imeIncognito,
                     decoration: InputDecoration(
-                        border: const UnderlineInputBorder(),
-                        labelText: context.t.serverQuery.urlSuffix,
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        hintText: '&api_key=key123&user_id=12345'),
+                      border: const UnderlineInputBorder(),
+                      labelText: context.t.serverQuery.urlSuffix,
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      hintText: '&api_key=key123&user_id=12345',
+                    ),
                   ),
                 ),
               CheckboxListTile(
@@ -176,8 +182,10 @@ class _ServerEditor extends HookConsumerWidget {
                       urlSuffix: cUrlSuffix.text,
                     );
                     final result = await ScannerDialog.open(
-                        context, baseServer,
-                        token: cToken.text);
+                      context,
+                      baseServer,
+                      token: cToken.text,
+                    );
                     if (result.searchParserId.isNotEmpty) {
                       server.value = result;
                     }
@@ -221,16 +229,15 @@ class _ServerEditor extends HookConsumerWidget {
 }
 
 class ScannerDialog extends HookConsumerWidget {
-  const ScannerDialog({
-    super.key,
-    required this.server,
-    this.token = '',
-  });
+  const ScannerDialog({super.key, required this.server, this.token = ''});
 
   final Server server;
   final String token;
-  static Future<Server> open(BuildContext context, Server server,
-      {String token = ''}) async {
+  static Future<Server> open(
+    BuildContext context,
+    Server server, {
+    String token = '',
+  }) async {
     final result = context.navigator.push<Server>(
       DialogRoute(
         context: context,
@@ -291,7 +298,7 @@ class ScannerDialog extends HookConsumerWidget {
                           color: Colors.greenAccent,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -313,7 +320,8 @@ class ScannerDialog extends HookConsumerWidget {
                 ),
               if (isScanning)
                 const LinearProgressIndicator(
-                    backgroundColor: Colors.transparent),
+                  backgroundColor: Colors.transparent,
+                ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextButton(
@@ -330,7 +338,7 @@ class ScannerDialog extends HookConsumerWidget {
                     isScanning ? context.t.cancel : context.t.actionContinue,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],

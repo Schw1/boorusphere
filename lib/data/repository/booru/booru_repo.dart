@@ -37,11 +37,15 @@ class BooruRepo implements ImageboardRepo {
   final Server server;
 
   Future<Response> _request(String url, BooruParser parser) {
-    return client.get(url,
-        options: _opt.copyWith(headers: {
+    return client.get(
+      url,
+      options: _opt.copyWith(
+        headers: {
           ...parser.headers,
           ...ServerAuthStore.headersFor(server, url),
-        }));
+        },
+      ),
+    );
   }
 
   @override
@@ -50,12 +54,15 @@ class BooruRepo implements ImageboardRepo {
       final tags = NhentaiTags.instance;
       await tags.ensureLoaded(client);
       return {
-        for (final (token, count) in tags.suggest(word)) Suggestion(token, count)
+        for (final (token, count) in tags.suggest(word))
+          Suggestion(token, count),
       };
     }
 
-    var parser = parsers.firstWhere((x) => x.id == server.suggestionParserId,
-        orElse: NoParser.new);
+    var parser = parsers.firstWhere(
+      (x) => x.id == server.suggestionParserId,
+      orElse: NoParser.new,
+    );
 
     final suggestionUrl = server.suggestionUrlsOf(word);
     final res = await _request(suggestionUrl, parser);
@@ -65,14 +72,19 @@ class BooruRepo implements ImageboardRepo {
       return parser.parseSuggestion(server, res).toSet();
     }
 
-    parser = parsers.firstWhere((it) => it.canParseSuggestion(res),
-        orElse: NoParser.new);
+    parser = parsers.firstWhere(
+      (it) => it.canParseSuggestion(res),
+      orElse: NoParser.new,
+    );
 
     if (parser.id.isNotEmpty) {
       _log.i(
-          'getSuggestion(${server.name}): parser resolved, now using ${parser.id}_parser');
+        'getSuggestion(${server.name}): parser resolved, now using ${parser.id}_parser',
+      );
       await serverState.edit(
-          server, server.copyWith(suggestionParserId: parser.id));
+        server,
+        server.copyWith(suggestionParserId: parser.id),
+      );
     }
 
     return parser.parseSuggestion(server, res).toSet();
@@ -80,8 +92,10 @@ class BooruRepo implements ImageboardRepo {
 
   @override
   Future<Set<Post>> getPage(PageOption option, int index) async {
-    var parser = parsers.firstWhere((x) => x.id == server.searchParserId,
-        orElse: NoParser.new);
+    var parser = parsers.firstWhere(
+      (x) => x.id == server.searchParserId,
+      orElse: NoParser.new,
+    );
 
     if (parser is NhentaiJsonParser) {
       // Tag names for the tag ids of the results (blocking, details); wait
@@ -96,8 +110,10 @@ class BooruRepo implements ImageboardRepo {
       return _nhentaiRandomPage(parser, option, index);
     }
 
-    final searchUrl =
-        server.searchUrlOf(option, page: index + parser.pageOffset);
+    final searchUrl = server.searchUrlOf(
+      option,
+      page: index + parser.pageOffset,
+    );
     final res = await _request(searchUrl, parser);
 
     if (parser.canParsePage(res)) {
@@ -105,21 +121,29 @@ class BooruRepo implements ImageboardRepo {
       return parser.parsePage(server, res).toSet();
     }
 
-    parser =
-        parsers.firstWhere((it) => it.canParsePage(res), orElse: NoParser.new);
+    parser = parsers.firstWhere(
+      (it) => it.canParsePage(res),
+      orElse: NoParser.new,
+    );
 
     if (parser.id.isNotEmpty) {
       _log.i(
-          'getPage(${server.name}): parser resolved, now using ${parser.id}_parser');
+        'getPage(${server.name}): parser resolved, now using ${parser.id}_parser',
+      );
       await serverState.edit(
-          server, server.copyWith(searchParserId: parser.id));
+        server,
+        server.copyWith(searchParserId: parser.id),
+      );
     }
 
     return parser.parsePage(server, res).toSet();
   }
 
   Future<Set<Post>> _nhentaiRandomPage(
-      NhentaiJsonParser parser, PageOption option, int index) async {
+    NhentaiJsonParser parser,
+    PageOption option,
+    int index,
+  ) async {
     final key = '${option.query}|${option.sort}|${option.seed}';
     var order = _randomPageOrder[key];
     if (order == null) {
@@ -133,8 +157,10 @@ class BooruRepo implements ImageboardRepo {
     }
     if (index >= order.length) return {};
 
-    final res =
-        await _request(server.searchUrlOf(option, page: order[index]), parser);
+    final res = await _request(
+      server.searchUrlOf(option, page: order[index]),
+      parser,
+    );
     if (!parser.canParsePage(res)) return {};
     final posts = parser.parsePage(server, res).toList()
       ..shuffle(Random(option.seed ^ index));

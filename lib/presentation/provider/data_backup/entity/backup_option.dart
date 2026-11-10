@@ -11,8 +11,10 @@ abstract class BackupOption with _$BackupOption {
     @Default(true) bool favoritePost,
     @Default(true) bool setting,
     @Default(true) bool monloader,
+
     /// Reading progress, "Continue reading" list and saved searches.
     @Default(true) bool reading,
+
     /// Credential parameters in the servers' URL suffix (api_key=…, …).
     /// Off by default: they would be in plain text in the backup file.
     @Default(false) bool credentials,
@@ -22,10 +24,10 @@ abstract class BackupOption with _$BackupOption {
 extension BackupOptionX on BackupOption {
   bool isValid() =>
       (searchHistory ||
-          server ||
-          blockedTags ||
-          favoritePost ||
-          setting ||
-          monloader ||
-          reading);
+      server ||
+      blockedTags ||
+      favoritePost ||
+      setting ||
+      monloader ||
+      reading);
 }

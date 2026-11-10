@@ -63,13 +63,10 @@ class ServerAuthStore {
 
   /// Tokens of [servers] for a backup with login data (`{serverId: token}`).
   static MapEntry<String, Object> exportBackup(Iterable<Server> servers) =>
-      MapEntry(
-        backupKey,
-        {
-          for (final server in servers)
-            if (tokenOf(server.id).isNotEmpty) server.id: tokenOf(server.id),
-        },
-      );
+      MapEntry(backupKey, {
+        for (final server in servers)
+          if (tokenOf(server.id).isNotEmpty) server.id: tokenOf(server.id),
+      });
 
   /// Saves the tokens of a backup made with login data.
   static Future<void> importBackup(String src) async {
@@ -91,8 +88,11 @@ class ServerAuthStore {
   ///
   /// The token is only attached when [url] points at the server's own
   /// homepage or API origin, so it never leaks to third-party hosts.
-  static Map<String, String> headersFor(Server server, String url,
-      {String? token}) {
+  static Map<String, String> headersFor(
+    Server server,
+    String url, {
+    String? token,
+  }) {
     final value = token ?? tokenOf(server.id);
     if (value.isEmpty || !isOwnOrigin(server, url)) return const {};
     return {'Authorization': 'Bearer $value'};

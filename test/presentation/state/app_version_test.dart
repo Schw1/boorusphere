@@ -23,9 +23,9 @@ void main() async {
 
   group('app version', () {
     test('get', () async {
-      final ref = ProviderContainer(overrides: [
-        envRepoProvider.overrideWithValue(FakeEnvRepo()),
-      ]);
+      final ref = ProviderContainer(
+        overrides: [envRepoProvider.overrideWithValue(FakeEnvRepo())],
+      );
 
       addTearDown(ref.dispose);
 
@@ -35,13 +35,14 @@ void main() async {
       const edgeTag = 'v9.9.9-ios.3';
       final adapter = DioAdapterMock(ref.read(dioProvider));
       when(() => adapter.fetch(any(), any(), any())).thenAnswer(
-          (invocation) async => ResponseBody.fromString(
-                '{"tag_name": "$edgeTag", "prerelease": false}',
-                200,
-                headers: {
-                  Headers.contentTypeHeader: [Headers.jsonContentType],
-                },
-              ));
+        (invocation) async => ResponseBody.fromString(
+          '{"tag_name": "$edgeTag", "prerelease": false}',
+          200,
+          headers: {
+            Headers.contentTypeHeader: [Headers.jsonContentType],
+          },
+        ),
+      );
 
       await ref.read(appVersionsStateProvider.future);
       final versions = ref.read(appVersionsStateProvider).value;
@@ -58,8 +59,10 @@ void main() async {
     });
 
     test('fromString and toString', () {
-      expect(AppVersion.fromString('1.5.4+53'),
-          const AppVersion(major: 1, minor: 5, patch: 4));
+      expect(
+        AppVersion.fromString('1.5.4+53'),
+        const AppVersion(major: 1, minor: 5, patch: 4),
+      );
       expect(AppVersion.fromString('v1.5.4-ios.12').release, 12);
       expect(AppVersion.fromString('1.5.4-ios.12-test.1').release, 12);
       expect(AppVersion.fromString('1.5.4-ios-dev+abc1234').release, 0);
@@ -88,24 +91,22 @@ void main() async {
     });
 
     test('empty response', () async {
-      final ref = ProviderContainer(overrides: [
-        envRepoProvider.overrideWithValue(FakeEnvRepo()),
-      ]);
+      final ref = ProviderContainer(
+        overrides: [envRepoProvider.overrideWithValue(FakeEnvRepo())],
+      );
 
       ref.setupTestFor(dioProvider);
       ref.setupTestFor(appVersionsStateProvider);
 
       final adapter = DioAdapterMock(ref.read(dioProvider));
-      when(() => adapter.fetch(any(), any(), any()))
-          .thenAnswer((invocation) async => ResponseBody.fromString('', 200));
+      when(
+        () => adapter.fetch(any(), any(), any()),
+      ).thenAnswer((invocation) async => ResponseBody.fromString('', 200));
 
       addTearDown(ref.dispose);
 
       await ref.read(appVersionsStateProvider.future);
-      expect(
-        ref.read(appVersionsStateProvider).value?.latest,
-        AppVersion.zero,
-      );
+      expect(ref.read(appVersionsStateProvider).value?.latest, AppVersion.zero);
     });
   });
 }

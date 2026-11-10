@@ -76,8 +76,9 @@ void main() async {
       // behavior (errors surface right away, e.g. a booru being offline).
       retry: (retryCount, error) => null,
       overrides: [
-        sharedStorageHandleProvider
-            .overrideWithValue(await provideSharedStorageHandle()),
+        sharedStorageHandleProvider.overrideWithValue(
+          await provideSharedStorageHandle(),
+        ),
         cookieJarProvider.overrideWithValue(await provideCookieJar()),
         defaultServersProvider.overrideWithValue(await provideDefaultServers()),
         envRepoProvider.overrideWithValue(await provideEnvRepo()),

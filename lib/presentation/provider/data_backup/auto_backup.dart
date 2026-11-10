@@ -45,7 +45,8 @@ class AutoBackup {
   bool get enabled => _repo.get(Setting.backupAutoEnabled, or: false);
 
   AutoBackupInterval get interval => AutoBackupInterval.fromName(
-      _repo.get(Setting.backupAutoInterval, or: AutoBackupInterval.daily.name));
+    _repo.get(Setting.backupAutoInterval, or: AutoBackupInterval.daily.name),
+  );
 
   int get keep => _repo.get(Setting.backupAutoKeep, or: 3);
 
@@ -70,15 +71,16 @@ class AutoBackup {
   Future<void> runIfDue() async {
     if (_running || !enabled) return;
     final last = lastRun;
-    if (last != null &&
-        DateTime.now().difference(last) < interval.duration) {
+    if (last != null && DateTime.now().difference(last) < interval.duration) {
       return;
     }
     _running = true;
     try {
       await writeBackupFile(ref, const BackupOption(), kind: kind);
       await _repo.put(
-          Setting.backupAutoLast, DateTime.now().millisecondsSinceEpoch);
+        Setting.backupAutoLast,
+        DateTime.now().millisecondsSinceEpoch,
+      );
       await _rotate();
     } catch (e, s) {
       debugPrint('AutoBackup failed: $e\n$s');
@@ -90,16 +92,13 @@ class AutoBackup {
   Future<void> _rotate() async {
     try {
       final dir = await backupDirectory(ref);
-      final files = dir
-          .listSync()
-          .whereType<File>()
-          .where((f) {
-            final name = p.basename(f.path);
-            return name.startsWith(_prefix) && name.endsWith('.zip');
-          })
-          .toList()
-        // the timestamp in the name sorts chronologically
-        ..sort((a, b) => p.basename(b.path).compareTo(p.basename(a.path)));
+      final files =
+          dir.listSync().whereType<File>().where((f) {
+              final name = p.basename(f.path);
+              return name.startsWith(_prefix) && name.endsWith('.zip');
+            }).toList()
+            // the timestamp in the name sorts chronologically
+            ..sort((a, b) => p.basename(b.path).compareTo(p.basename(a.path)));
       for (final old in files.skip(keep < 1 ? 1 : keep)) {
         old.deleteSync();
       }

@@ -48,7 +48,7 @@ class _Content extends HookConsumerWidget {
                 context.navigator.pop(true);
               },
               child: Text(context.t.restore),
-            )
+            ),
           ],
         );
       },
@@ -69,20 +69,26 @@ class _Content extends HookConsumerWidget {
             ),
           );
         case ImportedBackupResult():
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.restore.success),
-            duration: const Duration(seconds: 1),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.restore.success),
+              duration: const Duration(seconds: 1),
+            ),
+          );
         case ExportedBackupResult(:final path):
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.backup.success(dest: path)),
-            duration: const Duration(seconds: 2),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.backup.success(dest: path)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         case ErrorBackupResult():
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.dataBackup.restore.invalid),
-            duration: const Duration(seconds: 1),
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.dataBackup.restore.invalid),
+              duration: const Duration(seconds: 1),
+            ),
+          );
         default:
       }
     });
@@ -101,9 +107,11 @@ class _Content extends HookConsumerWidget {
               builder: (context) => _BackupSelectionDialog(),
             );
             if (result != null) {
-              unawaited(ref
-                  .read(dataBackupStateProvider.notifier)
-                  .backup(option: result));
+              unawaited(
+                ref
+                    .read(dataBackupStateProvider.notifier)
+                    .backup(option: result),
+              );
             }
           },
         ),
@@ -163,9 +171,13 @@ class _AutoBackupSection extends HookConsumerWidget {
               underline: const SizedBox.shrink(),
               items: [
                 DropdownMenuItem(
-                    value: AutoBackupInterval.daily, child: Text(t.daily)),
+                  value: AutoBackupInterval.daily,
+                  child: Text(t.daily),
+                ),
                 DropdownMenuItem(
-                    value: AutoBackupInterval.weekly, child: Text(t.weekly)),
+                  value: AutoBackupInterval.weekly,
+                  child: Text(t.weekly),
+                ),
               ],
               onChanged: (value) async {
                 if (value == null) return;
@@ -177,13 +189,15 @@ class _AutoBackupSection extends HookConsumerWidget {
           ListTile(
             title: Text(t.keep),
             trailing: DropdownButton<int>(
-              value: AutoBackup.keepOptions.contains(auto.keep)
-                  ? auto.keep
-                  : 3,
+              value: AutoBackup.keepOptions.contains(auto.keep) ? auto.keep : 3,
               underline: const SizedBox.shrink(),
               items: AutoBackup.keepOptions
-                  .map((n) => DropdownMenuItem(
-                      value: n, child: Text(t.keepValue(count: '$n'))))
+                  .map(
+                    (n) => DropdownMenuItem(
+                      value: n,
+                      child: Text(t.keepValue(count: '$n')),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) async {
                 if (value == null) return;
@@ -262,8 +276,9 @@ class _BackupSelectionDialog extends HookWidget {
               value: option.value.server && option.value.credentials,
               onChanged: option.value.server
                   ? (newValue) {
-                      option.value = option.value
-                          .copyWith(credentials: newValue ?? false);
+                      option.value = option.value.copyWith(
+                        credentials: newValue ?? false,
+                      );
                     }
                   : null,
             ),
@@ -271,24 +286,27 @@ class _BackupSelectionDialog extends HookWidget {
               title: Text(context.t.searchHistory),
               value: option.value.searchHistory,
               onChanged: (newValue) {
-                option.value =
-                    option.value.copyWith(searchHistory: newValue ?? true);
+                option.value = option.value.copyWith(
+                  searchHistory: newValue ?? true,
+                );
               },
             ),
             CheckboxListTile(
               title: Text(context.t.tagsBlocker.title),
               value: option.value.blockedTags,
               onChanged: (newValue) {
-                option.value =
-                    option.value.copyWith(blockedTags: newValue ?? true);
+                option.value = option.value.copyWith(
+                  blockedTags: newValue ?? true,
+                );
               },
             ),
             CheckboxListTile(
               title: Text(context.t.favorites.title),
               value: option.value.favoritePost,
               onChanged: (newValue) {
-                option.value =
-                    option.value.copyWith(favoritePost: newValue ?? true);
+                option.value = option.value.copyWith(
+                  favoritePost: newValue ?? true,
+                );
               },
             ),
             CheckboxListTile(
@@ -303,8 +321,9 @@ class _BackupSelectionDialog extends HookWidget {
               subtitle: Text(context.t.monbooru.backup.desc),
               value: option.value.monloader,
               onChanged: (newValue) {
-                option.value =
-                    option.value.copyWith(monloader: newValue ?? true);
+                option.value = option.value.copyWith(
+                  monloader: newValue ?? true,
+                );
               },
             ),
             CheckboxListTile(
@@ -329,13 +348,14 @@ class _BackupSelectionDialog extends HookWidget {
           onPressed: option.value.isValid()
               ? () {
                   final result = option.value.copyWith(
-                      credentials:
-                          option.value.server && option.value.credentials);
+                    credentials:
+                        option.value.server && option.value.credentials,
+                  );
                   context.navigator.pop(result);
                 }
               : null,
           child: Text(context.t.backup),
-        )
+        ),
       ],
     );
   }

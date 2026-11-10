@@ -15,9 +15,7 @@ class AutocompleteJsonParser extends BooruParser {
   final suggestionQuery = 'autocomplete.php?q={tag-part}';
 
   @override
-  List<BooruParserType> get type => [
-        BooruParserType.suggestion,
-      ];
+  List<BooruParserType> get type => [BooruParserType.suggestion];
 
   @override
   bool canParsePage(Response res) {
@@ -36,26 +34,30 @@ class AutocompleteJsonParser extends BooruParser {
     }
     try {
       final isList = jsonDecode(data) is List;
-      final canParse = isList &&
+      final canParse =
+          isList &&
           data.toString().contains('label') &&
           data.toString().contains('value');
       return canParse;
     } catch (e) {
       return false;
     }
-
   }
 
   @override
   Set<Suggestion> parseSuggestion(Server server, Response res) {
-    final entries = res.data is List ? List.from(res.data) : List.from(jsonDecode(res.data));
+    final entries = res.data is List
+        ? List.from(res.data)
+        : List.from(jsonDecode(res.data));
     final result = <Suggestion>{};
     for (final Map<String, dynamic> entry in entries) {
       final label = pick(entry, 'label').asStringOrNull() ?? '';
       final tag = pick(entry, 'value').asStringOrNull() ?? '';
       // post count is in label at the end of the string "<tag> (post count)"
-      final postCount = int.tryParse(
-              label.split(' ').last.replaceAll('(', '').replaceAll(')', '')) ??
+      final postCount =
+          int.tryParse(
+            label.split(' ').last.replaceAll('(', '').replaceAll(')', ''),
+          ) ??
           0;
       if (postCount > 0 && tag.isNotEmpty) {
         result.add(Suggestion(BooruUtil.decodeTag(tag), postCount));

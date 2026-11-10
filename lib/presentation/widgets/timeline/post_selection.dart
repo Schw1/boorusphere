@@ -63,8 +63,7 @@ class PostSelectionAction {
 
   final IconData icon;
   final String tooltip;
-  final Future<void> Function(BuildContext context, List<Post> posts)
-      onPressed;
+  final Future<void> Function(BuildContext context, List<Post> posts) onPressed;
 }
 
 /// Enables selecting posts in the [Timeline]s below and shows the action bar
@@ -153,8 +152,7 @@ class _SelectionBar extends HookConsumerWidget {
         progress.value = null;
         selection.clear();
       }
-      showRootSnackBar(report.describe,
-          duration: const Duration(seconds: 6));
+      showRootSnackBar(report.describe, duration: const Duration(seconds: 6));
     }
 
     final sending = progress.value;
@@ -177,16 +175,19 @@ class _SelectionBar extends HookConsumerWidget {
                 child: Text(
                   sending == null
                       ? t.count(n: selection.length)
-                      : context.t.monbooru.batch
-                          .sending(sent: sending.$1, total: sending.$2),
+                      : context.t.monbooru.batch.sending(
+                          sent: sending.$1,
+                          total: sending.$2,
+                        ),
                   style: context.theme.textTheme.titleMedium,
                 ),
               ),
               IconButton(
                 tooltip: t.selectAll,
                 icon: const Icon(Icons.select_all),
-                onPressed:
-                    sending == null ? () => selection.selectAll(posts()) : null,
+                onPressed: sending == null
+                    ? () => selection.selectAll(posts())
+                    : null,
               ),
               for (final action in actions)
                 IconButton(

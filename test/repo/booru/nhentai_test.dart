@@ -7,33 +7,30 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Shapes as returned by nhentai's API v2 (titles and tags made up).
-Map<String, dynamic> _item(int id, {int pages = 12, bool blacklisted = false}) =>
-    {
-      'id': id,
-      'media_id': '${id + 1000}',
-      'english_title': 'Gallery $id [English]',
-      'japanese_title': 'ギャラリー $id',
-      'thumbnail': 'galleries/${id + 1000}/thumb.webp',
-      'thumbnail_width': 250,
-      'thumbnail_height': 353,
-      'num_pages': pages,
-      'num_favorites': 42,
-      'tag_ids': [1, 2, 3],
-      'blacklisted': blacklisted,
-      'suggestion': null,
-    };
+Map<String, dynamic> _item(
+  int id, {
+  int pages = 12,
+  bool blacklisted = false,
+}) => {
+  'id': id,
+  'media_id': '${id + 1000}',
+  'english_title': 'Gallery $id [English]',
+  'japanese_title': 'ギャラリー $id',
+  'thumbnail': 'galleries/${id + 1000}/thumb.webp',
+  'thumbnail_width': 250,
+  'thumbnail_height': 353,
+  'num_pages': pages,
+  'num_favorites': 42,
+  'tag_ids': [1, 2, 3],
+  'blacklisted': blacklisted,
+  'suggestion': null,
+};
 
 Response _page(List<Map<String, dynamic>> items) => Response(
-      requestOptions:
-          RequestOptions(path: 'https://nhentai.net/api/v2/search'),
-      statusCode: 200,
-      data: {
-        'result': items,
-        'num_pages': 20,
-        'per_page': 25,
-        'total': 500,
-      },
-    );
+  requestOptions: RequestOptions(path: 'https://nhentai.net/api/v2/search'),
+  statusCode: 200,
+  data: {'result': items, 'num_pages': 20, 'per_page': 25, 'total': 500},
+);
 
 const _gallery = {
   'id': 5,
@@ -80,37 +77,51 @@ void main() {
 
     test('order tags become the sort parameter', () {
       expect(url('order:rank'), endsWith('&sort=popular-week'));
-      expect(url('order:rank'),
-          contains('query=${Uri.encodeComponent('pages:>0')}'));
-      expect(url('language:german order:popular-today'),
-          allOf(contains('query=language%3Agerman&'),
-              endsWith('&sort=popular-today')));
+      expect(
+        url('order:rank'),
+        contains('query=${Uri.encodeComponent('pages:>0')}'),
+      );
+      expect(
+        url('language:german order:popular-today'),
+        allOf(
+          contains('query=language%3Agerman&'),
+          endsWith('&sort=popular-today'),
+        ),
+      );
       expect(url('sort:month'), endsWith('&sort=popular-month'));
       expect(url('order:popular'), endsWith('&sort=popular'));
       expect(url('order:recent tag:glasses'), isNot(contains('sort=')));
     });
 
     test('sort button, overridden by order: tags', () {
-      String sorted(String query, String sort) => server.searchUrlOf(
-          PageOption(query: query, sort: sort), page: 1);
+      String sorted(String query, String sort) =>
+          server.searchUrlOf(PageOption(query: query, sort: sort), page: 1);
       expect(sorted('', 'popular-month'), endsWith('&sort=popular-month'));
-      expect(sorted('order:rank', 'popular-month'),
-          endsWith('&sort=popular-week'));
+      expect(
+        sorted('order:rank', 'popular-month'),
+        endsWith('&sort=popular-week'),
+      );
       // order:recent means nhentai's default, even if the button says else
       expect(sorted('order:recent', 'popular'), isNot(contains('sort=')));
       expect(sorted('tag:glasses', ''), isNot(contains('sort=')));
     });
 
     test('language button, overridden by language: tags', () {
-      Map<String, String> params(String query, String language) =>
-          Uri.parse(server.searchUrlOf(
-                  PageOption(query: query, language: language), page: 1))
-              .queryParameters;
+      Map<String, String> params(String query, String language) => Uri.parse(
+        server.searchUrlOf(
+          PageOption(query: query, language: language),
+          page: 1,
+        ),
+      ).queryParameters;
       expect(params('', 'english')['query'], 'language:english');
-      expect(params('tag:glasses', 'japanese')['query'],
-          'tag:glasses language:japanese');
-      expect(params('language:chinese', 'english')['query'],
-          'language:chinese');
+      expect(
+        params('tag:glasses', 'japanese')['query'],
+        'tag:glasses language:japanese',
+      );
+      expect(
+        params('language:chinese', 'english')['query'],
+        'language:chinese',
+      );
       expect(params('', '')['query'], 'pages:>0');
       expect(params('order:rank', 'english')['query'], 'language:english');
     });
@@ -131,9 +142,9 @@ void main() {
 
     test('quoted words stay together, typed tags get quoted', () {
       final split = NhentaiJsonParser.splitQuery(
-          '"school days" tag:"big hat" artist:some_one order:rank');
-      expect(split.query,
-          '"school days" tag:"big hat" artist:"some one"');
+        '"school days" tag:"big hat" artist:some_one order:rank',
+      );
+      expect(split.query, '"school days" tag:"big hat" artist:"some one"');
       expect(split.sort, 'popular-week');
     });
 
@@ -143,7 +154,9 @@ void main() {
 
     test('page and quoted tags', () {
       final u = server.searchUrlOf(
-          const PageOption(query: 'tag:"school uniform"'), page: 3);
+        const PageOption(query: 'tag:"school uniform"'),
+        page: 3,
+      );
       expect(u, startsWith('https://nhentai.net/api/v2/search?query='));
       expect(Uri.parse(u).queryParameters['query'], 'tag:"school uniform"');
       expect(Uri.parse(u).queryParameters['page'], '3');
@@ -154,10 +167,14 @@ void main() {
     test('recognizes search pages only', () {
       expect(parser.canParsePage(_page([_item(1)])), isTrue);
       expect(
-          parser.canParsePage(Response(
-              requestOptions: RequestOptions(),
-              data: {'results': [], 'total': 0})),
-          isFalse);
+        parser.canParsePage(
+          Response(
+            requestOptions: RequestOptions(),
+            data: {'results': [], 'total': 0},
+          ),
+        ),
+        isFalse,
+      );
       expect(NhentaiJsonParser.isNhentai(server), isTrue);
     });
 
@@ -166,7 +183,10 @@ void main() {
       expect(posts, hasLength(1));
       final post = posts.single;
       expect(post.id, 5);
-      expect(post.previewFile, 'https://t.nhentai.net/galleries/1005/thumb.webp');
+      expect(
+        post.previewFile,
+        'https://t.nhentai.net/galleries/1005/thumb.webp',
+      );
       expect(post.sampleFile, post.previewFile);
       expect(post.originalFile, isEmpty);
       expect(post.pageCount, 12);
@@ -182,11 +202,7 @@ void main() {
     test('skips blacklisted and empty galleries', () {
       final posts = parser.parsePage(
         server,
-        _page([
-          _item(1, blacklisted: true),
-          _item(2, pages: 0),
-          _item(3),
-        ]),
+        _page([_item(1, blacklisted: true), _item(2, pages: 0), _item(3)]),
       );
       expect(posts.map((it) => it.id), [3]);
     });
@@ -197,16 +213,20 @@ void main() {
       final gallery = NhentaiGallery.fromJson(_gallery)!;
       expect(gallery.id, 5);
       expect(gallery.title, 'Gallery 5 [English]');
-      expect(gallery.cover,
-          'https://t.nhentai.net/galleries/1005/cover.webp.webp');
+      expect(
+        gallery.cover,
+        'https://t.nhentai.net/galleries/1005/cover.webp.webp',
+      );
       expect(gallery.pages, [
         'https://i.nhentai.net/galleries/1005/1.webp',
         'https://i.nhentai.net/galleries/1005/2.jpg',
       ]);
       expect(gallery.tags['tag'], ['school uniform', 'glasses']);
       expect(gallery.tags['artist'], ['someone']);
-      expect(NhentaiGallery.galleryApiUrl(server, 5),
-          'https://nhentai.net/api/v2/galleries/5');
+      expect(
+        NhentaiGallery.galleryApiUrl(server, 5),
+        'https://nhentai.net/api/v2/galleries/5',
+      );
     });
 
     test('not a gallery', () {
@@ -217,8 +237,10 @@ void main() {
     test('search tokens', () {
       // tag list not loaded here: with the type, underscores for spaces
       expect(NhentaiGallery.searchToken('tag', 'glasses'), 'tag:glasses');
-      expect(NhentaiGallery.searchToken('tag', 'school uniform'),
-          'tag:school_uniform');
+      expect(
+        NhentaiGallery.searchToken('tag', 'school uniform'),
+        'tag:school_uniform',
+      );
       expect(NhentaiGallery.labelOf('tag:school_uniform'), 'school uniform');
       expect(NhentaiGallery.labelOf('big_breasts'), 'big breasts');
       expect(NhentaiGallery.labelOf('artist:"some one"'), 'some one');
@@ -228,10 +250,15 @@ void main() {
 
   group('related galleries', () {
     test('a list in the shape of search results', () {
-      final posts = NhentaiJsonParser.parseRelated(server, [_item(7), _item(8)]);
+      final posts = NhentaiJsonParser.parseRelated(server, [
+        _item(7),
+        _item(8),
+      ]);
       expect(posts.map((it) => it.id), [7, 8]);
-      expect(posts.first.previewFile,
-          'https://t.nhentai.net/galleries/1007/thumb.webp');
+      expect(
+        posts.first.previewFile,
+        'https://t.nhentai.net/galleries/1007/thumb.webp',
+      );
       expect(posts.first.title, 'Gallery 7 [English]');
       expect(posts.first.pageCount, 12);
     });
@@ -244,8 +271,10 @@ void main() {
       expect(posts.single.id, 5);
       expect(posts.single.pageCount, 2);
       expect(posts.single.title, 'Gallery 5 [English]');
-      expect(posts.single.previewFile,
-          'https://t.nhentai.net/galleries/1005/thumb.webp');
+      expect(
+        posts.single.previewFile,
+        'https://t.nhentai.net/galleries/1005/thumb.webp',
+      );
       expect(posts.single.postUrl, 'https://nhentai.net/g/5/');
     });
 
@@ -255,8 +284,10 @@ void main() {
     });
 
     test('URL', () {
-      expect(NhentaiGallery.relatedApiUrl(server, 5),
-          'https://nhentai.net/api/v2/galleries/5/related');
+      expect(
+        NhentaiGallery.relatedApiUrl(server, 5),
+        'https://nhentai.net/api/v2/galleries/5/related',
+      );
     });
   });
 }

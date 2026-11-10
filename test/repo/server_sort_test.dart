@@ -20,13 +20,15 @@ void main() {
   const monbooru = Server(
     id: 'Monbooru',
     homepage: 'http://192.168.0.10:8455',
-    searchUrl: 'api/v1/images/search?q={tags}&page={page-id}&limit={post-limit}',
+    searchUrl:
+        'api/v1/images/search?q={tags}&page={page-id}&limit={post-limit}',
     searchParserId: 'Monbooru.json',
   );
   const shimmie = Server(
     id: 'Shimmie',
     homepage: 'https://example.org',
-    searchUrl: 'api/danbooru/find_posts/index.xml?tags={tags}&page={page-id}&limit={post-limit}',
+    searchUrl:
+        'api/danbooru/find_posts/index.xml?tags={tags}&page={page-id}&limit={post-limit}',
     searchParserId: 'Shimmie.xml',
   );
 
@@ -45,17 +47,27 @@ void main() {
   });
 
   test('danbooru tags', () {
-    expect(tagsOf(danbooru, all.copyWith(sort: 'rank')), contains('order:rank'));
-    expect(tagsOf(danbooru, all.copyWith(sort: 'favcount')),
-        contains('order:favcount'));
+    expect(
+      tagsOf(danbooru, all.copyWith(sort: 'rank')),
+      contains('order:rank'),
+    );
+    expect(
+      tagsOf(danbooru, all.copyWith(sort: 'favcount')),
+      contains('order:favcount'),
+    );
     expect(tagsOf(danbooru, all), isNot(contains('order:')));
   });
 
   test('gelbooru tags', () {
-    expect(tagsOf(gelbooru, all.copyWith(sort: 'score')),
-        contains('sort:score:desc'));
+    expect(
+      tagsOf(gelbooru, all.copyWith(sort: 'score')),
+      contains('sort:score:desc'),
+    );
     // not offered there: ignored
-    expect(tagsOf(gelbooru, all.copyWith(sort: 'rank')), isNot(contains('sort:')));
+    expect(
+      tagsOf(gelbooru, all.copyWith(sort: 'rank')),
+      isNot(contains('sort:')),
+    );
   });
 
   test('monbooru params', () {
@@ -65,11 +77,15 @@ void main() {
 
   test('random and typed order win', () {
     final random = tagsOf(
-        danbooru, all.copyWith(sort: 'rank', random: true, seed: 1));
+      danbooru,
+      all.copyWith(sort: 'rank', random: true, seed: 1),
+    );
     expect(random, contains('order:random'));
     expect(random, isNot(contains('order:rank')));
-    final typed =
-        tagsOf(danbooru, all.copyWith(query: 'cat order:score', sort: 'rank'));
+    final typed = tagsOf(
+      danbooru,
+      all.copyWith(query: 'cat order:score', sort: 'rank'),
+    );
     expect(typed, isNot(contains('order:rank')));
     expect(typed, contains('order:score'));
   });

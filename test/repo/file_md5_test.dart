@@ -22,24 +22,26 @@ void main() {
   group('FileMd5.fromUrl', () {
     test('danbooru style file name', () {
       expect(
-          FileMd5.fromUrl('https://cdn.donmai.us/original/1d/c5/$md5.jpg'),
-          md5);
+        FileMd5.fromUrl('https://cdn.donmai.us/original/1d/c5/$md5.jpg'),
+        md5,
+      );
     });
     test('gelbooru with query', () {
       expect(
-          FileMd5.fromUrl(
-              'https://img3.gelbooru.com/images/1d/c5/$md5.png?1234'),
-          md5);
+        FileMd5.fromUrl('https://img3.gelbooru.com/images/1d/c5/$md5.png?1234'),
+        md5,
+      );
     });
     test('moebooru path segment', () {
       expect(
-          FileMd5.fromUrl(
-              'https://files.yande.re/image/$md5/yande.re%20123%20tag.jpg'),
-          md5);
+        FileMd5.fromUrl(
+          'https://files.yande.re/image/$md5/yande.re%20123%20tag.jpg',
+        ),
+        md5,
+      );
     });
     test('prefixed file name', () {
-      expect(FileMd5.fromUrl('https://example.org/files/sample_$md5.jpg'),
-          md5);
+      expect(FileMd5.fromUrl('https://example.org/files/sample_$md5.jpg'), md5);
     });
     test('none', () {
       expect(FileMd5.fromUrl('https://example.org/images/12345.jpg'), '');
@@ -51,9 +53,10 @@ void main() {
   group('Post.fileMd5', () {
     test('prefers the md5 from the booru', () {
       const post = Post(
-          md5: md5,
-          originalFile:
-              'https://example.org/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg');
+        md5: md5,
+        originalFile:
+            'https://example.org/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg',
+      );
       expect(post.fileMd5, md5);
     });
     test('falls back to the URL', () {

@@ -25,8 +25,9 @@ class HomeSearchBar extends HookConsumerWidget {
     final searchBar = ref.watch(searchBarControllerProvider);
     final delta = useState([0.0, 0.0]);
     final collapsed = !searchBar.isOpen && delta.value.first > 0;
-    final isBlurAllowed =
-        ref.watch(uiSettingStateProvider.select((ui) => ui.blur));
+    final isBlurAllowed = ref.watch(
+      uiSettingStateProvider.select((ui) => ui.blur),
+    );
     final onScrolling = useCallback(() {
       final position = scrollController.position;
       final threshold = innerHeight;
@@ -73,14 +74,14 @@ class HomeSearchBar extends HookConsumerWidget {
         blur: isBlurAllowed,
         child: Container(
           decoration: BoxDecoration(
-            color: context.theme.scaffoldBackgroundColor.withValues(alpha: 
-              context.isLightThemed
+            color: context.theme.scaffoldBackgroundColor.withValues(
+              alpha: context.isLightThemed
                   ? isBlurAllowed
-                      ? 0.7
-                      : 0.92
+                        ? 0.7
+                        : 0.92
                   : isBlurAllowed
-                      ? 0.85
-                      : 0.97,
+                  ? 0.85
+                  : 0.97,
             ),
             border: Border(
               top: BorderSide(color: context.colorScheme.outlineVariant),
@@ -149,8 +150,9 @@ class _SearchField extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchBar = ref.watch(searchBarControllerProvider);
-    final imeIncognito =
-        ref.watch(uiSettingStateProvider.select((it) => it.imeIncognito));
+    final imeIncognito = ref.watch(
+      uiSettingStateProvider.select((it) => it.imeIncognito),
+    );
     final session = ref.watch(searchSessionProvider);
     final server = ref.watch(serverStateProvider).getById(session.serverId);
 
@@ -240,8 +242,11 @@ class _SortButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stored = ref.watch(serverSettingStateProvider
-        .select((it) => it.searchSorts[server.id] ?? ''));
+    final stored = ref.watch(
+      serverSettingStateProvider.select(
+        (it) => it.searchSorts[server.id] ?? '',
+      ),
+    );
     final options = server.sortOptions;
     final sort = options.contains(stored) ? stored : '';
     final t = context.t.sortOrder;
@@ -321,8 +326,11 @@ class _LanguageButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final language = ref.watch(serverSettingStateProvider
-        .select((it) => it.searchLanguages[server.id] ?? ''));
+    final language = ref.watch(
+      serverSettingStateProvider.select(
+        (it) => it.searchLanguages[server.id] ?? '',
+      ),
+    );
     final t = context.t.languageFilter;
     final active = language.isNotEmpty;
 
@@ -386,19 +394,21 @@ class _RandomButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final random =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRandom));
+    final random = ref.watch(
+      serverSettingStateProvider.select((it) => it.searchRandom),
+    );
     final t = context.t.randomOrder;
     final label = '${t.label}: ${random ? t.on : t.off}';
 
     return TextButton.icon(
-      onPressed: () => ref
-          .read(serverSettingStateProvider.notifier)
-          .setRandom(!random),
+      onPressed: () =>
+          ref.read(serverSettingStateProvider.notifier).setRandom(!random),
       icon: Icon(
         Icons.shuffle_rounded,
         size: 16,
-        color: random ? context.colorScheme.primary : context.colorScheme.onSurface,
+        color: random
+            ? context.colorScheme.primary
+            : context.colorScheme.onSurface,
       ),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
@@ -439,14 +449,16 @@ class _RatingButton extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: BooruRating.values
-                .map((e) => RadioListTile(
-                      value: e,
-                      groupValue: current,
-                      title: Text(rateDesc(context, e)),
-                      onChanged: (x) {
-                        context.navigator.pop(x);
-                      },
-                    ))
+                .map(
+                  (e) => RadioListTile(
+                    value: e,
+                    groupValue: current,
+                    title: Text(rateDesc(context, e)),
+                    onChanged: (x) {
+                      context.navigator.pop(x);
+                    },
+                  ),
+                )
                 .toList(),
           ),
         );
@@ -456,8 +468,9 @@ class _RatingButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rating =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+    final rating = ref.watch(
+      serverSettingStateProvider.select((it) => it.searchRating),
+    );
     final label = '${context.t.rating.title}: ${rateDesc(context, rating)}';
 
     return TextButton(
@@ -488,11 +501,7 @@ class _RatingButton extends ConsumerWidget {
 }
 
 class _Button extends StatelessWidget {
-  const _Button({
-    this.collapsed = false,
-    required this.onTap,
-    this.child,
-  });
+  const _Button({this.collapsed = false, required this.onTap, this.child});
 
   final bool collapsed;
   final void Function() onTap;
@@ -537,19 +546,12 @@ class _LeadingButton extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (child, animator) {
-          final animation = Tween<double>(
-            begin: 0,
-            end: 1,
-          ).animate(CurvedAnimation(
-            parent: animator,
-            curve: Curves.easeInOutCubic,
-          ));
+          final animation = Tween<double>(begin: 0, end: 1).animate(
+            CurvedAnimation(parent: animator, curve: Curves.easeInOutCubic),
+          );
           return RotationTransition(
             turns: animation,
-            child: ScaleTransition(
-              scale: animation,
-              child: child,
-            ),
+            child: ScaleTransition(scale: animation, child: child),
           );
         },
         child: searchBar.isOpen
@@ -567,8 +569,9 @@ class _LeadingButton extends ConsumerWidget {
 class _RatingIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rating =
-        ref.watch(serverSettingStateProvider.select((it) => it.searchRating));
+    final rating = ref.watch(
+      serverSettingStateProvider.select((it) => it.searchRating),
+    );
 
     String letter = 's';
     switch (rating) {
@@ -603,8 +606,10 @@ class _RatingIndicator extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         padding: const EdgeInsets.all(4),
-        child: Text(letter,
-            style: const TextStyle(fontSize: 10, color: Colors.white)),
+        child: Text(
+          letter,
+          style: const TextStyle(fontSize: 10, color: Colors.white),
+        ),
       ),
     );
   }
@@ -622,9 +627,11 @@ class _TrailingButton extends ConsumerWidget {
     final grid = ref.watch(uiSettingStateProvider.select((ui) => ui.grid));
 
     backToTop() {
-      scrollController?.animateTo(0,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeInOutCubic);
+      scrollController?.animateTo(
+        0,
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeInOutCubic,
+      );
     }
 
     return _Button(
@@ -638,19 +645,12 @@ class _TrailingButton extends ConsumerWidget {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, animator) {
-            final animation = Tween<double>(
-              begin: 0,
-              end: 1,
-            ).animate(CurvedAnimation(
-              parent: animator,
-              curve: Curves.easeInOutCubic,
-            ));
+            final animation = Tween<double>(begin: 0, end: 1).animate(
+              CurvedAnimation(parent: animator, curve: Curves.easeInOutCubic),
+            );
             return RotationTransition(
               turns: animation,
-              child: ScaleTransition(
-                scale: animation,
-                child: child,
-              ),
+              child: ScaleTransition(scale: animation, child: child),
             );
           },
           child: collapsed

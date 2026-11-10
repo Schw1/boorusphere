@@ -4,13 +4,11 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 
 final timelineControllerProvider =
     ChangeNotifierProvider.autoDispose<TimelineController>(
-        (ref) => throw UnimplementedError());
+      (ref) => throw UnimplementedError(),
+    );
 
 class TimelineController extends ChangeNotifier {
-  TimelineController({
-    required this.scrollController,
-    this.onLoadMore,
-  }) {
+  TimelineController({required this.scrollController, this.onLoadMore}) {
     scrollController.addListener(_autoLoadMore);
   }
 

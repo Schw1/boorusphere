@@ -11,9 +11,6 @@ class AppVersionsState extends _$AppVersionsState {
   @override
   Future<AppVersions> build() async {
     final repo = ref.read(versionRepoProvider);
-    return (
-      current: repo.current,
-      latest: await repo.fetch(),
-    );
+    return (current: repo.current, latest: await repo.fetch());
   }
 }

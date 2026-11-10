@@ -30,8 +30,7 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
     return null;
   }
 
-  bool contains(String serverId, String query) =>
-      find(serverId, query) != null;
+  bool contains(String serverId, String query) => find(serverId, query) != null;
 
   /// Total new posts, for a badge.
   int get totalNew => state.fold(0, (sum, it) => sum + it.newCount);
@@ -67,8 +66,11 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
 
   /// The search was opened: its new posts count as seen. [ids] are posts
   /// just loaded newest first (pass none when loaded in another order).
-  Future<void> markSeen(String serverId, String query,
-      [Iterable<int> ids = const []]) async {
+  Future<void> markSeen(
+    String serverId,
+    String query, [
+    Iterable<int> ids = const [],
+  ]) async {
     final search = find(serverId, query);
     if (search == null) return;
     if (search.newCount == 0 && ids.every((it) => it <= search.seenId)) {
@@ -83,7 +85,8 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
     try {
       final now = DateTime.now();
       for (final search in List.of(state)) {
-        final due = now.millisecondsSinceEpoch - search.checkedAt >=
+        final due =
+            now.millisecondsSinceEpoch - search.checkedAt >=
             checkInterval.inMilliseconds;
         if (!force && !due) continue;
         await check(search);
@@ -111,8 +114,9 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
       language: settings.searchLanguages[server.id] ?? '',
     );
     try {
-      final posts =
-          await ref.read(imageboardRepoProvider(server)).getPage(option, 0);
+      final posts = await ref
+          .read(imageboardRepoProvider(server))
+          .getPage(option, 0);
       if (!ref.mounted) return;
       final blocked = ref
           .read(tagsBlockerStateProvider)
@@ -122,11 +126,13 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
           .toSet();
       final shown = posts.where((it) => !it.allTags.any(blocked.contains));
       final current = find(search.serverId, search.query) ?? search;
-      await _put(current.checked(
-        posts.map((it) => it.id),
-        shownIds: shown.map((it) => it.id),
-        now: DateTime.now(),
-      ));
+      await _put(
+        current.checked(
+          posts.map((it) => it.id),
+          shownIds: shown.map((it) => it.id),
+          now: DateTime.now(),
+        ),
+      );
     } catch (_) {
       // try again next time
     }

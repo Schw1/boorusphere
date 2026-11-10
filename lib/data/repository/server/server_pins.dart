@@ -32,7 +32,10 @@ class ServerPins {
   static Future<void> import(Object? data) async {
     if (data is! List) return;
     final box = await _box();
-    final ids = {for (final id in data) if (id is String && id.isNotEmpty) id};
+    final ids = {
+      for (final id in data)
+        if (id is String && id.isNotEmpty) id,
+    };
     for (final id in ids) {
       await box.put(id, true);
     }

@@ -15,10 +15,14 @@ void main() {
     });
 
     test('keeps other parameters', () {
-      expect(UrlSuffixCredentials.strip('&tags=-video&api_key=abc'),
-          '&tags=-video');
-      expect(UrlSuffixCredentials.strip('?gallery=cats&key=abc'),
-          '?gallery=cats');
+      expect(
+        UrlSuffixCredentials.strip('&tags=-video&api_key=abc'),
+        '&tags=-video',
+      );
+      expect(
+        UrlSuffixCredentials.strip('?gallery=cats&key=abc'),
+        '?gallery=cats',
+      );
       expect(UrlSuffixCredentials.strip('&API_KEY=abc&json=1'), '&json=1');
     });
 

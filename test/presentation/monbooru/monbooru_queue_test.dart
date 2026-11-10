@@ -15,12 +15,12 @@ const _md5a = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const _md5b = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
 Post _post(int id, {String md5 = ''}) => Post(
-      id: id,
-      serverId: 'Danbooru',
-      md5: md5,
-      postUrl: 'https://danbooru.donmai.us/posts/$id',
-      originalFile: 'https://cdn.donmai.us/original/$id.jpg',
-    );
+  id: id,
+  serverId: 'Danbooru',
+  md5: md5,
+  postUrl: 'https://danbooru.donmai.us/posts/$id',
+  originalFile: 'https://cdn.donmai.us/original/$id.jpg',
+);
 
 const _monbooru = Server(
   id: 'Monbooru',
@@ -36,13 +36,23 @@ class _SearchAdapter implements HttpClientAdapter {
   final requests = <RequestOptions>[];
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     requests.add(options);
     final q = options.uri.queryParameters['q'] ?? '';
     final hit = present.contains(q.replaceFirst('md5:', ''));
     return ResponseBody.fromString(
-      jsonEncode({'results': hit ? [{'id': 1}] : [], 'total': hit ? 1 : 0}),
+      jsonEncode({
+        'results': hit
+            ? [
+                {'id': 1},
+              ]
+            : [],
+        'total': hit ? 1 : 0,
+      }),
       200,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -66,7 +76,9 @@ void main() {
     test('outcomes', () {
       expect(_job('succeeded', created: 1).outcome, MonbooruOutcome.added);
       expect(
-          _job('succeeded', duplicate: 1).outcome, MonbooruOutcome.duplicate);
+        _job('succeeded', duplicate: 1).outcome,
+        MonbooruOutcome.duplicate,
+      );
       expect(_job('failed').outcome, MonbooruOutcome.failed);
       expect(_job('succeeded').outcome, MonbooruOutcome.skipped);
       expect(_job('queued').isFinished, isFalse);
@@ -109,15 +121,22 @@ void main() {
 
     test('tags sent to monloader', () {
       const booruPost = Post(
-          tags: ['cat', 'blue_eyes'], originalFile: 'https://x/1.jpg');
+        tags: ['cat', 'blue_eyes'],
+        originalFile: 'https://x/1.jpg',
+      );
       expect(MonbooruSender.tagsFor(booruPost), ['cat', 'blue_eyes']);
       // nhentai gallery: search tokens stay in the app
       const gallery = Post(
-          tags: ['tag:"big hat"', 'language:english'], pageCount: 20);
+        tags: ['tag:"big hat"', 'language:english'],
+        pageCount: 20,
+      );
       expect(MonbooruSender.tagsFor(gallery), isEmpty);
       // Monbooru archive (has a file) keeps its tags
       const archive = Post(
-          tags: ['cat'], pageCount: 5, originalFile: 'https://x/f.cbz');
+        tags: ['cat'],
+        pageCount: 5,
+        originalFile: 'https://x/f.cbz',
+      );
       expect(MonbooruSender.tagsFor(archive), ['cat']);
     });
 
@@ -127,20 +146,27 @@ void main() {
       expect(MonbooruSender.errorOf(409).kind, MonbooruErrorKind.unavailable);
       expect(MonbooruSender.errorOf(500).kind, MonbooruErrorKind.http);
       expect(MonbooruSender.errorOf(400).detail, '400');
-      expect(MonbooruSender.errorOf(400, 'unsupported URL').detail,
-          '400: unsupported URL');
+      expect(
+        MonbooruSender.errorOf(400, 'unsupported URL').detail,
+        '400: unsupported URL',
+      );
     });
 
     test('reason of an error answer', () {
-      expect(MonbooruSender.messageOf({'error': 'unsupported URL'}),
-          'unsupported URL');
-      expect(MonbooruSender.messageOf('{"message": "bad request"}'),
-          'bad request');
       expect(
-          MonbooruSender.messageOf({
-            'error': {'code': 'invalid_url', 'message': 'no extractor'}
-          }),
-          'no extractor');
+        MonbooruSender.messageOf({'error': 'unsupported URL'}),
+        'unsupported URL',
+      );
+      expect(
+        MonbooruSender.messageOf('{"message": "bad request"}'),
+        'bad request',
+      );
+      expect(
+        MonbooruSender.messageOf({
+          'error': {'code': 'invalid_url', 'message': 'no extractor'},
+        }),
+        'no extractor',
+      );
       expect(MonbooruSender.messageOf('plain reason'), 'plain reason');
       expect(MonbooruSender.messageOf('<html>…</html>'), '');
       expect(MonbooruSender.messageOf(null), '');
@@ -160,22 +186,23 @@ void main() {
         pollInterval: const Duration(milliseconds: 1),
         pollTimeout: const Duration(seconds: 2),
         sender: sender ?? (_) async => const MonbooruSendResult.queued(7),
-        jobFetcher: jobs ??
-            (_) async =>
-                MonbooruJobLookup.found(_job('succeeded', created: 1)),
+        jobFetcher:
+            jobs ??
+            (_) async => MonbooruJobLookup.found(_job('succeeded', created: 1)),
         tokenOf: (id) => id == _monbooru.id ? 'secret' : '',
         client: dio,
-        recorder: recorder ??
-            (post, report, jobId, {isResult = false}) async {},
+        recorder:
+            recorder ?? (post, report, jobId, {isResult = false}) async {},
       );
     }
 
     test('sends are recorded: queued, then the result', () async {
       final records = <(int, MonbooruOutcome?, bool, bool)>[];
-      final q = queue(recorder: (post, report, jobId,
-          {isResult = false}) async {
-        records.add((jobId, report?.outcome, report == null, isResult));
-      });
+      final q = queue(
+        recorder: (post, report, jobId, {isResult = false}) async {
+          records.add((jobId, report?.outcome, report == null, isResult));
+        },
+      );
       final report = Completer<MonbooruSendReport>();
       await q.send(_post(1), onReport: report.complete);
       await report.future;
@@ -187,7 +214,8 @@ void main() {
       records.clear();
       final failing = queue(
         sender: (_) async => const MonbooruSendResult.failed(
-            MonbooruError(MonbooruErrorKind.unreachable, 'x')),
+          MonbooruError(MonbooruErrorKind.unreachable, 'x'),
+        ),
         recorder: (post, report, jobId, {isResult = false}) async {
           records.add((jobId, report?.outcome, report == null, isResult));
         },
@@ -199,11 +227,15 @@ void main() {
     test('gallery from URL suffix', () {
       expect(MonbooruQueue.galleryOf(_monbooru), isNull);
       expect(
-          MonbooruQueue.galleryOf(
-              _monbooru.copyWith(urlSuffix: '&gallery=cats&x=1')),
-          'cats');
-      expect(MonbooruQueue.galleryOf(_monbooru.copyWith(urlSuffix: '?gallery=')),
-          isNull);
+        MonbooruQueue.galleryOf(
+          _monbooru.copyWith(urlSuffix: '&gallery=cats&x=1'),
+        ),
+        'cats',
+      );
+      expect(
+        MonbooruQueue.galleryOf(_monbooru.copyWith(urlSuffix: '?gallery=')),
+        isNull,
+      );
     });
 
     test('lookup server needs a Monbooru server with token', () {
@@ -221,8 +253,11 @@ void main() {
       expect(await q.check(_post(2, md5: _md5b), [_monbooru]), isFalse);
       // No md5 / no server: unknown
       expect(await q.check(_post(3), [_monbooru]), isNull);
-      expect(await q.check(_post(4, md5: _md5b), []), isFalse,
-          reason: 'recent miss is cached');
+      expect(
+        await q.check(_post(4, md5: _md5b), []),
+        isFalse,
+        reason: 'recent miss is cached',
+      );
 
       final first = adapter.requests.first;
       expect(first.uri.queryParameters['q'], 'md5:$_md5a');
@@ -237,12 +272,14 @@ void main() {
 
     test('send follows the job until it is done', () async {
       var polls = 0;
-      final q = queue(jobs: (_) async {
-        polls++;
-        return MonbooruJobLookup.found(polls < 3
-            ? _job('running')
-            : _job('succeeded', created: 1));
-      });
+      final q = queue(
+        jobs: (_) async {
+          polls++;
+          return MonbooruJobLookup.found(
+            polls < 3 ? _job('running') : _job('succeeded', created: 1),
+          );
+        },
+      );
       final post = _post(1, md5: _md5a);
       final report = Completer<MonbooruSendReport>();
       final error = await q.send(post, onReport: report.complete);
@@ -268,7 +305,8 @@ void main() {
     test('failed send', () async {
       final q = queue(
         sender: (_) async => const MonbooruSendResult.failed(
-            MonbooruError(MonbooruErrorKind.invalidToken)),
+          MonbooruError(MonbooruErrorKind.invalidToken),
+        ),
       );
       final error = await q.send(_post(1));
       expect(error?.kind, MonbooruErrorKind.invalidToken);
@@ -297,7 +335,8 @@ void main() {
     test('batch stops when monloader is not set up', () async {
       final q = queue(
         sender: (_) async => const MonbooruSendResult.failed(
-            MonbooruError(MonbooruErrorKind.notConfigured)),
+          MonbooruError(MonbooruErrorKind.notConfigured),
+        ),
       );
       final report = await q.sendAll([_post(1), _post(2), _post(3)], []);
       expect(report.error?.kind, MonbooruErrorKind.notConfigured);

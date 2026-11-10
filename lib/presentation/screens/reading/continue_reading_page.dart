@@ -24,10 +24,9 @@ class ContinueReadingPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useValueListenable(ReadingProgress.changes);
     final servers = ref.watch(serverStateProvider);
-    final recent = useFuture(useMemoized(
-      ReadingProgress.recent,
-      [ReadingProgress.changes.value],
-    ));
+    final recent = useFuture(
+      useMemoized(ReadingProgress.recent, [ReadingProgress.changes.value]),
+    );
     // Posts of servers that were removed can't be opened anymore.
     final posts = (recent.data ?? const <Post>[])
         .where((it) => servers.any((s) => s.id == it.serverId))
@@ -37,28 +36,28 @@ class ContinueReadingPage extends HookConsumerWidget {
 
     return ProviderScope(
       overrides: [
-        searchSessionProvider
-            .overrideWith((ref) => session ?? const SearchSession()),
+        searchSessionProvider.overrideWith(
+          (ref) => session ?? const SearchSession(),
+        ),
         timelineControllerProvider.overrideWith(
-            (ref) => TimelineController(scrollController: scrollController)),
+          (ref) => TimelineController(scrollController: scrollController),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(
           title: Text(context.t.continueReading.title),
-          actions: [
-            if (posts.isNotEmpty) _Menu(posts: posts),
-          ],
+          actions: [if (posts.isNotEmpty) _Menu(posts: posts)],
         ),
         body: posts.isEmpty
             ? recent.hasData
-                ? Center(
-                    child: NoticeCard(
-                      icon: const Icon(Icons.auto_stories_outlined),
-                      margin: const EdgeInsets.all(32),
-                      children: Text(context.t.continueReading.placeholder),
-                    ),
-                  )
-                : const SizedBox.shrink()
+                  ? Center(
+                      child: NoticeCard(
+                        icon: const Icon(Icons.auto_stories_outlined),
+                        margin: const EdgeInsets.all(32),
+                        children: Text(context.t.continueReading.placeholder),
+                      ),
+                    )
+                  : const SizedBox.shrink()
             : PostSelectionScope(
                 posts: () => posts,
                 actions: [
@@ -103,7 +102,8 @@ class _Menu extends StatelessWidget {
         switch (action) {
           case _Action.removeFinished:
             await ReadingProgress.forgetAll(
-                posts.where(ReadingProgress.isFinished));
+              posts.where(ReadingProgress.isFinished),
+            );
           case _Action.removeAll:
             final ok = await showDialog<bool>(
               context: context,
@@ -131,10 +131,7 @@ class _Menu extends StatelessWidget {
           enabled: posts.any(ReadingProgress.isFinished),
           child: Text(t.removeFinished),
         ),
-        PopupMenuItem(
-          value: _Action.removeAll,
-          child: Text(t.removeAll),
-        ),
+        PopupMenuItem(value: _Action.removeAll, child: Text(t.removeAll)),
       ],
     );
   }

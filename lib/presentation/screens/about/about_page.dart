@@ -47,17 +47,21 @@ class AboutPage extends ConsumerWidget {
               ),
               Text(
                 'Boorusphere',
-                style: context.theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w300),
+                style: context.theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w300,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
                   context.t.version(
-                      version: '${displayVersion(ref.watch(versionRepoProvider).current)}'
-                          ' - $kAppArch'),
-                  style: context.theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w400),
+                    version:
+                        '${displayVersion(ref.watch(versionRepoProvider).current)}'
+                        ' - $kAppArch',
+                  ),
+                  style: context.theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
               const _SignatureInfo(),
@@ -186,7 +190,8 @@ class _Downloader extends ConsumerWidget {
     final progress = ref.watch(appUpdateProgressProvider);
     final hasUpdateApk = progress.status.isDownloaded;
 
-    final showDownloadButton = progress.status.isCanceled ||
+    final showDownloadButton =
+        progress.status.isCanceled ||
         progress.status.isFailed ||
         progress.status.isEmpty;
 
@@ -208,8 +213,9 @@ class _Downloader extends ConsumerWidget {
         if (progress.status.isDownloading) ...[
           const SizedBox(width: 16),
           Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text('${progress.progress}%')),
+            padding: const EdgeInsets.all(8),
+            child: Text('${progress.progress}%'),
+          ),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
@@ -228,11 +234,7 @@ class _Downloader extends ConsumerWidget {
                         context.colorScheme.primary.withValues(alpha: 0.5),
                         context.colorScheme.primary.withValues(alpha: 0),
                       ],
-                      stops: const <double>[
-                        0.35,
-                        0.5,
-                        0.65,
-                      ],
+                      stops: const <double>[0.35, 0.5, 0.65],
                     ),
                     period: const Duration(milliseconds: 700),
                     child: const LinearProgressIndicator(
@@ -277,7 +279,8 @@ class _SignatureInfo extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         context.t.signature.validUntil(
-            date: DateFormat.yMMMEd().add_Hm().format(expiry.toLocal())),
+          date: DateFormat.yMMMEd().add_Hm().format(expiry.toLocal()),
+        ),
         style: context.theme.textTheme.bodySmall?.copyWith(
           color: warn ? context.colorScheme.error : null,
         ),

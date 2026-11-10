@@ -67,7 +67,8 @@ class ForYouPage extends HookConsumerWidget {
     final chosen = useValueListenable(choice);
     final all = chosen == allServers;
     final server = servers.getById(
-        chosen == null || all ? session.serverId : chosen);
+      chosen == null || all ? session.serverId : chosen,
+    );
     final scrollController = useMemoized(AutoScrollController.new);
     useEffect(() => scrollController.dispose, [scrollController]);
 
@@ -103,15 +104,14 @@ class ForYouPage extends HookConsumerWidget {
       final settings = ref.read(serverSettingStateProvider);
       final repo = ref.read(imageboardRepoProvider(q.server));
       Future<List<Post>> page(int n) async => (await repo.getPage(
-            PageOption(
-              query: q.tag,
-              limit: settings.postLimit,
-              searchRating: settings.searchRating,
-              language: settings.searchLanguages[q.server.id] ?? '',
-            ),
-            n,
-          ))
-              .toList();
+        PageOption(
+          query: q.tag,
+          limit: settings.postLimit,
+          searchRating: settings.searchRating,
+          language: settings.searchLanguages[q.server.id] ?? '',
+        ),
+        n,
+      )).toList();
       try {
         var result = await page(q.page);
         // fewer pages than the random start: from the first one
@@ -143,14 +143,17 @@ class ForYouPage extends HookConsumerWidget {
           } else if (NhentaiJsonParser.isNhentai(server)) {
             basis = everything.where(isNhentaiPost).toList();
           } else {
-            final same =
-                everything.where((it) => it.serverId == server.id).toList();
+            final same = everything
+                .where((it) => it.serverId == server.id)
+                .toList();
             basis = same.length >= _minSameServer
                 ? same
                 : everything.where((it) => !isNhentaiPost(it)).toList();
           }
-          final interests =
-              ForYou.interests(basis, blocked: blockedTags(server));
+          final interests = ForYou.interests(
+            basis,
+            blocked: blockedTags(server),
+          );
           noInterests.value = interests.isEmpty;
           final tags = ForYou.pick(
             interests,
@@ -211,11 +214,13 @@ class ForYouPage extends HookConsumerWidget {
               child: NoticeCard(
                 icon: const Icon(Icons.auto_awesome_outlined),
                 margin: const EdgeInsets.all(32),
-                children: Text(noInterests.value
-                    ? t.noInterests
-                    : error.value
-                        ? t.nothingFound
-                        : ''),
+                children: Text(
+                  noInterests.value
+                      ? t.noInterests
+                      : error.value
+                      ? t.nothingFound
+                      : '',
+                ),
               ),
             );
     } else {
@@ -248,15 +253,20 @@ class ForYouPage extends HookConsumerWidget {
     return ProviderScope(
       overrides: [
         searchSessionProvider.overrideWith((ref) => session),
-        timelineControllerProvider.overrideWith((ref) => TimelineController(
-              scrollController: scrollController,
-              onLoadMore: () => loadRef.value(),
-            )),
+        timelineControllerProvider.overrideWith(
+          (ref) => TimelineController(
+            scrollController: scrollController,
+            onLoadMore: () => loadRef.value(),
+          ),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(all ? '${t.title} · ${t.allServers}'
-              : '${t.title} · ${server.name}'),
+          title: Text(
+            all
+                ? '${t.title} · ${t.allServers}'
+                : '${t.title} · ${server.name}',
+          ),
           actions: [
             PopupMenuButton<String>(
               tooltip: t.servers,
@@ -299,11 +309,16 @@ class ForYouPage extends HookConsumerWidget {
                             padding: const EdgeInsets.only(right: 8),
                             child: ActionChip(
                               label: Text(
-                                  all ? '${q.tag} · ${q.server.name}' : q.tag),
-                              onPressed: () => context.router.push(HomeRoute(
-                                session: SearchSession(
-                                    serverId: q.server.id, query: q.tag),
-                              )),
+                                all ? '${q.tag} · ${q.server.name}' : q.tag,
+                              ),
+                              onPressed: () => context.router.push(
+                                HomeRoute(
+                                  session: SearchSession(
+                                    serverId: q.server.id,
+                                    query: q.tag,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                       ],

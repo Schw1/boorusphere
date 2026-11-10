@@ -29,11 +29,7 @@ BooruScanner useBooruScanner(
   return scanner;
 }
 
-enum _ScanType {
-  search,
-  suggestion,
-  post,
-}
+enum _ScanType { search, suggestion, post }
 
 class _ScanResult {
   const _ScanResult({
@@ -127,41 +123,52 @@ class BooruScanner {
 
       if (type == _ScanType.post) {
         return _ScanResult(
-            origin: origin, parserId: parser.id, query: parser.postUrl);
+          origin: origin,
+          parserId: parser.id,
+          query: parser.postUrl,
+        );
       }
 
       if (type == _ScanType.search) {
         if (parser.canParsePage(res)) {
           return _ScanResult(
-              origin: origin,
-              parserId: parser.id,
-              query: parser.searchQuery,
-              authBuilderId: parser.id);
+            origin: origin,
+            parserId: parser.id,
+            query: parser.searchQuery,
+            authBuilderId: parser.id,
+          );
         }
 
-        final realParser = parsers.firstWhere((x) => x.canParsePage(res),
-            orElse: NoParser.new);
+        final realParser = parsers.firstWhere(
+          (x) => x.canParsePage(res),
+          orElse: NoParser.new,
+        );
         return _ScanResult(
-            origin: origin,
-            parserId: realParser.id,
-            query: parser.searchQuery,
-            authBuilderId: parser.id);
+          origin: origin,
+          parserId: realParser.id,
+          query: parser.searchQuery,
+          authBuilderId: parser.id,
+        );
       }
 
       if (type == _ScanType.suggestion) {
         if (parser.canParseSuggestion(res)) {
           return _ScanResult(
-              origin: origin,
-              parserId: parser.id,
-              query: parser.suggestionQuery);
+            origin: origin,
+            parserId: parser.id,
+            query: parser.suggestionQuery,
+          );
         }
 
-        final realParser = parsers.firstWhere((x) => x.canParseSuggestion(res),
-            orElse: NoParser.new);
+        final realParser = parsers.firstWhere(
+          (x) => x.canParseSuggestion(res),
+          orElse: NoParser.new,
+        );
         return _ScanResult(
-            origin: origin,
-            parserId: realParser.id,
-            query: parser.suggestionQuery);
+          origin: origin,
+          parserId: realParser.id,
+          query: parser.suggestionQuery,
+        );
       }
 
       return _ScanResult.empty;
@@ -174,8 +181,11 @@ class BooruScanner {
     }
   }
 
-  Stream<_ScanResult> _performScans(String host,
-      {required _ScanType type, required Server server}) async* {
+  Stream<_ScanResult> _performScans(
+    String host, {
+    required _ScanType type,
+    required Server server,
+  }) async* {
     final results = <_ScanResult>[];
     final requests = parsers.mapIndexed((i, parser) async {
       if (i > 0) {
@@ -252,7 +262,11 @@ class BooruScanner {
       }
 
       _uilog('🧐 Scanning suggestion query...');
-      final suggestion = _performScans(api, type: _ScanType.suggestion, server: server);
+      final suggestion = _performScans(
+        api,
+        type: _ScanType.suggestion,
+        server: server,
+      );
       await for (var ev in suggestion) {
         if (ev == _ScanResult.empty && isScanning.value) {
           continue;
@@ -283,10 +297,7 @@ class BooruScanner {
           continue;
         }
 
-        data = data.copyWith(
-          postUrl: ev.query,
-          homepage: ev.origin,
-        );
+        data = data.copyWith(postUrl: ev.query, homepage: ev.origin);
       }
 
       _isScanning.value = false;

@@ -18,8 +18,7 @@ class NhentaiTag {
   final String type;
 
   /// Search token for the tag as nhentai wants it, e.g. `tag:"big breasts"`.
-  String get token =>
-      name.contains(' ') ? '$type:"$name"' : '$type:$name';
+  String get token => name.contains(' ') ? '$type:"$name"' : '$type:$name';
 }
 
 /// A parsed tag list with its lookup tables.
@@ -183,9 +182,9 @@ class NhentaiTags {
   /// in the app (`big_breasts`) and as nhentai writes them
   /// (`tag:"big breasts"`), so blocked tags of either form match.
   List<String> tokensOf(Iterable<int> ids) => [
-        for (final id in ids)
-          if (_byId[id] case final tag?) ...{display(tag), tag.token},
-      ];
+    for (final id in ids)
+      if (_byId[id] case final tag?) ...{display(tag), tag.token},
+  ];
 
   static String underscored(String name) => name.replaceAll(' ', '_');
 
@@ -211,8 +210,9 @@ class NhentaiTags {
   }
 
   static final _prefixed = RegExp(
-      '^(-?)(${nhentaiTagTypes.join('|')}):(.+)\$',
-      caseSensitive: false);
+    '^(-?)(${nhentaiTagTypes.join('|')}):(.+)\$',
+    caseSensitive: false,
+  );
 
   /// One word of a search as nhentai wants it: known tag names become
   /// `type:"name"` tokens (`-big_breasts` -> `-tag:"big breasts"`),
@@ -226,7 +226,8 @@ class NhentaiTags {
       final type = m.group(2)!.toLowerCase();
       final value = m.group(3)!;
       if (value.startsWith('"')) return word;
-      final tag = _find(value, type: type) ??
+      final tag =
+          _find(value, type: type) ??
           NhentaiTag(0, value.toLowerCase().replaceAll('_', ' '), 0, type);
       return '$minus${tag.token}';
     }
@@ -278,7 +279,7 @@ class NhentaiTags {
           type != null
               ? '$minus${tag.type}:${underscored(tag.name)}'
               : '$minus${display(tag)}',
-          tag.count
+          tag.count,
         ),
     ];
   }

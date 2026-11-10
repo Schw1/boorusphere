@@ -73,7 +73,8 @@ class AppThemeDataNotifier {
       listTileTheme: origin.listTileTheme.copyWith(
         minVerticalPadding: 12,
         iconColor: colorScheme.onSurfaceVariant,
-      ), dialogTheme: DialogThemeData(backgroundColor: colorScheme.surface),
+      ),
+      dialogTheme: DialogThemeData(backgroundColor: colorScheme.surface),
     );
   }
 
@@ -87,9 +88,7 @@ class AppThemeDataNotifier {
       primaryColor: Colors.black,
       canvasColor: Colors.black,
       scaffoldBackgroundColor: Colors.black,
-      drawerTheme: origin.drawerTheme.copyWith(
-        backgroundColor: Colors.black,
-      ),
+      drawerTheme: origin.drawerTheme.copyWith(backgroundColor: Colors.black),
       colorScheme: origin.colorScheme.copyWith(
         brightness: Brightness.dark,
         surface: origin.colorScheme.surface,

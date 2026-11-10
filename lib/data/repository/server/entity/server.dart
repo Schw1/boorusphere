@@ -21,7 +21,7 @@ abstract class Server with _$Server {
     @HiveField(8, defaultValue: '') @Default('') String alias,
     @HiveField(9, defaultValue: '') @Default('') String searchParserId,
     @HiveField(10, defaultValue: '') @Default('') String suggestionParserId,
-    @HiveField(11, defaultValue: '') @Default('') String urlSuffix ,
+    @HiveField(11, defaultValue: '') @Default('') String urlSuffix,
   }) = _Server;
 
   factory Server.fromJson(Map<String, dynamic> json) => _$ServerFromJson(json);
@@ -40,7 +40,8 @@ abstract class Server with _$Server {
       // nhentai: everything is explicit (no rating), `order:` tags become
       // its sort parameter, and the query must not be empty
       final split = NhentaiJsonParser.splitQuery(
-          NhentaiJsonParser.withLanguage(tags, option.language));
+        NhentaiJsonParser.withLanguage(tags, option.language),
+      );
       // an order: tag in the search wins over the sort button
       final order = split.sort.isNotEmpty || split.hadOrder
           ? split.sort
@@ -131,8 +132,10 @@ abstract class Server with _$Server {
     return (tag: ' order:random', params: '');
   }
 
-  static final _typedOrder =
-      RegExp(r'(^|\s)-?(order|sort):', caseSensitive: false);
+  static final _typedOrder = RegExp(
+    r'(^|\s)-?(order|sort):',
+    caseSensitive: false,
+  );
 
   /// Booru engine, as far as sorting is concerned.
   String get _engine {
@@ -157,16 +160,16 @@ abstract class Server with _$Server {
   /// Sort orders the sort button offers for this server ('' = the
   /// engine's default, newest first). Empty: no sort button.
   List<String> get sortOptions => switch (_engine) {
-        'nhentai' => NhentaiJsonParser.sortOptions,
-        'danbooru' => const ['', 'rank', 'score', 'favcount', 'oldest'],
-        'e621' => const ['', 'score', 'favcount', 'oldest'],
-        'danbooru1' || 'moebooru' => const ['', 'score', 'oldest'],
-        'gelbooru' => const ['', 'score', 'oldest'],
-        'szurubooru' => const ['', 'score', 'favcount'],
-        'philomena' => const ['', 'score', 'favcount', 'oldest'],
-        'monbooru' => const ['', 'oldest', 'size'],
-        _ => const [],
-      };
+    'nhentai' => NhentaiJsonParser.sortOptions,
+    'danbooru' => const ['', 'rank', 'score', 'favcount', 'oldest'],
+    'e621' => const ['', 'score', 'favcount', 'oldest'],
+    'danbooru1' || 'moebooru' => const ['', 'score', 'oldest'],
+    'gelbooru' => const ['', 'score', 'oldest'],
+    'szurubooru' => const ['', 'score', 'favcount'],
+    'philomena' => const ['', 'score', 'favcount', 'oldest'],
+    'monbooru' => const ['', 'oldest', 'size'],
+    _ => const [],
+  };
 
   /// How the engine is asked for [sort]: an extra search tag or extra URL
   /// parameters (see [sortOptions] for the ids).
@@ -244,7 +247,7 @@ String _rateString(BooruRating searchRating) {
     BooruRating.questionable => 'rating:questionable',
     BooruRating.explicit => 'rating:explicit',
     BooruRating.sensitive => 'rating:sensitive',
-    _ => ''
+    _ => '',
   };
 }
 
@@ -254,7 +257,7 @@ String _monbooruRateString(BooruRating searchRating) {
     BooruRating.questionable => 'rating:questionable',
     BooruRating.explicit => 'rating:explicit',
     BooruRating.sensitive => 'rating:sensitive',
-    _ => ''
+    _ => '',
   };
 }
 
@@ -263,6 +266,6 @@ String _szuruRateString(BooruRating searchRating) {
     BooruRating.safe => 'safety:safe',
     BooruRating.questionable => 'safety:sketchy',
     BooruRating.sensitive || BooruRating.explicit => 'safety:unsafe',
-    _ => ''
+    _ => '',
   };
 }

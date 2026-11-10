@@ -29,8 +29,11 @@ void main() {
 
     test('blocked posts are not counted', () {
       final first = search.checked([100], now: now);
-      final next =
-          first.checked([103, 102, 101], shownIds: [103, 101], now: now);
+      final next = first.checked(
+        [103, 102, 101],
+        shownIds: [103, 101],
+        now: now,
+      );
       expect(next.newCount, 2);
     });
 
@@ -43,8 +46,10 @@ void main() {
     });
 
     test('opening marks everything seen', () {
-      final checked =
-          search.checked([100], now: now).checked([120, 110], now: now);
+      final checked = search.checked([100], now: now).checked([
+        120,
+        110,
+      ], now: now);
       final seen = checked.seen();
       expect(seen.seenId, 120);
       expect(seen.newCount, 0);
@@ -55,10 +60,14 @@ void main() {
 
     test('an order: tag puts other posts first: no count', () {
       expect(search.canCount, isTrue);
-      expect(const SavedSearch(serverId: 's', query: 'cat order:score')
-          .canCount, isFalse);
-      expect(const SavedSearch(serverId: 's', query: 'sort:popular')
-          .canCount, isFalse);
+      expect(
+        const SavedSearch(serverId: 's', query: 'cat order:score').canCount,
+        isFalse,
+      );
+      expect(
+        const SavedSearch(serverId: 's', query: 'sort:popular').canCount,
+        isFalse,
+      );
     });
 
     test('same search, other spacing: same key', () {

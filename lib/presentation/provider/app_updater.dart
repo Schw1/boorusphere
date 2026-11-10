@@ -42,7 +42,8 @@ class AppUpdater {
 
   Future<void> clear() async {
     final tasks = await FlutterDownloader.loadTasksWithRawQuery(
-        query: 'SELECT * FROM task WHERE file_name LIKE \'%.apk\'');
+      query: 'SELECT * FROM task WHERE file_name LIKE \'%.apk\'',
+    );
     if (tasks == null) return;
     for (var task in tasks) {
       await ref.read(downloadEntryStateProvider.notifier).remove(task.taskId);
@@ -75,8 +76,9 @@ class AppUpdater {
       } catch (e) {}
     }
 
-    final newId =
-        await ref.read(downloaderProvider).download(Post.appReserved, url: url);
+    final newId = await ref
+        .read(downloaderProvider)
+        .download(Post.appReserved, url: url);
 
     if (newId != null) {
       id = newId;

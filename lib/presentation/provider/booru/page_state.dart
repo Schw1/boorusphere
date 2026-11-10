@@ -61,8 +61,12 @@ class PageState extends _$PageState {
 
     if (state is! DataFetchResult) return;
 
-    state = FetchResult.data(state.data
-        .copyWith(posts: _posts, filteredPosts: List.of(_filteredPosts)));
+    state = FetchResult.data(
+      state.data.copyWith(
+        posts: _posts,
+        filteredPosts: List.of(_filteredPosts),
+      ),
+    );
   }
 
   Future<void> update(PageOption Function(PageOption) updater) async {
@@ -109,7 +113,10 @@ class PageState extends _$PageState {
 
     state = FetchResult.loading(
       state.data.copyWith(
-          posts: _posts, filteredPosts: _filteredPosts, option: option),
+        posts: _posts,
+        filteredPosts: _filteredPosts,
+        option: option,
+      ),
     );
 
     try {
@@ -128,13 +135,15 @@ class PageState extends _$PageState {
 
         final posts = res.where((it) => knownIds.add(it.id)).toList();
         final displayedPosts = <Post>[];
-        displayedPosts
-            .addAll(posts.where((it) => !it.allTags.any(blocked.contains)));
+        displayedPosts.addAll(
+          posts.where((it) => !it.allTags.any(blocked.contains)),
+        );
         if (displayedPosts.isNotEmpty) {
           _posts.addAll(posts);
           _filteredPosts.addAll(displayedPosts);
-          state = FetchResult.data(state.data
-              .copyWith(posts: _posts, filteredPosts: _filteredPosts));
+          state = FetchResult.data(
+            state.data.copyWith(posts: _posts, filteredPosts: _filteredPosts),
+          );
           if (firstPage) _markSeen(option, res);
           break;
         }
@@ -150,11 +159,15 @@ class PageState extends _$PageState {
   /// Opening a saved search shows its new posts, so they count as seen.
   void _markSeen(PageOption option, Iterable<Post> posts) {
     final newestFirst = !option.random && option.sort.isEmpty;
-    unawaited(ref.read(savedSearchesProvider.notifier).markSeen(
-          _server.id,
-          option.query,
-          newestFirst ? posts.map((it) => it.id) : const [],
-        ));
+    unawaited(
+      ref
+          .read(savedSearchesProvider.notifier)
+          .markSeen(
+            _server.id,
+            option.query,
+            newestFirst ? posts.map((it) => it.id) : const [],
+          ),
+    );
   }
 
   Future<void> loadMore() async {

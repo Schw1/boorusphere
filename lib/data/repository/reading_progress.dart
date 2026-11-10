@@ -27,10 +27,9 @@ class ReadingProgress {
       ? Hive.box<int>(boxName)
       : await Hive.openBox<int>(boxName);
 
-  static Future<Box<String>> _recentBox() async =>
-      Hive.isBoxOpen(recentBoxName)
-          ? Hive.box<String>(recentBoxName)
-          : await Hive.openBox<String>(recentBoxName);
+  static Future<Box<String>> _recentBox() async => Hive.isBoxOpen(recentBoxName)
+      ? Hive.box<String>(recentBoxName)
+      : await Hive.openBox<String>(recentBoxName);
 
   /// Opens the store early, so [pageOfSync] has data.
   static Future<void> open() async {
@@ -42,7 +41,8 @@ class ReadingProgress {
   static int? pageOfSync(Post post) =>
       Hive.isBoxOpen(boxName) ? Hive.box<int>(boxName).get(keyOf(post)) : null;
 
-  static Future<int?> pageOf(Post post) async => (await _box()).get(keyOf(post));
+  static Future<int?> pageOf(Post post) async =>
+      (await _box()).get(keyOf(post));
 
   static Future<void> save(Post post, int page, {DateTime? now}) async {
     final box = await _box();
@@ -110,9 +110,9 @@ class ReadingProgress {
 
   /// Pages and the "Continue reading" list, for backups.
   static Future<Map<String, dynamic>> export() async => {
-        'pages': Map<String, int>.from((await _box()).toMap()),
-        'recent': Map<String, String>.from((await _recentBox()).toMap()),
-      };
+    'pages': Map<String, int>.from((await _box()).toMap()),
+    'recent': Map<String, String>.from((await _recentBox()).toMap()),
+  };
 
   /// Restores [export]ed data. Merges: entries of the backup replace the
   /// same posts here, others stay. Pages read further here are kept.
@@ -134,7 +134,9 @@ class ReadingProgress {
         if (key is String && value is String) await box.put(key, value);
       }
       if (box.length > recentLimit) {
-        final oldest = _entries(box).skip(recentLimit).map((it) => keyOf(it.post));
+        final oldest = _entries(
+          box,
+        ).skip(recentLimit).map((it) => keyOf(it.post));
         await box.deleteAll(oldest.toList());
       }
     }
