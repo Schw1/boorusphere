@@ -189,6 +189,8 @@ class DataBackupState extends _$DataBackupState {
     }
 
     state = const BackupResult.loading(DataBackupType.restore);
+    final serversBefore = ref.read(serverRepoProvider).servers;
+    var restoredTokens = const <String>{};
     for (final json in decoder.files) {
       final content = utf8.decode(json.content);
       switch (json.name.replaceAll('.json', '')) {
@@ -211,7 +213,7 @@ class DataBackupState extends _$DataBackupState {
           await MonbooruSender.importBackup(content);
           break;
         case ServerAuthStore.backupKey:
-          await ServerAuthStore.importBackup(content);
+          restoredTokens = await ServerAuthStore.importBackup(content);
           break;
         case ReadingBackup.backupKey:
           await ReadingBackup.import(content);
@@ -222,6 +224,16 @@ class DataBackupState extends _$DataBackupState {
         default:
           break;
       }
+    }
+
+    // A server that now points to another address keeps no token from
+    // before, unless the backup brought one for it.
+    final moved = ServerAuthStore.movedServers(
+      serversBefore,
+      ref.read(serverRepoProvider).servers,
+    ).difference(restoredTokens);
+    for (final id in moved) {
+      await ServerAuthStore.remove(id);
     }
 
     _invalidateProviders();
