@@ -35,12 +35,19 @@ class _PrecachePostsState extends HookState<_Precacher, _PrecachePostsHook> {
 
   Future<void> _precacheImagePost(Post post, bool og) async {
     if (!post.content.isPhoto || !context.mounted) return;
-    final image = ExtendedNetworkImageProvider(
-      // An archive's original file is the .cbz, not an image.
-      og && !post.isArchive ? post.originalFile : post.content.url,
-      headers: hook.ref.read(postHeadersFactoryProvider(post)),
-      cache: true,
-      retries: 3,
+    final url = post.viewerUrl(loadOriginal: og);
+    final size = post.viewerDecodeSize(url);
+    // The same provider (and size) as the viewer, so it finds this in the
+    // cache instead of decoding a huge original at full size here.
+    final image = ExtendedResizeImage.resizeIfNeeded(
+      provider: ExtendedNetworkImageProvider(
+        url,
+        headers: hook.ref.read(postHeadersFactoryProvider(post)),
+        cache: true,
+        retries: 3,
+      ),
+      cacheWidth: size?.width,
+      cacheHeight: size?.height,
     );
     final status = await image.obtainCacheStatus(
       configuration: ImageConfiguration.empty,
