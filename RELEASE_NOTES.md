@@ -2,6 +2,8 @@ Unofficial fork of Boorusphere 1.5.4 for iOS and Android: an unsigned IPA for si
 
 ## New
 <!-- Changes for the next release go here, one '- ' entry each. -->
+- **New home:** the project is now at github.com/Schw1/boorusphere (formerly boorusphere-ios), as it is no longer iOS-only. Update checks and the nhentai tag list use the new address; older versions keep working through GitHub's redirect.
+- **Changelog:** the in-app changelog now lists the changes of each release, including those of 1.5.4-ios.18.
 
 ## In 1.5.4-ios.18
 - **Related posts:** the post details show the parent post, other versions and child posts, and the pools the post is in (Danbooru, e621), each opening a search. Pools open in their reading order on Danbooru. Shown for Danbooru, e621, Gelbooru, Safebooru and Moebooru (yande.re, Konachan).
