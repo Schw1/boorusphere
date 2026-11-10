@@ -31,7 +31,8 @@ if [ ! -d ios ]; then
   flutter create --platforms=ios --org "$ORG" --project-name "$PROJECT" .
 fi
 
-flutter pub get
+# Same versions as the Android and test jobs: fail if pubspec.lock is stale.
+flutter pub get --enforce-lockfile
 
 # 2. App icon
 # The config file must NOT be named flutter_launcher_icons-<x>.yaml: the tool
