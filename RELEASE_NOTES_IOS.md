@@ -1,6 +1,7 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **Related posts:** the post details show the parent post, other versions and child posts, and the pools the post is in (Danbooru, e621), each opening a search. Pools open in their reading order on Danbooru. Shown for Danbooru, e621, Gelbooru, Safebooru and Moebooru (yande.re, Konachan).
 - **App data out of sight (iOS):** favorites, servers, settings and the other app data were stored in the folder the Files app shows (Files → On My iPhone → Boorusphere), where they could be deleted by accident and showed login data. They are now kept where only the app sees them; the first start of this version moves them over. Downloads and backups stay in the Files app.
 - **Fix:** downloads with a `%` in the file name failed; names in other scripts (e.g. Japanese) became `____.jpg`. Names are now kept readable, with the post id when nothing readable is left.
 - **Fix:** very large originals (e.g. 10000 × 10000 px) with "Load original" could close the app. Pictures larger than 4096 px are now shown at 4096 px on their longest side.

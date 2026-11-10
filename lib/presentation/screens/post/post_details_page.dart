@@ -8,6 +8,7 @@ import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
+import 'package:boorusphere/presentation/screens/post/post_relations.dart';
 import 'package:boorusphere/presentation/screens/post/related_galleries.dart';
 import 'package:boorusphere/presentation/utils/entity/pixel_size.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -131,6 +132,17 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                   trailing: _CopyButton(post.originalFile),
                 ),
               if (isGallery) RelatedGalleries(post: post, session: session),
+              PostRelations(
+                post: post,
+                onSearch: (query) => context.router.push(
+                  HomeRoute(
+                    session: session.copyWith(
+                      query: query,
+                      serverId: post.serverId,
+                    ),
+                  ),
+                ),
+              ),
               ListTile(
                 title: Text(context.t.tags),
                 subtitle: Padding(

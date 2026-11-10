@@ -1,11 +1,28 @@
-# Keeps the SHA-pinned GitHub Actions up to date (one grouped PR per week).
-# Dart/Flutter packages are updated by hand together with the Flutter SDK.
+# Keeps the SHA-pinned GitHub Actions and the Dart packages up to date.
 version: 2
 updates:
+  # One grouped PR per week for the actions.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     groups:
       actions:
+        patterns: ['*']
+
+  # One grouped PR per month for the Dart/Flutter packages. Only
+  # pubspec.lock changes ("lockfile-only"): updates stay within the ranges
+  # in pubspec.yaml, so the versions pinned there on purpose (auto_route,
+  # dynamic_color, ...) and major versions are left alone; those come with
+  # a Flutter SDK update, by hand. CI checks every PR with the Flutter
+  # version the app is built with (pub get --enforce-lockfile, analyze,
+  # tests, Android build), so an update that needs a newer SDK shows up red.
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: monthly
+    versioning-strategy: lockfile-only
+    open-pull-requests-limit: 2
+    groups:
+      dart:
         patterns: ['*']

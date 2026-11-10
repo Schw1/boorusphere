@@ -60,6 +60,8 @@ class MoebooruJsonParser extends BooruParser {
       final rating = pick(post, 'rating').asStringOrNull() ?? 'q';
       final score = pick(post, 'score').asIntOrNull() ?? 0;
       final md5 = FileMd5.normalize(pick(post, 'md5').asStringOrNull());
+      final parentId = BooruUtil.parentIdOf(pick(post, 'parent_id').value);
+      final hasChildren = BooruUtil.isTrue(pick(post, 'has_children').value);
 
       final hasFile = originalFile.isNotEmpty && previewFile.isNotEmpty;
       final hasContent = width > 0 && height > 0;
@@ -85,6 +87,8 @@ class MoebooruJsonParser extends BooruParser {
             source: source,
             score: score,
             md5: md5,
+            parentId: parentId,
+            hasChildren: hasChildren,
           ),
         );
       }

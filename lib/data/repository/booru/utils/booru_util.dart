@@ -3,6 +3,20 @@ import 'package:html_unescape/html_unescape_small.dart';
 import 'package:path/path.dart' as path;
 
 class BooruUtil {
+  /// A parent post id from the API (int, numeric string, '' or null);
+  /// 0 when there is none.
+  static int parentIdOf(Object? value) {
+    final id = value is num ? value.toInt() : int.tryParse('${value ?? ''}');
+    return id != null && id > 0 ? id : 0;
+  }
+
+  /// A yes/no flag from the API: `true`, `"true"`, `1` or `"1"`.
+  static bool isTrue(Object? value) =>
+      value == true ||
+      value == 1 ||
+      '$value'.toLowerCase() == 'true' ||
+      value == '1';
+
   static String normalizeUrl(Server server, String urlString) {
     if (urlString.isEmpty) {
       // wtf are you doing here

@@ -66,6 +66,19 @@ class E621JsonParser extends BooruParser {
       final postUrl = server.postUrlOf(id);
       final score = pick(post, 'score', 'total').asIntOrNull() ?? 0;
       final md5 = FileMd5.normalize(pick(post, 'file', 'md5').asStringOrNull());
+      final parentId = BooruUtil.parentIdOf(
+        pick(post, 'relationships', 'parent_id').value,
+      );
+      final hasChildren = BooruUtil.isTrue(
+        pick(post, 'relationships', 'has_children').value,
+      );
+      final poolIds = [
+        for (final it in pick(
+          post,
+          'pools',
+        ).asListOrEmpty<Object?>((p) => p.value))
+          if (BooruUtil.parentIdOf(it) case final id when id > 0) id,
+      ];
 
       if (hasFile && hasContent) {
         result.add(
@@ -91,6 +104,9 @@ class E621JsonParser extends BooruParser {
             tagsMeta: tagsMeta.map(BooruUtil.decodeTag).toList(),
             score: score,
             md5: md5,
+            parentId: parentId,
+            hasChildren: hasChildren,
+            poolIds: poolIds,
           ),
         );
       }

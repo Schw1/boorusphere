@@ -29,9 +29,6 @@
 * Restoring a backup only replaces data once its file could be read; a broken entry is skipped instead of stopping the restore
 * Faster: pages with many blocked tags, the first nhentai search, following monloader jobs; server icons are kept between app starts; cached images older than 7 days are removed at start
 * Privacy: the Referer of API requests is only the server's address (no login data from the URL suffix); post links only open web addresses
-* iOS: app data (Hive, cookies) moved out of the Documents folder the Files app shows
-* Fix: downloads with '%' or non-Latin file names; very large originals are decoded at most 4096 px
-* Restore drops the token of a server whose address changed; more local addresses recognized (nas, *.fritz.box, IPv6)
 * Sort button in the search bar for boorus that support it (e.g. Danbooru: rank, score, favorites, oldest), remembered per server
 * iOS: warning before the sideloading signature expires; update notice with a link to the release
 * iOS: fixed app icon and empty server list after restoring a backup

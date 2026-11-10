@@ -190,11 +190,17 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+    env:
+      TAG: ${{ inputs.release_tag || github.ref_name }}
+      # Builds from feature branches are test builds
+      PRERELEASE: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
     steps:
-      # Only for RELEASE_NOTES_IOS.md
+      # For the release notes. Real releases push the rotated notes back to
+      # main (last step), so this job keeps the checkout's credentials; its
+      # token is the only one in the workflow that can write.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          persist-credentials: ${{ env.PRERELEASE != 'true' }}
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -205,15 +211,35 @@ jobs:
           name: boorusphere-apk
           path: apk
 
+      # "## New" of RELEASE_NOTES_IOS.md becomes "## New in <version>". A
+      # real release fails here when "## New" has no entries.
+      - name: Release notes
+        run: |
+          python3 tool/release_notes.py body "$TAG" "$RUNNER_TEMP/release_notes.md" \
+            $([ "$PRERELEASE" = true ] && echo --allow-empty)
+
       - name: Publish release
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
-          tag_name: ${{ inputs.release_tag || github.ref_name }}
-          name: Boorusphere ${{ inputs.release_tag || github.ref_name }} (iOS + Android)
+          tag_name: ${{ env.TAG }}
+          name: Boorusphere ${{ env.TAG }} (iOS + Android)
           target_commitish: ${{ github.sha }}
-          # Builds from feature branches are test builds
-          prerelease: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
+          prerelease: ${{ env.PRERELEASE }}
           files: |
             boorusphere-unsigned.ipa
             apk/*.apk
-          body_path: RELEASE_NOTES_IOS.md
+          body_path: ${{ runner.temp }}/release_notes.md
+
+      # The released entries move under "## In <version>" and into
+      # CHANGELOG.md (in-app changelog); "## New" starts empty again.
+      # Done on the newest main, so commits made during the build stay.
+      - name: Move the notes under the released version
+        if: env.PRERELEASE != 'true'
+        run: |
+          git fetch origin main
+          git checkout -B notes origin/main
+          python3 tool/release_notes.py rotate "$TAG"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "Release notes: $TAG"
+          git push origin notes:main
