@@ -1,3 +1,4 @@
+import 'package:boorusphere/data/app_storage.dart';
 import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/app_state/current_app_state_repo.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
@@ -37,7 +38,9 @@ void main() async {
   setupLogger();
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  await Hive.initFlutter();
+  // Hive boxes and cookies out of the Documents folder the Files app shows.
+  final storage = await AppStorage.prepare();
+  await Hive.initFlutter(storage.hivePath);
 
   Hive.registerAdapter(ServerAdapter());
   Hive.registerAdapter(BooruTagAdapter());
@@ -79,7 +82,9 @@ void main() async {
         sharedStorageHandleProvider.overrideWithValue(
           await provideSharedStorageHandle(),
         ),
-        cookieJarProvider.overrideWithValue(await provideCookieJar()),
+        cookieJarProvider.overrideWithValue(
+          provideCookieJar(storage.cookiePath),
+        ),
         defaultServersProvider.overrideWithValue(await provideDefaultServers()),
         envRepoProvider.overrideWithValue(await provideEnvRepo()),
       ],

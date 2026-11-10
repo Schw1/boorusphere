@@ -25,6 +25,7 @@ The app requires **iOS 14** or later.
 | --- | --- | --- |
 | Version / `sdkVersion` | Pigeon `AppEnv` (Kotlin) | `package_info_plus`, `sdkVersion = 99` |
 | Download folder | public Downloads folder (Pigeon `StorageUtil`) | app folder `Documents/Boorusphere`, visible in the Files app; optionally also saved to Photos (Settings → Save to Photos) |
+| App data (Hive, cookies) | app's private documents folder | `Library/Application Support` (`hive/`, `cookies/`), not visible in the Files app; versions before 1.5.4-ios.18 kept them in `Documents` and are moved once at start (`lib/data/app_storage.dart`) |
 | Opening files | Intent (Pigeon `StorageUtil`) | `open_filex` |
 | Media scan, "Hide media" | `media_scanner`, `.nomedia` | not applicable (setting hidden) |
 | Notification permission for downloads | requested | not requested |
@@ -110,7 +111,7 @@ The **Upstream check** workflow runs every Monday and compares `Kropatz/boorusph
 ## Security notes
 
 - **Keychain:** the Monbooru server tokens and the monloader token are stored in the iOS Keychain (`first unlock, this device only`): not synced via iCloud Keychain. They are only written into a backup when "Include login data" is chosen (plain text, red warning in the dialog; automatic backups never include them), so they can be moved to another device, e.g. from iOS to Android.
-- **Login data in URL suffixes:** some boorus take credentials as query parameters (e.g. `&api_key=…&user_id=…`). They stay in the app's Hive storage. A manual backup leaves them out unless **Include login data** is checked; then they are in plain text in the backup file, which is visible in the Files app. Restoring a backup without login data on the same device keeps the existing keys.
+- **Login data in URL suffixes:** some boorus take credentials as query parameters (e.g. `&api_key=…&user_id=…`). They stay in the app's Hive storage, which is not visible in the Files app. A manual backup leaves them out unless **Include login data** is checked; then they are in plain text in the backup file, which is visible in the Files app. Restoring a backup without login data on the same device keeps the existing keys.
 - **Plain HTTP (App Transport Security):** `NSAllowsArbitraryLoads` stays enabled on purpose, so user-added boorus without HTTPS keep working (browsing, video and downloads). The Android build allows cleartext traffic for the same reason. All bundled servers use HTTPS. Token fields warn when the address is plain HTTP outside the local network.
 - **Android backup:** Android's own auto backup stays enabled, so app data (including URL suffix credentials) can end up in the Google account backup; tokens in the Keystore don't.
 - **Android signing key:** only in the repository secrets and with the maintainer; see [Android](#android).

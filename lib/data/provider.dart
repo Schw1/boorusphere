@@ -6,8 +6,6 @@ import 'package:boorusphere/domain/provider.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'provider.g.dart';
@@ -17,9 +15,9 @@ CookieJar cookieJar(Ref ref) {
   return CookieJar();
 }
 
-Future<CookieJar> provideCookieJar() async {
-  final dir = await getApplicationDocumentsDirectory();
-  return PersistCookieJar(storage: FileStorage(path.join(dir.path, 'cookies')));
+/// The cookie jar, kept in [path] (see `AppStorage`).
+CookieJar provideCookieJar(String path) {
+  return PersistCookieJar(storage: FileStorage(path));
 }
 
 @Riverpod(keepAlive: true)
