@@ -1,4 +1,6 @@
 ## 1.5.4
+* New home: the project is now at github.com/Schw1/boorusphere (formerly boorusphere-ios), as it is no longer iOS-only. Update checks and the nhentai tag list use the new address; older versions keep working through GitHub's redirect.
+* Changelog: the in-app changelog now lists the changes of each release, including those of 1.5.4-ios.18.
 * Related posts: the post details show the parent post, other versions and child posts, and the pools the post is in (Danbooru, e621), each opening a search. Pools open in their reading order on Danbooru. Shown for Danbooru, e621, Gelbooru, Safebooru and Moebooru (yande.re, Konachan).
 * App data out of sight (iOS): favorites, servers, settings and the other app data were stored in the folder the Files app shows (Files → On My iPhone → Boorusphere), where they could be deleted by accident and showed login data. They are now kept where only the app sees them; the first start of this version moves them over. Downloads and backups stay in the Files app.
 * Fix: downloads with a % in the file name failed; names in other scripts (e.g. Japanese) became ____.jpg. Names are now kept readable, with the post id when nothing readable is left.
