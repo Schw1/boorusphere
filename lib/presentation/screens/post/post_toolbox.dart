@@ -8,6 +8,7 @@ import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
 import 'package:boorusphere/presentation/provider/monbooru_queue.dart';
 import 'package:boorusphere/presentation/provider/post_notes_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -223,8 +224,8 @@ class PostMonbooruButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final queue = MonbooruQueue.instance;
-    final states = useValueListenable(queue.states);
+    final queue = ref.watch(monbooruQueueProvider);
+    final states = ref.watch(monbooruStatesProvider);
     final state = states[post.viewId] ?? MonbooruPostState.unknown;
     final servers = ref.watch(serverStateProvider);
     final server = servers.findById(post.serverId);

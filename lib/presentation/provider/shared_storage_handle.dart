@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:boorusphere/pigeon/storage_util.pi.dart';
+import 'package:boorusphere/utils/logger.dart';
+import 'package:logging/logging.dart';
 import 'package:media_scanner/media_scanner.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
@@ -9,6 +11,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'shared_storage_handle.g.dart';
+
+final _log = Logger('SharedStorage');
 
 @Riverpod(keepAlive: true)
 SharedStorageHandle sharedStorageHandle(Ref ref) {
@@ -51,8 +55,9 @@ class SharedStorageHandle {
     if (!dir.existsSync()) {
       try {
         Directory(path).createSync();
-        // ignore: empty_catches
-      } catch (e) {}
+      } catch (e) {
+        _log.w('init: cannot create $path: $e');
+      }
     }
   }
 
@@ -60,8 +65,9 @@ class SharedStorageHandle {
     final dir = Directory(p.join(path, directory));
     try {
       dir.createSync();
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      _log.w('createSubDir($directory): $e');
+    }
     return dir;
   }
 
@@ -69,8 +75,9 @@ class SharedStorageHandle {
     final file = File(p.join(path, Uri.decodeFull(relativePath)));
     try {
       return file.existsSync();
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      _log.w('fileExists($relativePath): $e');
+    }
     return false;
   }
 
@@ -89,8 +96,9 @@ class SharedStorageHandle {
       } else if (!hide && isExists) {
         await _nomedia.delete();
       }
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      _log.w('hide($hide): $e');
+    }
     await rescan();
   }
 
@@ -102,7 +110,8 @@ class SharedStorageHandle {
       } else {
         await StorageUtil().open(filePath);
       }
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      _log.w('open($dest): $e');
+    }
   }
 }

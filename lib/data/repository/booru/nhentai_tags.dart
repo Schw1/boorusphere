@@ -135,10 +135,10 @@ class NhentaiTags {
   Future<void> _load(Dio client) async {
     final file = await _file();
     var stale = true;
-    if (await file.exists()) {
+    if (file.existsSync()) {
       try {
         _apply(await compute(_readTagList, file.path));
-        final age = DateTime.now().difference(await file.lastModified());
+        final age = DateTime.now().difference(file.lastModifiedSync());
         stale = age > maxAge;
       } catch (e) {
         debugPrint('NhentaiTags: stored list unreadable: $e');

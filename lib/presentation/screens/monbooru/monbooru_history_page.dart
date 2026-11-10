@@ -4,9 +4,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/monbooru_history.dart';
-import 'package:boorusphere/presentation/provider/monbooru_queue.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/screens/post/post_viewer.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -32,14 +32,11 @@ class MonbooruHistoryPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    useValueListenable(MonbooruHistory.changes);
-    final entries = useFuture(
-      useMemoized(MonbooruHistory.all, [MonbooruHistory.changes.value]),
-    );
+    final entries = ref.watch(monbooruHistoryProvider);
     // Swiped away: hidden at once, before the store has caught up (a
     // dismissed item must leave the list in the same frame).
     final removed = useState(<String>{});
-    final list = (entries.data ?? const <MonbooruHistoryEntry>[])
+    final list = (entries.value ?? const <MonbooruHistoryEntry>[])
         .where((it) => !removed.value.contains(it.post.viewId))
         .toList();
     final scrollController = useMemoized(AutoScrollController.new);
@@ -82,7 +79,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
           child: list.isEmpty
               ? ListView(
                   children: [
-                    if (entries.hasData)
+                    if (entries.hasValue)
                       Center(
                         child: NoticeCard(
                           icon: const Icon(Icons.cloud_upload_outlined),
@@ -171,7 +168,7 @@ class _Tile extends HookConsumerWidget {
     final blur = ref.watch(
       contentSettingStateProvider.select((it) => it.blurExplicit),
     );
-    final states = useValueListenable(MonbooruQueue.instance.states);
+    final states = ref.watch(monbooruStatesProvider);
     final busy = states[post.viewId]?.isBusy ?? false;
     final report = entry.report;
 
@@ -226,7 +223,7 @@ class _Tile extends HookConsumerWidget {
         children: [
           Icon(icon, color: color, size: 20),
           PopupMenuButton<_Action>(
-            onSelected: (action) => _onAction(context, action),
+            onSelected: (action) => _onAction(context, ref, action),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: _Action.resend,
@@ -244,17 +241,23 @@ class _Tile extends HookConsumerWidget {
     );
   }
 
-  Future<void> _onAction(BuildContext context, _Action action) async {
+  Future<void> _onAction(
+    BuildContext context,
+    WidgetRef ref,
+    _Action action,
+  ) async {
     switch (action) {
       case _Action.resend:
         final messenger = ScaffoldMessenger.of(context);
         final sent = context.t.monbooru.sent;
-        final error = await MonbooruQueue.instance.send(
-          entry.post,
-          onReport: (report) {
-            showRootSnackBar((c) => report.describe(c));
-          },
-        );
+        final error = await ref
+            .read(monbooruQueueProvider)
+            .send(
+              entry.post,
+              onReport: (report) {
+                showRootSnackBar((c) => report.describe(c));
+              },
+            );
         messenger
           ..hideCurrentSnackBar()
           ..showSnackBar(

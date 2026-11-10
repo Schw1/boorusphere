@@ -6,13 +6,17 @@ import 'package:boorusphere/data/repository/downloads/entity/download_progress.d
 import 'package:boorusphere/data/repository/version/entity/app_version.dart';
 import 'package:boorusphere/presentation/provider/download/download_state.dart';
 import 'package:boorusphere/presentation/provider/download/downloader.dart';
+import 'package:boorusphere/utils/logger.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_updater.g.dart';
+
+final _log = Logger('AppUpdater');
 
 // keepAlive: the service keeps its Ref and uses it after awaits; with
 // Riverpod 3 an auto-disposed Ref throws once the provider is gone.
@@ -64,16 +68,18 @@ class AppUpdater {
     if (!tmp.existsSync()) {
       try {
         tmp.createSync();
-        // ignore: empty_catches
-      } catch (e) {}
+      } catch (e) {
+        _log.w('start: cannot create the temp folder: $e');
+      }
     }
 
     final apk = File(path.join(tmp.absolute.path, fileName));
     if (apk.existsSync()) {
       try {
         apk.deleteSync();
-        // ignore: empty_catches
-      } catch (e) {}
+      } catch (e) {
+        _log.w('start: cannot delete the old APK: $e');
+      }
     }
 
     final newId = await ref

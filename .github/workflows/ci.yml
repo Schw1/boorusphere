@@ -43,9 +43,9 @@ jobs:
           dart run slang
           dart run build_runner build
 
-      # Warnings fail the build; infos (deprecations etc.) don't.
-      - name: Analyze (errors and warnings)
-        run: flutter analyze --no-fatal-infos lib test tool
+      # The code is free of analyzer findings; any new one fails the build.
+      - name: Analyze
+        run: flutter analyze lib test tool
 
       - name: Test
         run: flutter test

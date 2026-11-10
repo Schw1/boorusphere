@@ -3,6 +3,7 @@ import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/reading_progress.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/widgets/notice_card.dart';
 import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
@@ -22,13 +23,10 @@ class ContinueReadingPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    useValueListenable(ReadingProgress.changes);
     final servers = ref.watch(serverStateProvider);
-    final recent = useFuture(
-      useMemoized(ReadingProgress.recent, [ReadingProgress.changes.value]),
-    );
+    final recent = ref.watch(continueReadingProvider);
     // Posts of servers that were removed can't be opened anymore.
-    final posts = (recent.data ?? const <Post>[])
+    final posts = (recent.value ?? const <Post>[])
         .where((it) => servers.any((s) => s.id == it.serverId))
         .toList();
     final scrollController = useMemoized(AutoScrollController.new);
@@ -49,7 +47,7 @@ class ContinueReadingPage extends HookConsumerWidget {
           actions: [if (posts.isNotEmpty) _Menu(posts: posts)],
         ),
         body: posts.isEmpty
-            ? recent.hasData
+            ? recent.hasValue
                   ? Center(
                       child: NoticeCard(
                         icon: const Icon(Icons.auto_stories_outlined),

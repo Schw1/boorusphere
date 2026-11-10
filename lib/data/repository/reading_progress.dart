@@ -38,8 +38,11 @@ class ReadingProgress {
   }
 
   /// Last page read, or null if never opened (or the store isn't open).
-  static int? pageOfSync(Post post) =>
-      Hive.isBoxOpen(boxName) ? Hive.box<int>(boxName).get(keyOf(post)) : null;
+  static int? pageOfSync(Post post) => pageOfKey(keyOf(post));
+
+  /// Like [pageOfSync], for a [keyOf] key.
+  static int? pageOfKey(String key) =>
+      Hive.isBoxOpen(boxName) ? Hive.box<int>(boxName).get(key) : null;
 
   static Future<int?> pageOf(Post post) async =>
       (await _box()).get(keyOf(post));

@@ -1,8 +1,8 @@
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/data/repository/booru/parser/monbooru_json_parser.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
-import 'package:boorusphere/presentation/provider/monbooru_queue.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/monbooru_error.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
@@ -141,13 +141,15 @@ class _SelectionBar extends HookConsumerWidget {
         return server == null || !MonbooruJsonParser.isMonbooru(server);
       }).toList();
       progress.value = (0, picked.length);
-      final report = await MonbooruQueue.instance.sendAll(
-        picked,
-        servers,
-        onProgress: (sent, total) {
-          if (context.mounted) progress.value = (sent, total);
-        },
-      );
+      final report = await ref
+          .read(monbooruQueueProvider)
+          .sendAll(
+            picked,
+            servers,
+            onProgress: (sent, total) {
+              if (context.mounted) progress.value = (sent, total);
+            },
+          );
       if (context.mounted) {
         progress.value = null;
         selection.clear();

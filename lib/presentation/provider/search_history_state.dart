@@ -41,7 +41,7 @@ class SearchHistoryState extends _$SearchHistoryState {
     state = repo.all;
   }
 
-  Future<void> delete(key) async {
+  Future<void> delete(Object? key) async {
     final repo = ref.read(searchHistoryRepoProvider);
     await repo.delete(key);
     if (!ref.mounted) return;

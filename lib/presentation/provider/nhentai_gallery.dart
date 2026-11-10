@@ -5,7 +5,7 @@ import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// Galleries already loaded this session, by "<serverId>:<id>".
+/// Galleries already loaded this session, by `serverId:id`.
 final _cache = <String, NhentaiGallery>{};
 
 /// Pages, cover and tag names of an nhentai gallery post; null when the

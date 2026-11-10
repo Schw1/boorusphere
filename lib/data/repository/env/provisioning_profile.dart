@@ -38,7 +38,7 @@ class ProvisioningProfile {
     if (!Platform.isIOS) return null;
     try {
       final file = File(_path);
-      if (!await file.exists()) return null;
+      if (!file.existsSync()) return null;
       return parseExpiration(await file.readAsBytes());
     } catch (e) {
       debugPrint('ProvisioningProfile.loadExpiration: $e');

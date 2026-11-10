@@ -3,7 +3,7 @@ import 'package:boorusphere/presentation/provider/data_backup/data_backup.dart';
 
 abstract interface class TagsBlockerRepo {
   Map<int, BooruTag> get();
-  Future<void> delete(key);
+  Future<void> delete(Object? key);
   Future<void> push(BooruTag value);
   Future<void> import(String src);
   Future<BackupItem> export();
