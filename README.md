@@ -8,7 +8,7 @@
             <img alt="Latest release" src="https://img.shields.io/github/v/release/Schw1/boorusphere?style=for-the-badge&logo=pkgsrc&logoColor=ebebf0&labelColor=23232F&color=95b6ff">
         </a>
         <a href="https://github.com/Schw1/boorusphere/actions">
-            <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Schw1/boorusphere/build-ios.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=build">
+            <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Schw1/boorusphere/build.yml?style=for-the-badge&logo=githubactions&logoColor=ebebf0&labelColor=23232F&label=build">
         </a>
         <a href="LICENSE.md">
             <img alt="License" src="https://img.shields.io/github/license/Schw1/boorusphere?style=for-the-badge&logo=gitbook&logoColor=ebebf0&color=b0a8f7&labelColor=23232F"/>
@@ -111,13 +111,13 @@ Download `boorusphere-arm64-v8a.apk` (most phones) or `boorusphere-universal.apk
 
 # Building
 
-Both apps are built by the [build workflow](.github/workflows/build-ios.yml) on GitHub Actions; no Mac is needed for iOS. How releases, release notes, signing and the platform differences work is described in [IOS_PORT.md](IOS_PORT.md).
+Both apps are built by the [build workflow](.github/workflows/build.yml) on GitHub Actions; no Mac is needed for iOS. How releases, release notes, signing and the platform differences work is described in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 For local development (Flutter 3.41, code generation, translations), see the [original README](https://github.com/Kropatz/boorusphere#building-from-source).
 
 # Security
 
-Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere/issues?q=label%3Asecurity). API tokens (Monbooru, monloader) are kept in the iOS Keychain / Android Keystore. Credentials in a server's URL suffix (e.g. `api_key=…`) are stored in the app's private storage and are left out of backups unless you choose "Include login data"; the same option also includes the API tokens, e.g. to move to another device. See [IOS_PORT.md](IOS_PORT.md#security-notes) for details.
+Known security and dependency topics are tracked in the [issues](https://github.com/Schw1/boorusphere/issues?q=label%3Asecurity). API tokens (Monbooru, monloader) are kept in the iOS Keychain / Android Keystore. Credentials in a server's URL suffix (e.g. `api_key=…`) are stored in the app's private storage and are left out of backups unless you choose "Include login data"; the same option also includes the API tokens, e.g. to move to another device. See [DEVELOPMENT.md](DEVELOPMENT.md#security-notes) for details.
 
 # License
 
