@@ -45,6 +45,10 @@ class PostImage extends HookConsumerWidget {
       }
     }, []);
 
+    // An archive's original file is the .cbz; its cover is shown.
+    final url = post.viewerUrl(loadOriginal: contentSetting.loadOriginal);
+    final decodeSize = post.viewerDecodeSize(url);
+
     final deviceRatio = context.mediaQuery.size.aspectRatio;
     final imageRatio = post.aspectRatio;
     final scaleRatio = deviceRatio < imageRatio
@@ -62,11 +66,10 @@ class PostImage extends HookConsumerWidget {
           Hero(
             tag: post.viewId,
             child: ExtendedImage.network(
-              // An archive's original file is the .cbz; show its cover.
-              contentSetting.loadOriginal && !post.isArchive
-                  ? post.originalFile
-                  : post.content.url,
+              url,
               headers: headers,
+              cacheWidth: decodeSize?.width,
+              cacheHeight: decodeSize?.height,
               fit: BoxFit.contain,
               mode: isBlur.value
                   ? ExtendedImageMode.none

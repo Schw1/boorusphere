@@ -82,7 +82,7 @@ void main() {
       await BooruTagsBlockerRepo.prepare();
       await UserSearchHistoryRepo.prepare();
       await UserSettingsRepo.prepare();
-      await SavedSearchStore.open();
+      await SavedSearchStore.openBox();
     });
 
     setUp(() async {

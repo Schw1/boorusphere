@@ -67,4 +67,34 @@ extension PostExt on Post {
 
   /// Multi-page archive (Monbooru CBZ).
   bool get isArchive => pageCount > 0;
+
+  /// URL the viewer shows: the original file with "Load original" (not
+  /// for archives, whose original is the .cbz), otherwise the sample.
+  String viewerUrl({required bool loadOriginal}) =>
+      loadOriginal && !isArchive ? originalFile : content.url;
+
+  /// Size to decode [url] to in the viewer, or null to keep it as it is.
+  ///
+  /// Decoded pictures take width × height × 4 bytes: a 10000 × 10000
+  /// original is 400 MB, which gets the app killed on iOS. Pictures larger
+  /// than [maxViewerSide] on their longest side are scaled down to it.
+  /// Unknown sizes are left alone.
+  PixelSize? viewerDecodeSize(String url) {
+    final size = url == originalFile
+        ? originalSize
+        : url == sampleFile
+        ? sampleSize
+        : const PixelSize();
+    if (size.width <= 0 || size.height <= 0) return null;
+    final longest = size.width > size.height ? size.width : size.height;
+    if (longest <= maxViewerSide) return null;
+    final scale = maxViewerSide / longest;
+    return PixelSize(
+      width: (size.width * scale).round().clamp(1, maxViewerSide),
+      height: (size.height * scale).round().clamp(1, maxViewerSide),
+    );
+  }
 }
+
+/// Longest side, in pixels, a picture in the viewer is decoded to.
+const maxViewerSide = 4096;

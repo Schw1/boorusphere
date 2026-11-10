@@ -87,22 +87,25 @@ void main() {
   });
 
   group('SavedSearchStore', () {
-    setUpAll(() {
+    late SavedSearchStore searches;
+
+    setUpAll(() async {
       Hive.init(Directory.systemTemp.createTempSync('saved').path);
+      await SavedSearchStore.openBox();
+      searches = SavedSearchStore.fromOpenBox();
     });
 
     test('saves in order, replaces, removes', () async {
-      await SavedSearchStore.open();
       const a = SavedSearch(serverId: 's', query: 'a', createdAt: 1);
       const b = SavedSearch(serverId: 's', query: 'b', createdAt: 2);
-      await SavedSearchStore.put(b);
-      await SavedSearchStore.put(a);
-      expect(SavedSearchStore.all().map((it) => it.query), ['a', 'b']);
-      await SavedSearchStore.put(a.copyWith(newCount: 3));
-      expect(SavedSearchStore.all().first.newCount, 3);
-      expect(SavedSearchStore.all(), hasLength(2));
-      await SavedSearchStore.remove(a);
-      expect(SavedSearchStore.all().map((it) => it.query), ['b']);
+      await searches.put(b);
+      await searches.put(a);
+      expect(searches.all().map((it) => it.query), ['a', 'b']);
+      await searches.put(a.copyWith(newCount: 3));
+      expect(searches.all().first.newCount, 3);
+      expect(searches.all(), hasLength(2));
+      await searches.remove(a);
+      expect(searches.all().map((it) => it.query), ['b']);
     });
   });
 

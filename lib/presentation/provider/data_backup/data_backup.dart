@@ -23,6 +23,7 @@ import 'package:boorusphere/presentation/provider/settings/download_setting_stat
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -65,9 +66,18 @@ Future<String> writeBackupFile(
     if (option.searchHistory) ref.read(searchHistoryRepoProvider).export(),
     if (option.monloader)
       MonbooruSender.exportBackup(withToken: option.credentials),
-    if (option.reading) ReadingBackup.export(),
+    if (option.reading)
+      ReadingBackup.export(
+        ref.read(readingProgressStoreProvider),
+        ref.read(savedSearchStoreProvider),
+      ),
     if (option.server)
-      Future.value(BackupItem(ServerPins.backupKey, ServerPins.export())),
+      Future.value(
+        BackupItem(
+          ServerPins.backupKey,
+          ref.read(serverPinsStoreProvider).export(),
+        ),
+      ),
     // API tokens of servers (Keychain/Keystore) only with login data, e.g.
     // to move to another device.
     if (option.server && option.credentials)
@@ -189,6 +199,8 @@ class DataBackupState extends _$DataBackupState {
     }
 
     state = const BackupResult.loading(DataBackupType.restore);
+    final serversBefore = ref.read(serverRepoProvider).servers;
+    var restoredTokens = const <String>{};
     for (final json in decoder.files) {
       final content = utf8.decode(json.content);
       switch (json.name.replaceAll('.json', '')) {
@@ -211,17 +223,31 @@ class DataBackupState extends _$DataBackupState {
           await MonbooruSender.importBackup(content);
           break;
         case ServerAuthStore.backupKey:
-          await ServerAuthStore.importBackup(content);
+          restoredTokens = await ServerAuthStore.importBackup(content);
           break;
         case ReadingBackup.backupKey:
-          await ReadingBackup.import(content);
+          await ReadingBackup.import(
+            content,
+            ref.read(readingProgressStoreProvider),
+            ref.read(savedSearchStoreProvider),
+          );
           break;
         case ServerPins.backupKey:
-          await ServerPins.import(jsonDecode(content));
+          await ref.read(serverPinsStoreProvider).import(jsonDecode(content));
           break;
         default:
           break;
       }
+    }
+
+    // A server that now points to another address keeps no token from
+    // before, unless the backup brought one for it.
+    final moved = ServerAuthStore.movedServers(
+      serversBefore,
+      ref.read(serverRepoProvider).servers,
+    ).difference(restoredTokens);
+    for (final id in moved) {
+      await ServerAuthStore.remove(id);
     }
 
     _invalidateProviders();

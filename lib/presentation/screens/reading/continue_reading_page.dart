@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
-import 'package:boorusphere/data/repository/reading_progress.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/stores.dart';
@@ -63,7 +62,9 @@ class ContinueReadingPage extends HookConsumerWidget {
                     icon: Icons.playlist_remove,
                     tooltip: context.t.continueReading.removeSelected,
                     onPressed: (context, selected) async {
-                      await ReadingProgress.forgetAll(selected);
+                      await ref
+                          .read(readingProgressStoreProvider)
+                          .forgetAll(selected);
                     },
                   ),
                 ],
@@ -87,21 +88,20 @@ class ContinueReadingPage extends HookConsumerWidget {
 
 enum _Action { removeFinished, removeAll }
 
-class _Menu extends StatelessWidget {
+class _Menu extends ConsumerWidget {
   const _Menu({required this.posts});
 
   final List<Post> posts;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t.continueReading;
+    final store = ref.read(readingProgressStoreProvider);
     return PopupMenuButton<_Action>(
       onSelected: (action) async {
         switch (action) {
           case _Action.removeFinished:
-            await ReadingProgress.forgetAll(
-              posts.where(ReadingProgress.isFinished),
-            );
+            await store.forgetAll(posts.where(store.isFinished));
           case _Action.removeAll:
             final ok = await showDialog<bool>(
               context: context,
@@ -120,13 +120,13 @@ class _Menu extends StatelessWidget {
                 ],
               ),
             );
-            if (ok ?? false) await ReadingProgress.forgetAll();
+            if (ok ?? false) await store.forgetAll();
         }
       },
       itemBuilder: (context) => [
         PopupMenuItem(
           value: _Action.removeFinished,
-          enabled: posts.any(ReadingProgress.isFinished),
+          enabled: posts.any(store.isFinished),
           child: Text(t.removeFinished),
         ),
         PopupMenuItem(value: _Action.removeAll, child: Text(t.removeAll)),

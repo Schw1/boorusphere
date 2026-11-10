@@ -133,75 +133,79 @@ void main() {
   });
 
   group('ReadingProgress', () {
-    setUpAll(() {
+    late ReadingProgress progress;
+
+    setUpAll(() async {
       Hive.init(Directory.systemTemp.createTempSync('progress').path);
+      await ReadingProgress.openBoxes();
+      progress = ReadingProgress.fromOpenBoxes();
     });
 
     test('saves and reads the last page', () async {
       const post = Post(id: 7, serverId: 'nhentai.net', pageCount: 20);
-      expect(await ReadingProgress.pageOf(post), isNull);
-      final before = ReadingProgress.changes.value;
-      await ReadingProgress.save(post, 4);
-      expect(await ReadingProgress.pageOf(post), 4);
-      expect(ReadingProgress.pageOfSync(post), 4);
-      expect(ReadingProgress.changes.value, greaterThan(before));
+      expect(await progress.pageOf(post), isNull);
+      final before = progress.changes.value;
+      await progress.save(post, 4);
+      expect(await progress.pageOf(post), 4);
+      expect(progress.pageOfSync(post), 4);
+      expect(progress.changes.value, greaterThan(before));
       // other server, same id: separate
       expect(
-        await ReadingProgress.pageOf(post.copyWith(serverId: 'Monbooru')),
+        await progress.pageOf(post.copyWith(serverId: 'Monbooru')),
         isNull,
       );
-      await ReadingProgress.clear(post);
-      expect(await ReadingProgress.pageOf(post), isNull);
+      await progress.clear(post);
+      expect(await progress.pageOf(post), isNull);
     });
 
     test('continue reading: newest first, forget, clear', () async {
-      await ReadingProgress.forgetAll();
+      await progress.forgetAll();
       const a = Post(id: 1, serverId: 'nhentai.net', pageCount: 10, title: 'A');
       const b = Post(id: 2, serverId: 'Monbooru', pageCount: 3);
-      await ReadingProgress.save(a, 0, now: DateTime(2026, 11, 1));
-      await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 2));
-      expect((await ReadingProgress.recent()).map((it) => it.id), [2, 1]);
+      await progress.save(a, 0, now: DateTime(2026, 11, 1));
+      await progress.save(b, 2, now: DateTime(2026, 11, 2));
+      expect((await progress.recent()).map((it) => it.id), [2, 1]);
       // reading again moves it up, with the post as stored
-      await ReadingProgress.save(a, 5, now: DateTime(2026, 11, 3));
-      final recent = await ReadingProgress.recent();
+      await progress.save(a, 5, now: DateTime(2026, 11, 3));
+      final recent = await progress.recent();
       expect(recent.map((it) => it.id), [1, 2]);
       expect(recent.first.title, 'A');
-      expect(ReadingProgress.isFinished(b), isTrue);
-      expect(ReadingProgress.isFinished(a), isFalse);
+      expect(progress.isFinished(b), isTrue);
+      expect(progress.isFinished(a), isFalse);
 
-      await ReadingProgress.forget(b);
-      expect((await ReadingProgress.recent()).map((it) => it.id), [1]);
-      expect(await ReadingProgress.pageOf(b), 2, reason: 'page stays');
+      await progress.forget(b);
+      expect((await progress.recent()).map((it) => it.id), [1]);
+      expect(await progress.pageOf(b), 2, reason: 'page stays');
 
       // several at once (selection), pages stay
-      await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 4));
-      await ReadingProgress.forgetAll([a, b]);
-      expect(await ReadingProgress.recent(), isEmpty);
-      expect(await ReadingProgress.pageOf(a), 5);
-      await ReadingProgress.save(a, 5, now: DateTime(2026, 11, 5));
+      await progress.save(b, 2, now: DateTime(2026, 11, 4));
+      await progress.forgetAll([a, b]);
+      expect(await progress.recent(), isEmpty);
+      expect(await progress.pageOf(a), 5);
+      await progress.save(a, 5, now: DateTime(2026, 11, 5));
 
-      await ReadingProgress.clear(a);
-      expect(await ReadingProgress.recent(), isEmpty);
-      expect(await ReadingProgress.pageOf(a), isNull);
+      await progress.clear(a);
+      expect(await progress.recent(), isEmpty);
+      expect(await progress.pageOf(a), isNull);
     });
 
     test(
       'continue reading keeps the newest ${ReadingProgress.recentLimit}',
       () async {
-        await ReadingProgress.forgetAll();
+        await progress.forgetAll();
         final start = DateTime(2026, 1, 1);
         for (var i = 0; i < ReadingProgress.recentLimit + 5; i++) {
-          await ReadingProgress.save(
+          await progress.save(
             Post(id: 1000 + i, serverId: 's', pageCount: 2),
             0,
             now: start.add(Duration(minutes: i)),
           );
         }
-        final recent = await ReadingProgress.recent();
+        final recent = await progress.recent();
         expect(recent, hasLength(ReadingProgress.recentLimit));
         expect(recent.first.id, 1000 + ReadingProgress.recentLimit + 4);
         expect(recent.any((it) => it.id < 1005), isFalse);
-        await ReadingProgress.forgetAll();
+        await progress.forgetAll();
       },
     );
   });

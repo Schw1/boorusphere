@@ -1,6 +1,14 @@
 Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
 
 ## New
+- **App data out of sight (iOS):** favorites, servers, settings and the other app data were stored in the folder the Files app shows (Files → On My iPhone → Boorusphere), where they could be deleted by accident and showed login data. They are now kept where only the app sees them; the first start of this version moves them over. Downloads and backups stay in the Files app.
+- **Fix:** downloads with a `%` in the file name failed; names in other scripts (e.g. Japanese) became `____.jpg`. Names are now kept readable, with the post id when nothing readable is left.
+- **Fix:** very large originals (e.g. 10000 × 10000 px) with "Load original" could close the app. Pictures larger than 4096 px are now shown at 4096 px on their longest side.
+- **Restore:** a server whose address in the backup differs from the one on this device loses its stored API token, so it is never sent to another address. Enter it again in the server settings.
+- **Local network:** addresses like `nas`, `*.fritz.box`, `*.internal` and local IPv6 addresses count as local: no plain-HTTP warning for their token, and their icons are not looked up at DuckDuckGo.
+- Settings dialogs (sort, language, rating, parser, download quality and filter) use the current Flutter radio buttons; under the hood the app was tidied up (no analyzer findings, more tests).
+
+## In 1.5.4-ios.17
 - **Server list in the menu:** only pinned servers and the active one are listed; all servers are in a list that opens on tap. Pin or unpin with the pin icon or a long press. Pins are in backups (with the server list).
 - **Fix:** blocked tags no longer show up in the tag suggestions while typing.
 - **Fix:** the favorite heart and the download mark stay on a post after its score or tags changed on the server.

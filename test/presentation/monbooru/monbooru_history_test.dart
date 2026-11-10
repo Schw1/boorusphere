@@ -14,12 +14,22 @@ import 'package:hive_ce/hive.dart';
 const _post = Post(id: 3, serverId: 'Danbooru', postUrl: 'https://x/3');
 
 void main() {
-  setUpAll(() {
+  late MonbooruHistory history;
+  late ReadingProgress progress;
+  late SavedSearchStore searches;
+
+  setUpAll(() async {
     Hive.init(Directory.systemTemp.createTempSync('history').path);
+    await MonbooruHistory.openBox();
+    await ReadingProgress.openBoxes();
+    await SavedSearchStore.openBox();
+    history = MonbooruHistory.fromOpenBox();
+    progress = ReadingProgress.fromOpenBoxes();
+    searches = SavedSearchStore.fromOpenBox();
   });
 
   group('MonbooruHistory', () {
-    setUp(MonbooruHistory.clear);
+    setUp(() => history.clear());
 
     test('report JSON round trip', () {
       const reports = [
@@ -45,22 +55,18 @@ void main() {
     });
 
     test('a result keeps the time of the send', () async {
-      await MonbooruHistory.record(
-        _post,
-        jobId: 9,
-        now: DateTime(2026, 11, 9, 10),
-      );
-      var entries = await MonbooruHistory.all();
+      await history.record(_post, jobId: 9, now: DateTime(2026, 11, 9, 10));
+      var entries = await history.all();
       expect(entries.single.isPending, isTrue);
       expect(entries.single.canLookUp, isTrue);
 
-      await MonbooruHistory.record(
+      await history.record(
         _post,
         report: const MonbooruSendReport(outcome: MonbooruOutcome.added),
         isResult: true,
         now: DateTime(2026, 11, 9, 11),
       );
-      entries = await MonbooruHistory.all();
+      entries = await history.all();
       expect(entries, hasLength(1));
       expect(entries.single.time, DateTime(2026, 11, 9, 10));
       expect(entries.single.jobId, 9);
@@ -70,7 +76,7 @@ void main() {
 
     test('failed sends, newest first, limit', () async {
       for (var i = 0; i < MonbooruHistory.limit + 3; i++) {
-        await MonbooruHistory.record(
+        await history.record(
           Post(id: i, serverId: 's'),
           report: const MonbooruSendReport(
             error: MonbooruError(MonbooruErrorKind.unreachable),
@@ -78,7 +84,7 @@ void main() {
           now: DateTime(2026).add(Duration(minutes: i)),
         );
       }
-      final entries = await MonbooruHistory.all();
+      final entries = await history.all();
       expect(entries, hasLength(MonbooruHistory.limit));
       expect(entries.first.post.id, MonbooruHistory.limit + 2);
       expect(entries.first.isFailed, isTrue);
@@ -86,10 +92,10 @@ void main() {
     });
 
     test('pending sends are looked up again', () async {
-      await MonbooruHistory.record(_post, jobId: 9);
-      await MonbooruHistory.record(const Post(id: 4, serverId: 'Danbooru'));
+      await history.record(_post, jobId: 9);
+      await history.record(const Post(id: 4, serverId: 'Danbooru'));
       final asked = <int>[];
-      await MonbooruHistory.lookUpPending(
+      await history.lookUpPending(
         fetchJob: (id) async {
           asked.add(id);
           return const MonbooruJobLookup.found(
@@ -98,18 +104,17 @@ void main() {
         },
       );
       expect(asked, [9], reason: 'no job id, nothing to ask');
-      final entry = (await MonbooruHistory.all()).firstWhere(
+      final entry = (await history.all()).firstWhere(
         (it) => it.post.id == _post.id,
       );
       expect(entry.report?.outcome, MonbooruOutcome.duplicate);
     });
 
     test('remove successful ones, keep failed and pending', () async {
-      Future<void> add(int id, MonbooruSendReport? report) =>
-          MonbooruHistory.record(
-            Post(id: id, serverId: 's'),
-            report: report,
-          );
+      Future<void> add(int id, MonbooruSendReport? report) => history.record(
+        Post(id: id, serverId: 's'),
+        report: report,
+      );
       await add(1, const MonbooruSendReport(outcome: MonbooruOutcome.added));
       await add(
         2,
@@ -124,8 +129,8 @@ void main() {
       );
       await add(5, null);
       await add(6, const MonbooruSendReport(unconfirmed: true));
-      await MonbooruHistory.removeSuccessful();
-      expect((await MonbooruHistory.all()).map((it) => it.post.id).toSet(), {
+      await history.removeSuccessful();
+      expect((await history.all()).map((it) => it.post.id).toSet(), {
         3,
         4,
         5,
@@ -134,9 +139,9 @@ void main() {
     });
 
     test('remove', () async {
-      await MonbooruHistory.record(_post);
-      await MonbooruHistory.remove(_post);
-      expect(await MonbooruHistory.all(), isEmpty);
+      await history.record(_post);
+      await history.remove(_post);
+      expect(await history.all(), isEmpty);
     });
   });
 
@@ -144,9 +149,9 @@ void main() {
     test('round trip, merging with what is there', () async {
       const a = Post(id: 1, serverId: 'nhentai.net', pageCount: 20, title: 'A');
       const b = Post(id: 2, serverId: 'Monbooru', pageCount: 5);
-      await ReadingProgress.save(a, 7, now: DateTime(2026, 11, 1));
-      await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 2));
-      await SavedSearchStore.put(
+      await progress.save(a, 7, now: DateTime(2026, 11, 1));
+      await progress.save(b, 2, now: DateTime(2026, 11, 2));
+      await searches.put(
         const SavedSearch(
           serverId: 'Danbooru',
           query: 'cat',
@@ -155,30 +160,27 @@ void main() {
         ),
       );
 
-      final entry = await ReadingBackup.export();
+      final entry = await ReadingBackup.export(progress, searches);
       expect(entry.key, 'reading');
       final json = jsonEncode(entry.value);
 
       // another device: b read further, a and the search unknown
-      await ReadingProgress.forgetAll();
-      await ReadingProgress.clear(a);
-      await ReadingProgress.save(b, 4, now: DateTime(2026, 11, 5));
-      await SavedSearchStore.remove(SavedSearchStore.all().single);
+      await progress.forgetAll();
+      await progress.clear(a);
+      await progress.save(b, 4, now: DateTime(2026, 11, 5));
+      await searches.remove(searches.all().single);
 
-      await ReadingBackup.import(json);
-      expect(await ReadingProgress.pageOf(a), 7);
-      expect(await ReadingProgress.pageOf(b), 4, reason: 'further page kept');
-      expect(
-        (await ReadingProgress.recent()).map((it) => it.id),
-        containsAll([1, 2]),
-      );
-      final search = SavedSearchStore.all().single;
+      await ReadingBackup.import(json, progress, searches);
+      expect(await progress.pageOf(a), 7);
+      expect(await progress.pageOf(b), 4, reason: 'further page kept');
+      expect((await progress.recent()).map((it) => it.id), containsAll([1, 2]));
+      final search = searches.all().single;
       expect(search.query, 'cat');
       expect(search.seenId, 50);
 
       // broken data does nothing
-      await ReadingBackup.import('not json');
-      await ReadingBackup.import('[]');
+      await ReadingBackup.import('not json', progress, searches);
+      await ReadingBackup.import('[]', progress, searches);
     });
   });
 }

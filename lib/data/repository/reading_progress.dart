@@ -10,7 +10,14 @@ import 'package:hive_ce/hive.dart';
 /// Besides the page, the post itself is kept (with the time it was last
 /// read), so a "Continue reading" list can show it again.
 class ReadingProgress {
-  ReadingProgress._();
+  ReadingProgress(this._pages, this._recent);
+
+  /// The store on the boxes opened by [openBoxes].
+  factory ReadingProgress.fromOpenBoxes() =>
+      ReadingProgress(Hive.box<int>(boxName), Hive.box<String>(recentBoxName));
+
+  final Box<int> _pages;
+  final Box<String> _recent;
 
   static const boxName = 'reading_progress';
   static const recentBoxName = 'reading_recent';
@@ -19,35 +26,29 @@ class ReadingProgress {
   static const recentLimit = 100;
 
   /// Changes whenever a page is saved, so open screens can update.
-  static final changes = ValueNotifier(0);
+  final changes = ValueNotifier(0);
 
   static String keyOf(Post post) => '${post.serverId}:${post.id}';
 
-  static Future<Box<int>> _box() async => Hive.isBoxOpen(boxName)
-      ? Hive.box<int>(boxName)
-      : await Hive.openBox<int>(boxName);
+  Future<Box<int>> _box() async => _pages;
 
-  static Future<Box<String>> _recentBox() async => Hive.isBoxOpen(recentBoxName)
-      ? Hive.box<String>(recentBoxName)
-      : await Hive.openBox<String>(recentBoxName);
+  Future<Box<String>> _recentBox() async => _recent;
 
-  /// Opens the store early, so [pageOfSync] has data.
-  static Future<void> open() async {
-    await _box();
-    await _recentBox();
+  /// Opens the boxes; call once at startup, before [fromOpenBoxes].
+  static Future<void> openBoxes() async {
+    await Hive.openBox<int>(boxName);
+    await Hive.openBox<String>(recentBoxName);
   }
 
-  /// Last page read, or null if never opened (or the store isn't open).
-  static int? pageOfSync(Post post) => pageOfKey(keyOf(post));
+  /// Last page read, or null if never opened.
+  int? pageOfSync(Post post) => pageOfKey(keyOf(post));
 
   /// Like [pageOfSync], for a [keyOf] key.
-  static int? pageOfKey(String key) =>
-      Hive.isBoxOpen(boxName) ? Hive.box<int>(boxName).get(key) : null;
+  int? pageOfKey(String key) => _pages.get(key);
 
-  static Future<int?> pageOf(Post post) async =>
-      (await _box()).get(keyOf(post));
+  Future<int?> pageOf(Post post) async => (await _box()).get(keyOf(post));
 
-  static Future<void> save(Post post, int page, {DateTime? now}) async {
+  Future<void> save(Post post, int page, {DateTime? now}) async {
     final box = await _box();
     if (box.get(keyOf(post)) != page) await box.put(keyOf(post), page);
     await _touch(post, now ?? DateTime.now());
@@ -55,7 +56,7 @@ class ReadingProgress {
   }
 
   /// Moves [post] to the top of the "Continue reading" list.
-  static Future<void> _touch(Post post, DateTime now) async {
+  Future<void> _touch(Post post, DateTime now) async {
     final box = await _recentBox();
     await box.put(
       keyOf(post),
@@ -84,18 +85,18 @@ class ReadingProgress {
   }
 
   /// Posts read recently, newest first.
-  static Future<List<Post>> recent() async =>
+  Future<List<Post>> recent() async =>
       _entries(await _recentBox()).map((it) => it.post).toList();
 
   /// Removes [post] from the "Continue reading" list; its page stays.
-  static Future<void> forget(Post post) async {
+  Future<void> forget(Post post) async {
     await (await _recentBox()).delete(keyOf(post));
     changes.value++;
   }
 
   /// Removes [posts] from the "Continue reading" list, or empties it when
   /// none are given; pages read stay.
-  static Future<void> forgetAll([Iterable<Post>? posts]) async {
+  Future<void> forgetAll([Iterable<Post>? posts]) async {
     final box = await _recentBox();
     if (posts == null) {
       await box.clear();
@@ -106,20 +107,20 @@ class ReadingProgress {
   }
 
   /// Whether the last page of [post] was reached.
-  static bool isFinished(Post post) {
+  bool isFinished(Post post) {
     final page = pageOfSync(post);
     return page != null && post.pageCount > 0 && page >= post.pageCount - 1;
   }
 
   /// Pages and the "Continue reading" list, for backups.
-  static Future<Map<String, dynamic>> export() async => {
+  Future<Map<String, dynamic>> export() async => {
     'pages': Map<String, int>.from((await _box()).toMap()),
     'recent': Map<String, String>.from((await _recentBox()).toMap()),
   };
 
   /// Restores [export]ed data. Merges: entries of the backup replace the
   /// same posts here, others stay. Pages read further here are kept.
-  static Future<void> import(Object? data) async {
+  Future<void> import(Object? data) async {
     if (data is! Map) return;
     final pages = data['pages'];
     if (pages is Map) {
@@ -146,7 +147,7 @@ class ReadingProgress {
     changes.value++;
   }
 
-  static Future<void> clear(Post post) async {
+  Future<void> clear(Post post) async {
     await (await _box()).delete(keyOf(post));
     await (await _recentBox()).delete(keyOf(post));
     changes.value++;
