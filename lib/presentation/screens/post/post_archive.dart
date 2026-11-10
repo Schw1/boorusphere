@@ -6,6 +6,7 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/nhentai_gallery.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/screens/post/post_image.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
@@ -32,13 +33,7 @@ class PostArchive extends HookConsumerWidget {
     final headers = ref.watch(postHeadersFactoryProvider(post));
     final cover = gallery?.cover ?? '';
     // Last page read; rebuilt when the reader saves a page.
-    useValueListenable(ReadingProgress.changes);
-    final saved = useFuture(
-      useMemoized(() => ReadingProgress.pageOf(post), [
-        post.viewId,
-        ReadingProgress.changes.value,
-      ]),
-    ).data;
+    final saved = ref.watch(readingPageProvider(ReadingProgress.keyOf(post)));
     final finished = saved != null && saved >= post.pageCount - 1;
     final resume = saved != null && saved > 0 && !finished;
 

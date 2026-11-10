@@ -7,17 +7,16 @@ import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
 import 'package:boorusphere/presentation/provider/app_versions/app_versions_state.dart';
 import 'package:boorusphere/presentation/provider/booru/page_state.dart';
-import 'package:boorusphere/presentation/provider/monbooru_history.dart';
 import 'package:boorusphere/presentation/provider/saved_searches.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/drawer/home_drawer_controller.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/favicon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -166,8 +165,9 @@ class _MonbooruHistoryTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    useValueListenable(MonbooruHistory.changes);
-    if (MonbooruHistory.isEmpty) return const SizedBox.shrink();
+    if (ref.watch(monbooruHistoryIsEmptyProvider)) {
+      return const SizedBox.shrink();
+    }
     final session = ref.watch(searchSessionProvider);
     return ListTile(
       title: Text(context.t.monbooru.history.title),
@@ -311,7 +311,7 @@ class _ServerSelection extends HookConsumerWidget {
     final servers = ref.watch(serverStateProvider);
     final session = ref.watch(searchSessionProvider);
     final serverActive = servers.getById(session.serverId);
-    final pinned = useValueListenable(ServerPins.pinned);
+    final pinned = ref.watch(serverPinsProvider);
     final shown = servers
         .where((it) => pinned.contains(it.id) || it.id == serverActive.id)
         .toList();

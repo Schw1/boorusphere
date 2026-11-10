@@ -5,6 +5,7 @@ import 'package:boorusphere/data/repository/reading_progress.dart';
 import 'package:boorusphere/presentation/provider/booru/post_headers_factory.dart';
 import 'package:boorusphere/presentation/provider/settings/content_setting_state.dart';
 import 'package:boorusphere/presentation/provider/settings/ui_setting_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/screens/post/post_viewer.dart';
 import 'package:boorusphere/presentation/utils/entity/content.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
@@ -332,10 +333,11 @@ class _SelectionMark extends StatelessWidget {
                       color: Colors.white,
                     ),
                     const SizedBox(width: 3),
-                    ValueListenableBuilder(
-                      valueListenable: ReadingProgress.changes,
-                      builder: (context, _, _) {
-                        final read = ReadingProgress.pageOfSync(post);
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final read = ref.watch(
+                          readingPageProvider(ReadingProgress.keyOf(post)),
+                        );
                         return Text(
                           read != null && read > 0
                               ? '${read + 1}/$pages'
