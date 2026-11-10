@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boorusphere/data/repository/setting/entity/setting.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
@@ -54,9 +56,9 @@ class UiSettingState extends _$UiSettingState {
     final repo = ref.read(settingsRepoProvider);
     state = state.copyWith(locale: locale);
     if (locale == null) {
-      LocaleSettings.useDeviceLocale();
+      unawaited(LocaleSettings.useDeviceLocale());
     } else {
-      LocaleSettings.setLocale(locale);
+      unawaited(LocaleSettings.setLocale(locale));
     }
 
     await repo.put(Setting.uiLanguage, locale == null ? '' : locale.name);

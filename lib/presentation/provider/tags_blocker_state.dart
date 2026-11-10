@@ -12,7 +12,7 @@ class TagsBlockerState extends _$TagsBlockerState {
     return repo.get();
   }
 
-  Future<void> delete(key) async {
+  Future<void> delete(Object? key) async {
     final repo = ref.read(tagsBlockerRepoProvider);
     await repo.delete(key);
     state = repo.get();

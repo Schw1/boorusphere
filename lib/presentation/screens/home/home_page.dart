@@ -247,7 +247,7 @@ class _SlidableContainer extends HookConsumerWidget {
                     0,
                     0,
                   )
-                  ..translate(slide - maxDrawerWidth),
+                  ..translateByDouble(slide - maxDrawerWidth, 0, 0, 1),
                 alignment: Alignment.centerLeft,
                 child: HomeDrawer(maxWidth: maxDrawerWidth),
               ),

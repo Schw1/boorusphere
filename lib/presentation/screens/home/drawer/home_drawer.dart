@@ -351,6 +351,7 @@ class _ServerSelection extends HookConsumerWidget {
         onLongPress: () => ServerPins.toggle(it.id),
         onTap: () {
           ref.read(homeDrawerControllerProvider).close().then((value) {
+            if (!context.mounted) return;
             if (it.id != serverActive.id) {
               context.router.push(
                 HomeRoute(session: session.copyWith(serverId: it.id)),

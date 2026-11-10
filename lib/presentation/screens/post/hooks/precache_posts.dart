@@ -62,7 +62,7 @@ class _PrecachePostsState extends HookState<_Precacher, _PrecachePostsHook> {
     return {...prev, ...next};
   }
 
-  void _precachePosts(i, showOG) {
+  void _precachePosts(int i, bool showOG) {
     if (!context.mounted) return;
     for (var post in _postsInRange(i, hook.range)) {
       _precacheImagePost(post, showOG);

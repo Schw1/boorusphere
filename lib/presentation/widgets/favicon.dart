@@ -119,7 +119,7 @@ class FaviconLoader {
     _cache.clear();
     try {
       final dir = await _directory();
-      if (dir != null && await dir.exists()) await dir.delete(recursive: true);
+      if (dir != null && dir.existsSync()) await dir.delete(recursive: true);
     } catch (e) {
       debugPrint('Favicon.clear: $e');
     }
@@ -133,11 +133,11 @@ class FaviconLoader {
     Uint8List? stored;
     if (file != null) {
       try {
-        if (await file.exists()) {
+        if (file.existsSync()) {
           final bytes = await file.readAsBytes();
           if (_isImage(bytes)) {
             stored = bytes;
-            final age = DateTime.now().difference(await file.lastModified());
+            final age = DateTime.now().difference(file.lastModifiedSync());
             if (age < maxAge) return bytes;
           }
         }

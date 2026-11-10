@@ -5,7 +5,7 @@ import 'package:grinder/grinder.dart';
 import 'grind_util.dart' as grutil;
 import 'me.dart' as me;
 
-Future<void> main(args) => grind(args);
+Future<void> main(List<String> args) => grind(args);
 
 @DefaultTask()
 Future<void> listTasks() => grutil.tasks();

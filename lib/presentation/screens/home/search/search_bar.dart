@@ -260,17 +260,19 @@ class _SortButton extends ConsumerWidget {
             title: Text(t.label),
             icon: const Icon(Icons.sort),
             contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final option in options)
-                  RadioListTile<String>(
-                    value: option,
-                    groupValue: sort,
-                    title: Text(describe(context, option)),
-                    onChanged: (x) => context.navigator.pop(x),
-                  ),
-              ],
+            content: RadioGroup(
+              groupValue: sort,
+              onChanged: (x) => context.navigator.pop(x),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final option in options)
+                    RadioListTile<String>(
+                      value: option,
+                      title: Text(describe(context, option)),
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -342,17 +344,19 @@ class _LanguageButton extends ConsumerWidget {
             title: Text(t.label),
             icon: const Icon(Icons.translate),
             contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final option in NhentaiJsonParser.languages)
-                  RadioListTile<String>(
-                    value: option,
-                    groupValue: language,
-                    title: Text(describe(context, option)),
-                    onChanged: (x) => context.navigator.pop(x),
-                  ),
-              ],
+            content: RadioGroup(
+              groupValue: language,
+              onChanged: (x) => context.navigator.pop(x),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final option in NhentaiJsonParser.languages)
+                    RadioListTile<String>(
+                      value: option,
+                      title: Text(describe(context, option)),
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -446,20 +450,20 @@ class _RatingButton extends ConsumerWidget {
           title: Text(context.t.rating.title),
           icon: const Icon(Icons.star),
           contentPadding: const EdgeInsets.only(top: 16, bottom: 16),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: BooruRating.values
-                .map(
-                  (e) => RadioListTile(
-                    value: e,
-                    groupValue: current,
-                    title: Text(rateDesc(context, e)),
-                    onChanged: (x) {
-                      context.navigator.pop(x);
-                    },
-                  ),
-                )
-                .toList(),
+          content: RadioGroup(
+            groupValue: current,
+            onChanged: (x) => context.navigator.pop(x),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: BooruRating.values
+                  .map(
+                    (e) => RadioListTile(
+                      value: e,
+                      title: Text(rateDesc(context, e)),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         );
       },

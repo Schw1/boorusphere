@@ -200,7 +200,7 @@ class MonbooruQueue {
     if (server == null) return null;
 
     final found = await (_checking[md5] ??= _query(server, md5));
-    _checking.remove(md5);
+    unawaited(_checking.remove(md5));
     if (found ?? false) {
       _present[md5] = true;
       _markPresent(post);
