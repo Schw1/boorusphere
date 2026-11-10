@@ -1,5 +1,5 @@
-name: Build iOS (unsigned IPA)
-# Also builds the Android APKs; a release always ships both.
+name: Build (iOS + Android)
+# Builds the unsigned iOS IPA and the Android APKs; a release always ships both.
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
     tags: ['v*-ios*']
 
 concurrency:
-  group: build-ios-${{ github.ref }}
+  group: build-${{ github.ref }}
   cancel-in-progress: true
 
 # Read-only by default; only the release job can write (create the release).
@@ -34,7 +34,7 @@ jobs:
           persist-credentials: false
 
       # The app shows CHANGELOG.md in its changelog: for a release, add the
-      # entries of this release ("## New" in RELEASE_NOTES_IOS.md) to the
+      # entries of this release ("## New" in RELEASE_NOTES.md) to the
       # copy that is built in. After a real release the release job commits
       # the same lines to main.
       - name: Changelog for this release
@@ -118,7 +118,7 @@ jobs:
           persist-credentials: false
 
       # The app shows CHANGELOG.md in its changelog: for a release, add the
-      # entries of this release ("## New" in RELEASE_NOTES_IOS.md) to the
+      # entries of this release ("## New" in RELEASE_NOTES.md) to the
       # copy that is built in. After a real release the release job commits
       # the same lines to main.
       - name: Changelog for this release
@@ -156,7 +156,7 @@ jobs:
         run: |
           if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ]; then
             if [ "$IS_RELEASE" = "true" ]; then
-              echo "::error::Android signing secrets are missing (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). See IOS_PORT.md."
+              echo "::error::Android signing secrets are missing (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). See DEVELOPMENT.md."
               exit 1
             fi
             echo "::warning::No signing secrets: building with the debug key (test build only)."
@@ -231,7 +231,7 @@ jobs:
           name: boorusphere-apk
           path: apk
 
-      # "## New" of RELEASE_NOTES_IOS.md becomes "## New in <version>". A
+      # "## New" of RELEASE_NOTES.md becomes "## New in <version>". A
       # real release fails here when "## New" has no entries.
       - name: Release notes
         run: |

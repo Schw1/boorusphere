@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Release notes for the fork's releases, written once in RELEASE_NOTES_IOS.md.
+"""Release notes for the fork's releases, written once in RELEASE_NOTES.md.
 
-Changes for the next release go under "## New" in RELEASE_NOTES_IOS.md, and
+Changes for the next release go under "## New" in RELEASE_NOTES.md, and
 only there. The release workflow uses this script to
 
   body <tag> <out> [--allow-empty]
@@ -28,7 +28,7 @@ import re
 import sys
 from pathlib import Path
 
-NOTES = Path("RELEASE_NOTES_IOS.md")
+NOTES = Path("RELEASE_NOTES.md")
 CHANGELOG = Path("CHANGELOG.md")
 NEW = "## New"
 EMPTY_HINT = "<!-- Changes for the next release go here, one '- ' entry each. -->"

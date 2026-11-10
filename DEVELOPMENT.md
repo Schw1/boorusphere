@@ -1,12 +1,14 @@
-# Boorusphere iOS port
+# Boorusphere for iOS and Android: build and platform notes
+
+The repository was called `boorusphere-ios` until it got its Android build; GitHub redirects the old name, so apps installed before the rename still find their updates. Its build workflow (`build.yml`), the release notes (`RELEASE_NOTES.md`) and this file (`DEVELOPMENT.md`, formerly `IOS_PORT.md`) were renamed with it. Release tags keep the form `v1.5.4-ios.N` for both apps: the update check of installed apps compares exactly that form.
 
 This fork builds an **unsigned IPA** and **signed Android APKs** with GitHub Actions, so no Mac is needed. A release always ships both.
 
 ## Building
 
-- Every push to `main` runs **Build iOS (unsigned IPA)** and uploads the artifact `boorusphere-unsigned-ipa`.
-- To publish a release: Actions → **Build iOS (unsigned IPA)** → *Run workflow*, and enter a tag such as `v1.5.4-ios.2`. The workflow builds the app, creates the tag and attaches `boorusphere-unsigned.ipa` and the APKs to the release, using `RELEASE_NOTES_IOS.md` as the release text. Runs on other branches than `main` create a pre-release (test build).
-- **Release notes:** changes are written once, as `- ` entries under `## New` in `RELEASE_NOTES_IOS.md`; `CHANGELOG.md` is not edited by hand for them. The build jobs add those entries to the built-in copy of `CHANGELOG.md`, so the app shows them in its changelog. The release job (`tool/release_notes.py`) heads that section `## New in <version>` for the release text, and after a real release moves the entries under `## In <version>`, adds them as plain text to the `CHANGELOG.md` section of the base version (in-app changelog) and pushes that to `main`. A real release with an empty `## New` fails before publishing.
+- Every push to `main` runs **Build (iOS + Android)** and uploads the artifact `boorusphere-unsigned-ipa`.
+- To publish a release: Actions → **Build (iOS + Android)** → *Run workflow*, and enter a tag such as `v1.5.4-ios.2`. The workflow builds the app, creates the tag and attaches `boorusphere-unsigned.ipa` and the APKs to the release, using `RELEASE_NOTES.md` as the release text. Runs on other branches than `main` create a pre-release (test build).
+- **Release notes:** changes are written once, as `- ` entries under `## New` in `RELEASE_NOTES.md`; `CHANGELOG.md` is not edited by hand for them. The build jobs add those entries to the built-in copy of `CHANGELOG.md`, so the app shows them in its changelog. The release job (`tool/release_notes.py`) heads that section `## New in <version>` for the release text, and after a real release moves the entries under `## In <version>`, adds them as plain text to the `CHANGELOG.md` section of the base version (in-app changelog) and pushes that to `main`. A real release with an empty `## New` fails before publishing.
 - The tag is passed to both apps (`--dart-define=APP_RELEASE=…`); it is the version shown in the app and the one the update check compares (`1.5.4-ios.12` is newer than `1.5.4-ios.11`).
 
 The workflow runs on `macos-15-intel`. That only affects the build machine; the app itself is built for iPhone (arm64). The arm64 macOS runner pool frequently cancels jobs for lack of capacity.
@@ -102,7 +104,7 @@ Sideloaded apps carry `embedded.mobileprovision`; its `ExpirationDate` is read a
 - **App ID** `io.github.schw1.boorusphere`, so the APK installs next to the original Boorusphere (Kotlin namespace unchanged). Data moves over with Backup and Restore.
 - **Signing:** release APKs are signed with this fork's own key from the repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. A release fails without them. The key is written to the runner's temp folder only for the build and deleted afterwards; it is never in the repository or an artifact. Builds without secrets (e.g. forks) use the debug key and are test builds.
 - **Files:** `boorusphere-<abi>.apk` (`arm64-v8a`, `armeabi-v7a`, `x86_64`) and `boorusphere-universal.apk`.
-- **Updates:** the in-app updater asks `api.github.com/repos/Schw1/boorusphere-ios/releases/latest` and downloads the APK for the device's ABI from that release. On iOS the same check shows a link to the release page.
+- **Updates:** the in-app updater asks `api.github.com/repos/Schw1/boorusphere/releases/latest` and downloads the APK for the device's ABI from that release. On iOS the same check shows a link to the release page.
 - **Plain HTTP** is allowed (`usesCleartextTraffic`), see Security notes.
 
 ## Dependency updates

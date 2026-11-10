@@ -27,14 +27,14 @@ jobs:
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: '3.41.x' # keep in sync with build-ios.yml
+          flutter-version: '3.41.x' # keep in sync with build.yml
           channel: stable
           cache: true
 
       - name: Get dependencies
         run: flutter pub get --enforce-lockfile
 
-      # RELEASE_NOTES_IOS.md must keep the "## New" section the release
+      # RELEASE_NOTES.md must keep the "## New" section the release
       # job builds the release text from.
       - name: Check release notes
         run: python3 tool/release_notes.py body v0.0.0 "$RUNNER_TEMP/notes.md" --allow-empty
@@ -73,7 +73,7 @@ jobs:
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: '3.41.x' # keep in sync with build-ios.yml
+          flutter-version: '3.41.x' # keep in sync with build.yml
           channel: stable
           cache: true
 
