@@ -42,11 +42,7 @@ class SettingsPage extends StatelessWidget {
             ),
             _Section(
               title: Text(context.t.settings.interface),
-              children: const [
-                _Language(),
-                _MidnightMode(),
-                _UiBlur(),
-              ],
+              children: const [_Language(), _MidnightMode(), _UiBlur()],
             ),
             _Section(
               title: Text(context.t.settings.safeMode),
@@ -58,18 +54,11 @@ class SettingsPage extends StatelessWidget {
             ),
             _Section(
               title: Text(context.t.servers.title),
-              children: const [
-                _LoadOriginal(),
-                _PostLimit(),
-              ],
+              children: const [_LoadOriginal(), _PostLimit()],
             ),
             _Section(
               title: Text(context.t.settings.misc),
-              children: const [
-                _Monbooru(),
-                _BackupRestore(),
-                _ClearCache(),
-              ],
+              children: const [_Monbooru(), _BackupRestore(), _ClearCache()],
             ),
           ],
         ),
@@ -87,18 +76,16 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const sectionPadding = EdgeInsets.fromLTRB(16, 12, 16, 12);
-    final sectionStyle = context.theme.textTheme.titleSmall!
-        .copyWith(color: context.colorScheme.primary);
+    final sectionStyle = context.theme.textTheme.titleSmall!.copyWith(
+      color: context.colorScheme.primary,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: sectionPadding,
-          child: DefaultTextStyle(
-            style: sectionStyle,
-            child: title,
-          ),
+          child: DefaultTextStyle(style: sectionStyle, child: title),
         ),
         ...children,
       ],
@@ -137,8 +124,9 @@ class _SaveToPhotos extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!Platform.isIOS) return const SizedBox.shrink();
-    final value = ref
-        .watch(downloadSettingStateProvider.select((it) => it.saveToPhotos));
+    final value = ref.watch(
+      downloadSettingStateProvider.select((it) => it.saveToPhotos),
+    );
 
     return SwitchListTile(
       title: Text(context.t.settings.saveToPhotos.title),
@@ -169,7 +157,9 @@ class _DownloadQuality extends ConsumerWidget {
   const _DownloadQuality();
 
   Future<DownloadQuality?> selectQuality(
-      BuildContext context, DownloadQuality current) {
+    BuildContext context,
+    DownloadQuality current,
+  ) {
     return showDialog<DownloadQuality>(
       context: context,
       builder: (context) {
@@ -180,14 +170,16 @@ class _DownloadQuality extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: DownloadQuality.values
-                .map((e) => RadioListTile(
-                      value: e,
-                      groupValue: current,
-                      title: Text(e.describe(context)),
-                      onChanged: (x) {
-                        context.navigator.pop(x);
-                      },
-                    ))
+                .map(
+                  (e) => RadioListTile(
+                    value: e,
+                    groupValue: current,
+                    title: Text(e.describe(context)),
+                    onChanged: (x) {
+                      context.navigator.pop(x);
+                    },
+                  ),
+                )
                 .toList(),
           ),
         );
@@ -197,8 +189,9 @@ class _DownloadQuality extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quality =
-        ref.watch(downloadSettingStateProvider.select((it) => it.quality));
+    final quality = ref.watch(
+      downloadSettingStateProvider.select((it) => it.quality),
+    );
     return ListTile(
       title: Text(context.t.downloads.quality),
       subtitle: Padding(
@@ -275,8 +268,9 @@ class _BlurContent extends ConsumerWidget {
         padding: const EdgeInsets.only(top: 8),
         child: Text(context.t.settings.blurContent.desc),
       ),
-      value: ref
-          .watch(contentSettingStateProvider.select((it) => it.blurExplicit)),
+      value: ref.watch(
+        contentSettingStateProvider.select((it) => it.blurExplicit),
+      ),
       onChanged: (value) {
         ref
             .read(contentSettingStateProvider.notifier)
@@ -357,8 +351,9 @@ class _LoadOriginal extends ConsumerWidget {
         padding: const EdgeInsets.only(top: 8),
         child: Text(context.t.settings.loadOg.desc),
       ),
-      value: ref
-          .watch(contentSettingStateProvider.select((it) => it.loadOriginal)),
+      value: ref.watch(
+        contentSettingStateProvider.select((it) => it.loadOriginal),
+      ),
       onChanged: (value) {
         ref
             .read(contentSettingStateProvider.notifier)
@@ -381,21 +376,16 @@ class _PostLimit extends ConsumerWidget {
       ),
       trailing: DropdownButton(
         menuMaxHeight: 178,
-        value:
-            ref.watch(serverSettingStateProvider.select((it) => it.postLimit)),
+        value: ref.watch(
+          serverSettingStateProvider.select((it) => it.postLimit),
+        ),
         elevation: 1,
         underline: const SizedBox.shrink(),
         borderRadius: const BorderRadius.all(Radius.circular(5)),
-        items: List<DropdownMenuItem<int>>.generate(
-          10,
-          (i) {
-            final x = i * 10 + 10;
-            return DropdownMenuItem(
-              value: x,
-              child: Text('$x'),
-            );
-          },
-        ),
+        items: List<DropdownMenuItem<int>>.generate(10, (i) {
+          final x = i * 10 + 10;
+          return DropdownMenuItem(value: x, child: Text('$x'));
+        }),
         onChanged: (value) {
           ref
               .read(serverSettingStateProvider.notifier)
@@ -436,10 +426,12 @@ class _ClearCache extends ConsumerWidget {
         child: Text(context.t.settings.clearCache.desc),
       ),
       onTap: () async {
-        context.scaffoldMessenger.showSnackBar(SnackBar(
-          content: Text(context.t.clearing),
-          duration: const Duration(milliseconds: 500),
-        ));
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(context.t.clearing),
+            duration: const Duration(milliseconds: 500),
+          ),
+        );
 
         await DefaultCacheManager().emptyCache();
         await extended_image.clearDiskCachedImages();
@@ -470,10 +462,8 @@ class _Monbooru extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8),
         child: Text(context.t.monbooru.settings.desc),
       ),
-      onTap: () => showDialog(
-        context: context,
-        builder: (_) => const _MonbooruDialog(),
-      ),
+      onTap: () =>
+          showDialog(context: context, builder: (_) => const _MonbooruDialog()),
     );
   }
 }
@@ -520,8 +510,10 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
     setState(() => _status = context.t.monbooru.settings.testing);
     final error = await MonbooruSender.testConnection(_url.text);
     if (!mounted) return;
-    setState(() => _status =
-        error?.describe(context) ?? context.t.monbooru.settings.ok);
+    setState(
+      () =>
+          _status = error?.describe(context) ?? context.t.monbooru.settings.ok,
+    );
   }
 
   @override
@@ -576,7 +568,9 @@ class _MonbooruDialogState extends State<_MonbooruDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: _test, child: Text(context.t.monbooru.settings.test)),
+          onPressed: _test,
+          child: Text(context.t.monbooru.settings.test),
+        ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(context.t.cancel),

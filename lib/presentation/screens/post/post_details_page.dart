@@ -51,8 +51,9 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
     updateSearch(Iterable<String> tags) {
       final newQuery = Set.from(tags).join(' ');
       if (newQuery.isEmpty) return;
-      context.router
-          .push(HomeRoute(session: session.copyWith(query: newQuery)));
+      context.router.push(
+        HomeRoute(session: session.copyWith(query: newQuery)),
+      );
     }
 
     final rating = post.rating.describe(context);
@@ -120,15 +121,15 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
                   trailing: _CopyButton(post.sampleFile),
                 ),
               if (post.originalFile.isNotEmpty)
-              ListTile(
-                title: Text(context.t.fileOg),
-                subtitle: _LinkSubtitle(
-                  post.originalFile,
-                  label:
-                      '${post.originalSize.toString()}, ${post.originalFile.fileExt}',
+                ListTile(
+                  title: Text(context.t.fileOg),
+                  subtitle: _LinkSubtitle(
+                    post.originalFile,
+                    label:
+                        '${post.originalSize.toString()}, ${post.originalFile.fileExt}',
+                  ),
+                  trailing: _CopyButton(post.originalFile),
                 ),
-                trailing: _CopyButton(post.originalFile),
-              ),
               if (isGallery) RelatedGalleries(post: post, session: session),
               ListTile(
                 title: Text(context.t.tags),
@@ -202,14 +203,15 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
         visible: selectedtag.value.isNotEmpty,
         children: [
           SpeedDialChild(
-              child: const Icon(Icons.copy),
-              label: context.t.actionTag.copy,
-              onTap: () {
-                final tags = selectedtag.value.join(' ');
-                if (tags.isNotEmpty) {
-                  clip(context, tags);
-                }
-              }),
+            child: const Icon(Icons.copy),
+            label: context.t.actionTag.copy,
+            onTap: () {
+              final tags = selectedtag.value.join(' ');
+              if (tags.isNotEmpty) {
+                clip(context, tags);
+              }
+            },
+          ),
           SpeedDialChild(
             child: const Icon(Icons.block),
             label: context.t.actionTag.block,
@@ -233,8 +235,10 @@ class PostDetailsPage extends HookConsumerWidget with ClipboardMixins {
             label: context.t.actionTag.append,
             onTap: () {
               if (selectedtag.value.isEmpty) return;
-              updateSearch(
-                  [...session.query.toWordList(), ...selectedtag.value]);
+              updateSearch([
+                ...session.query.toWordList(),
+                ...selectedtag.value,
+              ]);
             },
           ),
           SpeedDialChild(
@@ -272,15 +276,15 @@ List<Widget> _galleryTags(
   }
   final t = context.t;
   String label(String type) => switch (type) {
-        'artist' => t.artist,
-        'character' => t.character,
-        'parody' => t.copyright,
-        'tag' => t.general,
-        'group' => t.gallery.group,
-        'language' => t.gallery.language,
-        'category' => t.gallery.category,
-        _ => type,
-      };
+    'artist' => t.artist,
+    'character' => t.character,
+    'parody' => t.copyright,
+    'tag' => t.general,
+    'group' => t.gallery.group,
+    'language' => t.gallery.language,
+    'category' => t.gallery.category,
+    _ => type,
+  };
   final types = [
     ...NhentaiGallery.typeOrder,
     ...data.tags.keys.where((it) => !NhentaiGallery.typeOrder.contains(it)),
@@ -323,10 +327,7 @@ class _TagsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (labelText != null)
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(labelText),
-          ),
+          Padding(padding: const EdgeInsets.all(8), child: Text(labelText)),
         Wrap(
           children: [
             for (final tag in tags)
@@ -372,15 +373,11 @@ class _LinkSubtitle extends StatelessWidget {
             ),
           DefaultTextStyle(
             style: DefaultTextStyle.of(context).style.copyWith(
-                  color: isLink ? context.colorScheme.primary : null,
-                ),
+              color: isLink ? context.colorScheme.primary : null,
+            ),
             child: Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                url,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(url, maxLines: 2, overflow: TextOverflow.ellipsis),
             ),
           ),
         ],

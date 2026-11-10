@@ -22,5 +22,5 @@ enum Setting {
   backupAutoLast,
   searchRandom,
   searchSort,
-  searchLanguage;
+  searchLanguage,
 }

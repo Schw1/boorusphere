@@ -36,7 +36,8 @@ class PostUnknown extends ConsumerWidget {
           ),
         ),
         Positioned(
-          bottom: context.mediaQuery.viewInsets.bottom +
+          bottom:
+              context.mediaQuery.viewInsets.bottom +
               kBottomNavigationBarHeight +
               32,
           child: QuickBar.action(

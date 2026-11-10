@@ -26,7 +26,6 @@ import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart' show Ref;
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -55,12 +54,11 @@ Future<String> writeBackupFile(
 }) async {
   final versionRepo = ref.read(versionRepoProvider);
   final entries = [
-    Future.value(BackupItem(DataBackupState.appId,
-        {'version': '${versionRepo.current}'})),
+    Future.value(
+      BackupItem(DataBackupState.appId, {'version': '${versionRepo.current}'}),
+    ),
     if (option.server)
-      ref
-          .read(serverRepoProvider)
-          .export(withCredentials: option.credentials),
+      ref.read(serverRepoProvider).export(withCredentials: option.credentials),
     if (option.blockedTags) ref.read(tagsBlockerRepoProvider).export(),
     if (option.favoritePost) ref.read(favoritePostRepoProvider).export(),
     if (option.setting) ref.read(settingsRepoProvider).export(),
@@ -74,27 +72,34 @@ Future<String> writeBackupFile(
     // to move to another device.
     if (option.server && option.credentials)
       Future.value(
-          ServerAuthStore.exportBackup(ref.read(serverRepoProvider).servers)),
+        ServerAuthStore.exportBackup(ref.read(serverRepoProvider).servers),
+      ),
   ];
 
   // Own temp folder per run, so a manual and an automatic backup can't clash.
   final basedir = await getTemporaryDirectory();
-  final temp = Directory(path.join(basedir.path,
-      '.backup.tmp-${DateTime.now().microsecondsSinceEpoch}'));
+  final temp = Directory(
+    path.join(
+      basedir.path,
+      '.backup.tmp-${DateTime.now().microsecondsSinceEpoch}',
+    ),
+  );
   temp.createSync(recursive: true);
   try {
     final zipPath = path.join(temp.path, 'data.zip');
     final encoder = ZipFileEncoder();
     encoder.create(zipPath);
-    await Future.wait(entries.map((entry) async {
-      final item = await entry;
-      final data = item.value;
-      if (data is List && data.isEmpty) return;
+    await Future.wait(
+      entries.map((entry) async {
+        final item = await entry;
+        final data = item.value;
+        if (data is List && data.isEmpty) return;
 
-      final file = File('${temp.path}/${item.key}.json');
-      await file.writeAsString(jsonEncode(data));
-      return encoder.addFile(file);
-    }));
+        final file = File('${temp.path}/${item.key}.json');
+        await file.writeAsString(jsonEncode(data));
+        return encoder.addFile(file);
+      }),
+    );
     await encoder.close();
 
     final dir = await backupDirectory(ref);

@@ -34,7 +34,7 @@ class ChangelogState extends _$ChangelogState {
           // The changelog lists upstream versions; fork releases share them.
           (it) => it.version.base == version!.base,
           orElse: () => ChangelogData.empty,
-        )
+        ),
       ];
     } else {
       return parsed;

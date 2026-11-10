@@ -15,7 +15,8 @@ class WhatsNewBottomSheet extends HookConsumerWidget {
     final envRepo = ref.read(envRepoProvider);
 
     final changelog = ref.watch(
-        changelogStateProvider(ChangelogType.assets, envRepo.appVersion));
+      changelogStateProvider(ChangelogType.assets, envRepo.appVersion),
+    );
 
     return Wrap(
       children: [
@@ -57,9 +58,7 @@ class WhatsNewBottomSheet extends HookConsumerWidget {
                 ),
                 loading: () => const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Center(child: RefreshProgressIndicator()),
-                  ],
+                  children: [Center(child: RefreshProgressIndicator())],
                 ),
               ),
               ElevatedButton.icon(

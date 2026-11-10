@@ -25,14 +25,16 @@ void main() {
       const reports = [
         MonbooruSendReport(outcome: MonbooruOutcome.added),
         MonbooruSendReport(
-            outcome: MonbooruOutcome.failed, jobError: 'gallery-dl: 404'),
-        MonbooruSendReport(
-            error: MonbooruError(MonbooruErrorKind.http, '500')),
+          outcome: MonbooruOutcome.failed,
+          jobError: 'gallery-dl: 404',
+        ),
+        MonbooruSendReport(error: MonbooruError(MonbooruErrorKind.http, '500')),
         MonbooruSendReport(unconfirmed: true),
       ];
       for (final report in reports) {
         final back = MonbooruHistoryEntry.reportFromJson(
-            jsonDecode(jsonEncode(MonbooruHistoryEntry.reportToJson(report))))!;
+          jsonDecode(jsonEncode(MonbooruHistoryEntry.reportToJson(report))),
+        )!;
         expect(back.outcome, report.outcome);
         expect(back.error?.kind, report.error?.kind);
         expect(back.error?.detail, report.error?.detail);
@@ -43,16 +45,21 @@ void main() {
     });
 
     test('a result keeps the time of the send', () async {
-      await MonbooruHistory.record(_post,
-          jobId: 9, now: DateTime(2026, 11, 9, 10));
+      await MonbooruHistory.record(
+        _post,
+        jobId: 9,
+        now: DateTime(2026, 11, 9, 10),
+      );
       var entries = await MonbooruHistory.all();
       expect(entries.single.isPending, isTrue);
       expect(entries.single.canLookUp, isTrue);
 
-      await MonbooruHistory.record(_post,
-          report: const MonbooruSendReport(outcome: MonbooruOutcome.added),
-          isResult: true,
-          now: DateTime(2026, 11, 9, 11));
+      await MonbooruHistory.record(
+        _post,
+        report: const MonbooruSendReport(outcome: MonbooruOutcome.added),
+        isResult: true,
+        now: DateTime(2026, 11, 9, 11),
+      );
       entries = await MonbooruHistory.all();
       expect(entries, hasLength(1));
       expect(entries.single.time, DateTime(2026, 11, 9, 10));
@@ -66,7 +73,8 @@ void main() {
         await MonbooruHistory.record(
           Post(id: i, serverId: 's'),
           report: const MonbooruSendReport(
-              error: MonbooruError(MonbooruErrorKind.unreachable)),
+            error: MonbooruError(MonbooruErrorKind.unreachable),
+          ),
           now: DateTime(2026).add(Duration(minutes: i)),
         );
       }
@@ -81,31 +89,48 @@ void main() {
       await MonbooruHistory.record(_post, jobId: 9);
       await MonbooruHistory.record(const Post(id: 4, serverId: 'Danbooru'));
       final asked = <int>[];
-      await MonbooruHistory.lookUpPending(fetchJob: (id) async {
-        asked.add(id);
-        return const MonbooruJobLookup.found(
-            MonbooruJob(id: 9, status: 'succeeded', duplicate: 1));
-      });
+      await MonbooruHistory.lookUpPending(
+        fetchJob: (id) async {
+          asked.add(id);
+          return const MonbooruJobLookup.found(
+            MonbooruJob(id: 9, status: 'succeeded', duplicate: 1),
+          );
+        },
+      );
       expect(asked, [9], reason: 'no job id, nothing to ask');
-      final entry = (await MonbooruHistory.all())
-          .firstWhere((it) => it.post.id == _post.id);
+      final entry = (await MonbooruHistory.all()).firstWhere(
+        (it) => it.post.id == _post.id,
+      );
       expect(entry.report?.outcome, MonbooruOutcome.duplicate);
     });
 
     test('remove successful ones, keep failed and pending', () async {
       Future<void> add(int id, MonbooruSendReport? report) =>
-          MonbooruHistory.record(Post(id: id, serverId: 's'), report: report);
+          MonbooruHistory.record(
+            Post(id: id, serverId: 's'),
+            report: report,
+          );
       await add(1, const MonbooruSendReport(outcome: MonbooruOutcome.added));
-      await add(2,
-          const MonbooruSendReport(outcome: MonbooruOutcome.duplicate));
+      await add(
+        2,
+        const MonbooruSendReport(outcome: MonbooruOutcome.duplicate),
+      );
       await add(3, const MonbooruSendReport(outcome: MonbooruOutcome.failed));
-      await add(4, const MonbooruSendReport(
-          error: MonbooruError(MonbooruErrorKind.http, '400')));
+      await add(
+        4,
+        const MonbooruSendReport(
+          error: MonbooruError(MonbooruErrorKind.http, '400'),
+        ),
+      );
       await add(5, null);
       await add(6, const MonbooruSendReport(unconfirmed: true));
       await MonbooruHistory.removeSuccessful();
-      expect((await MonbooruHistory.all()).map((it) => it.post.id).toSet(),
-          {3, 4, 5, 6});
+      expect((await MonbooruHistory.all()).map((it) => it.post.id).toSet(), {
+        3,
+        4,
+        5,
+        6,
+      });
     });
 
     test('remove', () async {
@@ -121,8 +146,14 @@ void main() {
       const b = Post(id: 2, serverId: 'Monbooru', pageCount: 5);
       await ReadingProgress.save(a, 7, now: DateTime(2026, 11, 1));
       await ReadingProgress.save(b, 2, now: DateTime(2026, 11, 2));
-      await SavedSearchStore.put(const SavedSearch(
-          serverId: 'Danbooru', query: 'cat', seenId: 50, createdAt: 1));
+      await SavedSearchStore.put(
+        const SavedSearch(
+          serverId: 'Danbooru',
+          query: 'cat',
+          seenId: 50,
+          createdAt: 1,
+        ),
+      );
 
       final entry = await ReadingBackup.export();
       expect(entry.key, 'reading');
@@ -137,8 +168,10 @@ void main() {
       await ReadingBackup.import(json);
       expect(await ReadingProgress.pageOf(a), 7);
       expect(await ReadingProgress.pageOf(b), 4, reason: 'further page kept');
-      expect((await ReadingProgress.recent()).map((it) => it.id),
-          containsAll([1, 2]));
+      expect(
+        (await ReadingProgress.recent()).map((it) => it.id),
+        containsAll([1, 2]),
+      );
       final search = SavedSearchStore.all().single;
       expect(search.query, 'cat');
       expect(search.seenId, 50);

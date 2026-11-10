@@ -5,8 +5,8 @@ import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/home_status.dart';
 import 'package:boorusphere/presentation/screens/home/search/search_screen.dart';
-import 'package:boorusphere/presentation/screens/home/signature_banner.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
+import 'package:boorusphere/presentation/screens/home/signature_banner.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
@@ -29,8 +29,11 @@ class HomeContent extends HookConsumerWidget {
     useEffect(() {
       if (servers.isNotEmpty) {
         Future(() {
-          ref.read(pageStateProvider.notifier).update(
-              (option) => option.copyWith(query: session.query, clear: true));
+          ref
+              .read(pageStateProvider.notifier)
+              .update(
+                (option) => option.copyWith(query: session.query, clear: true),
+              );
         });
       }
     }, [servers.isNotEmpty]);
@@ -41,7 +44,9 @@ class HomeContent extends HookConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients ||
           pageState is DataFetchResult ||
-          pageState is LoadingFetchResult) return;
+          pageState is LoadingFetchResult) {
+        return;
+      }
 
       if (scrollController.position.extentAfter < 300) {
         scrollController.animateTo(
@@ -58,45 +63,47 @@ class HomeContent extends HookConsumerWidget {
     return PostSelectionScope(
       posts: () => filteredPosts,
       child: Stack(
-      alignment: Alignment.center,
-      children: [
-        RefreshIndicator(
-          onRefresh: () async {
-            unawaited(ref
-                .read(pageStateProvider.notifier)
-                .update((it) => it.copyWith(clear: true)));
-          },
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            controller: scrollController,
-            slivers: [
-              if (!isNewSearch)
-                SliverSafeArea(
-                  sliver: SliverPadding(
-                    padding: const EdgeInsets.all(10),
-                    sliver: SliverMainAxisGroup(
-                      slivers: [
-                        const SliverToBoxAdapter(child: SignatureBanner()),
-                        Timeline(posts: filteredPosts),
-                      ],
+        alignment: Alignment.center,
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              unawaited(
+                ref
+                    .read(pageStateProvider.notifier)
+                    .update((it) => it.copyWith(clear: true)),
+              );
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: scrollController,
+              slivers: [
+                if (!isNewSearch)
+                  SliverSafeArea(
+                    sliver: SliverPadding(
+                      padding: const EdgeInsets.all(10),
+                      sliver: SliverMainAxisGroup(
+                        slivers: [
+                          const SliverToBoxAdapter(child: SignatureBanner()),
+                          Timeline(posts: filteredPosts),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              if (!isNewSearch)
-                SliverPadding(
-                  padding: EdgeInsets.only(
-                    bottom: context.mediaQuery.viewPadding.bottom * 1.8 + 92,
-                  ),
-                  sliver: const SliverToBoxAdapter(child: HomeStatus()),
-                )
-              else
-                const SliverFillRemaining(child: HomeStatus()),
-            ],
+                if (!isNewSearch)
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                      bottom: context.mediaQuery.viewPadding.bottom * 1.8 + 92,
+                    ),
+                    sliver: const SliverToBoxAdapter(child: HomeStatus()),
+                  )
+                else
+                  const SliverFillRemaining(child: HomeStatus()),
+              ],
+            ),
           ),
-        ),
-        const _EdgeShadow(),
-        SearchScreen(scrollController: scrollController),
-      ],
+          const _EdgeShadow(),
+          SearchScreen(scrollController: scrollController),
+        ],
       ),
     );
   }
@@ -121,8 +128,8 @@ class _EdgeShadow extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomLeft,
                 colors: [
-                  tint.withOpacity(0.8),
-                  tint.withOpacity(0),
+                  tint.withValues(alpha: 0.8),
+                  tint.withValues(alpha: 0),
                 ],
               ),
             ),

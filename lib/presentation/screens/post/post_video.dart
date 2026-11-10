@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' show FontFeature;
 
 import 'package:boorusphere/data/repository/booru/entity/post.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
@@ -80,8 +79,9 @@ class _PostVideoContent extends HookConsumerWidget {
         contentSettings.blurExplicit && !contentSettings.blurTimelineOnly;
     final shouldBlur = post.rating.isExplicit && shouldBlurExplicit;
     final isBlur = useState(shouldBlur);
-    final blurNoticeAnimator =
-        useAnimationController(duration: kThemeChangeDuration);
+    final blurNoticeAnimator = useAnimationController(
+      duration: kThemeChangeDuration,
+    );
     final showOverlay = useState(true);
     // don't show pause button on initial load
     final showPauseOverlay = useState(false);
@@ -283,9 +283,7 @@ class _ToolboxOverlay extends ConsumerWidget {
                     .toggleVideoPlayerMute();
                 await source.player?.setVolume(mute ? 0 : 100);
               },
-              icon: Icon(
-                isMuted ? Icons.volume_mute : Icons.volume_up,
-              ),
+              icon: Icon(isMuted ? Icons.volume_mute : Icons.volume_up),
             ),
             PostDetailsButton(post: post),
             IconButton(
@@ -325,10 +323,7 @@ class _ToolboxOverlay extends ConsumerWidget {
 }
 
 class _PlayPauseOverlay extends StatelessWidget {
-  const _PlayPauseOverlay({
-    required this.isPlaying,
-    required this.onPressed,
-  });
+  const _PlayPauseOverlay({required this.isPlaying, required this.onPressed});
 
   final bool isPlaying;
   final void Function()? onPressed;
@@ -460,12 +455,13 @@ class _SeekBarState extends State<_SeekBar> {
               initialData: widget.player.state.position,
               builder: (context, snapshot) {
                 final position = snapshot.data ?? Duration.zero;
-                final fraction = _dragFraction ??
+                final fraction =
+                    _dragFraction ??
                     (totalMs <= 0
                         ? 0.0
                         : (position.inMilliseconds / totalMs)
-                            .clamp(0.0, 1.0)
-                            .toDouble());
+                              .clamp(0.0, 1.0)
+                              .toDouble());
                 return LinearProgressIndicator(
                   value: fraction,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),

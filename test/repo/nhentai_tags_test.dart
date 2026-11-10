@@ -12,7 +12,15 @@ import 'package:hive_ce/hive.dart';
 final _list = jsonEncode({
   'version': 1,
   'updated': '2026-11-08T00:00:00Z',
-  'types': ['parody', 'character', 'tag', 'artist', 'group', 'language', 'category'],
+  'types': [
+    'parody',
+    'character',
+    'tag',
+    'artist',
+    'group',
+    'language',
+    'category',
+  ],
   'tags': [
     [12227, 'english', 150000, 5],
     [2937, 'big hat', 240000, 2],
@@ -55,8 +63,12 @@ void main() {
 
     test('tokens for tag ids', () {
       // as typed in the app, and as nhentai writes them (old blocked tags)
-      expect(tags.tokensOf([2937, 12227, 999]),
-          ['big_hat', 'tag:"big hat"', 'english', 'language:english']);
+      expect(tags.tokensOf([2937, 12227, 999]), [
+        'big_hat',
+        'tag:"big hat"',
+        'english',
+        'language:english',
+      ]);
       expect(tags.tokensOf([9000]), ['character:glasses']);
     });
 
@@ -65,21 +77,27 @@ void main() {
       expect(names, ['big_hat', 'bigfoot', 'someone_big']);
       expect(tags.suggest('big_h').single.$1, 'big_hat');
       // same name as a tag: with its type
-      expect(tags.suggest('glass').map((it) => it.$1),
-          ['glasses', 'character:glasses']);
+      expect(tags.suggest('glass').map((it) => it.$1), [
+        'glasses',
+        'character:glasses',
+      ]);
     });
 
     test('suggestions with type and minus', () {
-      expect(tags.suggest('artist:som').map((it) => it.$1),
-          ['artist:someone_big']);
+      expect(tags.suggest('artist:som').map((it) => it.$1), [
+        'artist:someone_big',
+      ]);
       expect(tags.suggest('-tag:gla').single, ('-tag:glasses', 80000));
-      expect(tags.suggest('language:').map((it) => it.$1),
-          ['language:english']);
+      expect(tags.suggest('language:').map((it) => it.$1), [
+        'language:english',
+      ]);
     });
 
     test('empty word: most used', () {
-      expect(tags.suggest('', limit: 2).map((it) => it.$1),
-          ['doujinshi', 'big_hat']);
+      expect(tags.suggest('', limit: 2).map((it) => it.$1), [
+        'doujinshi',
+        'big_hat',
+      ]);
     });
 
     test('words typed in the app become nhentai tokens', () {
@@ -106,8 +124,10 @@ void main() {
     });
 
     test('rejects other files', () {
-      expect(() => NhentaiTags().loadJson('{"result": []}'),
-          throwsFormatException);
+      expect(
+        () => NhentaiTags().loadJson('{"result": []}'),
+        throwsFormatException,
+      );
       expect(NhentaiTags().suggest('big'), isEmpty);
     });
   });
@@ -127,8 +147,9 @@ void main() {
       expect(ReadingProgress.changes.value, greaterThan(before));
       // other server, same id: separate
       expect(
-          await ReadingProgress.pageOf(post.copyWith(serverId: 'Monbooru')),
-          isNull);
+        await ReadingProgress.pageOf(post.copyWith(serverId: 'Monbooru')),
+        isNull,
+      );
       await ReadingProgress.clear(post);
       expect(await ReadingProgress.pageOf(post), isNull);
     });
@@ -164,20 +185,24 @@ void main() {
       expect(await ReadingProgress.pageOf(a), isNull);
     });
 
-    test('continue reading keeps the newest ${ReadingProgress.recentLimit}',
-        () async {
-      await ReadingProgress.forgetAll();
-      final start = DateTime(2026, 1, 1);
-      for (var i = 0; i < ReadingProgress.recentLimit + 5; i++) {
-        await ReadingProgress.save(
-            Post(id: 1000 + i, serverId: 's', pageCount: 2), 0,
-            now: start.add(Duration(minutes: i)));
-      }
-      final recent = await ReadingProgress.recent();
-      expect(recent, hasLength(ReadingProgress.recentLimit));
-      expect(recent.first.id, 1000 + ReadingProgress.recentLimit + 4);
-      expect(recent.any((it) => it.id < 1005), isFalse);
-      await ReadingProgress.forgetAll();
-    });
+    test(
+      'continue reading keeps the newest ${ReadingProgress.recentLimit}',
+      () async {
+        await ReadingProgress.forgetAll();
+        final start = DateTime(2026, 1, 1);
+        for (var i = 0; i < ReadingProgress.recentLimit + 5; i++) {
+          await ReadingProgress.save(
+            Post(id: 1000 + i, serverId: 's', pageCount: 2),
+            0,
+            now: start.add(Duration(minutes: i)),
+          );
+        }
+        final recent = await ReadingProgress.recent();
+        expect(recent, hasLength(ReadingProgress.recentLimit));
+        expect(recent.first.id, 1000 + ReadingProgress.recentLimit + 4);
+        expect(recent.any((it) => it.id < 1005), isFalse);
+        await ReadingProgress.forgetAll();
+      },
+    );
   });
 }

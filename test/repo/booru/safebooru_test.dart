@@ -1,6 +1,5 @@
 import 'package:boorusphere/data/provider.dart';
 import 'package:boorusphere/data/repository/booru/entity/page_option.dart';
-import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/data/repository/server/user_server_repo.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
@@ -21,10 +20,12 @@ void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('Safebooru', () async {
-    final ref = ProviderContainer(overrides: [
-      defaultServersProvider.overrideWithValue(await provideDefaultServers()),
-      envRepoProvider.overrideWithValue(FakeEnvRepo()),
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        defaultServersProvider.overrideWithValue(await provideDefaultServers()),
+        envRepoProvider.overrideWithValue(FakeEnvRepo()),
+      ],
+    );
     final hiveContainer = HiveTestContainer();
 
     addTearDown(() async {
@@ -45,8 +46,9 @@ void main() async {
     const option = PageOption(limit: 5);
 
     const fakePage = 'safebooru/posts.xml';
-    when(() => adapter.fetch(any(), any(), any()))
-        .thenAnswer((_) async => FakeResponseBody.fromFixture(fakePage, 200));
+    when(
+      () => adapter.fetch(any(), any(), any()),
+    ).thenAnswer((_) async => FakeResponseBody.fromFixture(fakePage, 200));
 
     expect(
       await ref.read(imageboardRepoProvider(server)).getPage(option, 1),
@@ -54,13 +56,13 @@ void main() async {
     );
 
     const fakeTags = 'safebooru/tags.json';
-    when(() => adapter.fetch(any(), any(), any()))
-        .thenAnswer((_) async => FakeResponseBody.fromFixture(fakeTags, 200));
+    when(
+      () => adapter.fetch(any(), any(), any()),
+    ).thenAnswer((_) async => FakeResponseBody.fromFixture(fakeTags, 200));
 
     expect(
       await ref.read(imageboardRepoProvider(server)).getSuggestion('book'),
-      isA<Iterable>()
-          .having((x) => x.length, 'total', 10),
+      isA<Iterable>().having((x) => x.length, 'total', 10),
     );
   });
 }

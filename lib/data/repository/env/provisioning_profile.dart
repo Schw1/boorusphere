@@ -27,9 +27,10 @@ class ProvisioningProfile {
   }
 
   /// Path of the profile inside the running app bundle (`Runner.app`).
-  static String get _path =>
-      p.join(File(Platform.resolvedExecutable).parent.path,
-          'embedded.mobileprovision');
+  static String get _path => p.join(
+    File(Platform.resolvedExecutable).parent.path,
+    'embedded.mobileprovision',
+  );
 
   /// Expiry of the current signature, or null when unknown (not iOS, no
   /// profile in the bundle, unreadable file).

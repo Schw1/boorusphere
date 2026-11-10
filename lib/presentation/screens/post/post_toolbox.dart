@@ -75,18 +75,17 @@ class PostNotesButton extends HookConsumerWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       tooltip: context.t.notes.toggle,
-      icon: Icon(Icons.translate,
-          color: visible ? Colors.yellowAccent : Colors.white),
+      icon: Icon(
+        Icons.translate,
+        color: visible ? Colors.yellowAccent : Colors.white,
+      ),
       onPressed: () => postNotesVisible.value = !visible,
     );
   }
 }
 
 class PostDetailsButton extends ConsumerWidget {
-  const PostDetailsButton({
-    super.key,
-    required this.post,
-  });
+  const PostDetailsButton({super.key, required this.post});
 
   final Post post;
 
@@ -96,17 +95,15 @@ class PostDetailsButton extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       icon: const Icon(Icons.info),
-      onPressed: () => context.router.push(PostDetailsRoute(
-          post: post, session: ref.read(searchSessionProvider))),
+      onPressed: () => context.router.push(
+        PostDetailsRoute(post: post, session: ref.read(searchSessionProvider)),
+      ),
     );
   }
 }
 
 class PostOpenLinkButton extends ConsumerWidget {
-  const PostOpenLinkButton({
-    super.key,
-    required this.post,
-  });
+  const PostOpenLinkButton({super.key, required this.post});
 
   final Post post;
 
@@ -115,12 +112,13 @@ class PostOpenLinkButton extends ConsumerWidget {
     final server = ref.watch(serverStateProvider).findById(post.serverId);
     // A browser cannot send the API token, so open the post page instead of
     // a file URL that needs it.
-    final needsToken = server != null &&
+    final needsToken =
+        server != null &&
         ServerAuthStore.tokenOf(server.id).isNotEmpty &&
         ServerAuthStore.isOwnOrigin(server, post.originalFile);
     // Galleries (nhentai) have no single file: open their page.
-    final url = (needsToken || post.originalFile.isEmpty) &&
-            post.postUrl.isNotEmpty
+    final url =
+        (needsToken || post.originalFile.isEmpty) && post.postUrl.isNotEmpty
         ? post.postUrl
         : post.originalFile;
     return IconButton(
@@ -133,22 +131,24 @@ class PostOpenLinkButton extends ConsumerWidget {
 }
 
 class PostFavoriteButton extends HookConsumerWidget {
-  const PostFavoriteButton({
-    super.key,
-    required this.post,
-  });
+  const PostFavoriteButton({super.key, required this.post});
 
   final Post post;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isFav = ref.watch(
-        favoritePostStateProvider.select((it) => it.containsPost(post)));
-    final animator =
-        useAnimationController(duration: const Duration(milliseconds: 300));
+      favoritePostStateProvider.select((it) => it.containsPost(post)),
+    );
+    final animator = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
     final animation = useAnimation(
-        ColorTween(begin: Colors.white, end: Colors.pink.shade300)
-            .animate(animator));
+      ColorTween(
+        begin: Colors.white,
+        end: Colors.pink.shade300,
+      ).animate(animator),
+    );
     isFav ? animator.forward() : animator.reverse();
 
     return IconButton(
@@ -190,16 +190,17 @@ class PostDownloadButton extends HookConsumerWidget {
           value: pending.value
               ? null
               : progress.status.isDownloading
-                  ? progress.progress.ratio
-                  : 0,
+              ? progress.progress.ratio
+              : 0,
         ),
         IconButton(
           padding: const EdgeInsets.all(16),
           color: Colors.white,
-          icon: Icon(progress.status.isDownloaded
-              ? Icons.download_done
-              : Icons.download),
-          onPressed: pending.value ||
+          icon: Icon(
+            progress.status.isDownloaded ? Icons.download_done : Icons.download,
+          ),
+          onPressed:
+              pending.value ||
                   progress.status.isDownloaded ||
                   progress.status.isDownloading
               ? null
@@ -268,22 +269,26 @@ class PostMonbooruButton extends HookConsumerWidget {
       onPressed: state.isBusy
           ? null
           : () async {
-              if (state.isInMonbooru &&
-                  !await confirmSendDuplicate(context)) {
+              if (state.isInMonbooru && !await confirmSendDuplicate(context)) {
                 return;
               }
               if (!context.mounted) return;
               final messenger = ScaffoldMessenger.of(context);
-              final error = await queue.send(post, onReport: (report) {
-                showRootSnackBar((c) => report.describe(c));
-              });
+              final error = await queue.send(
+                post,
+                onReport: (report) {
+                  showRootSnackBar((c) => report.describe(c));
+                },
+              );
               if (!context.mounted) return;
               messenger
                 ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(
-                  content: Text(error?.describe(context) ?? t.sent),
-                  duration: const Duration(seconds: 3),
-                ));
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(error?.describe(context) ?? t.sent),
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
             },
     );
   }

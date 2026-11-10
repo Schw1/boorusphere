@@ -185,13 +185,15 @@ class MonbooruSender {
   /// open and reused. A client per request (as before) connects anew every
   /// time, which adds up when the jobs of a batch are polled every 2 s.
   /// Address and token are passed per request, so it never goes stale.
-  static final Dio _client = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 20),
-    validateStatus: (_) => true,
-    // The app strips Dart's default User-Agent (see CustomHttpClient).
-    headers: {'User-Agent': 'Boorusphere/${displayVersion('dev')}'},
-  ));
+  static final Dio _client = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 20),
+      validateStatus: (_) => true,
+      // The app strips Dart's default User-Agent (see CustomHttpClient).
+      headers: {'User-Agent': 'Boorusphere/${displayVersion('dev')}'},
+    ),
+  );
 
   /// Returns null when reachable, otherwise the error.
   static Future<MonbooruError?> testConnection(String url) async {
@@ -200,8 +202,10 @@ class MonbooruSender {
       if (res.statusCode == 200) return null;
       return MonbooruError(MonbooruErrorKind.http, '${res.statusCode}');
     } catch (e) {
-      return MonbooruError(MonbooruErrorKind.unreachable,
-          e is DioException ? e.message ?? e.type.name : '$e');
+      return MonbooruError(
+        MonbooruErrorKind.unreachable,
+        e is DioException ? e.message ?? e.type.name : '$e',
+      );
     }
   }
 
@@ -210,7 +214,8 @@ class MonbooruSender {
     final config = await load();
     if (!config.isComplete) {
       return const MonbooruSendResult.failed(
-          MonbooruError(MonbooruErrorKind.notConfigured));
+        MonbooruError(MonbooruErrorKind.notConfigured),
+      );
     }
 
     final pageUrl = post.postUrl;
@@ -218,7 +223,8 @@ class MonbooruSender {
     final target = pageUrl.isNotEmpty ? pageUrl : fileUrl;
     if (target.isEmpty) {
       return const MonbooruSendResult.failed(
-          MonbooruError(MonbooruErrorKind.noUrl));
+        MonbooruError(MonbooruErrorKind.noUrl),
+      );
     }
 
     try {
@@ -233,9 +239,12 @@ class MonbooruSender {
       }
       return MonbooruSendResult.failed(errorOf(code, messageOf(res.data)));
     } catch (e) {
-      return MonbooruSendResult.failed(MonbooruError(
+      return MonbooruSendResult.failed(
+        MonbooruError(
           MonbooruErrorKind.unreachable,
-          e is DioException ? e.message ?? e.type.name : '$e'));
+          e is DioException ? e.message ?? e.type.name : '$e',
+        ),
+      );
     }
   }
 
@@ -248,8 +257,10 @@ class MonbooruSender {
         403 => const MonbooruError(MonbooruErrorKind.noWriteScope),
         409 => const MonbooruError(MonbooruErrorKind.unavailable),
         503 => const MonbooruError(MonbooruErrorKind.apiDisabled),
-        _ => MonbooruError(MonbooruErrorKind.http,
-            message.isEmpty ? '$code' : '$code: $message'),
+        _ => MonbooruError(
+          MonbooruErrorKind.http,
+          message.isEmpty ? '$code' : '$code: $message',
+        ),
       };
 
   /// The reason in an error answer: `error`/`message`/`detail` of a JSON
@@ -410,8 +421,10 @@ class MonbooruJob {
   MonbooruOutcome get outcome {
     if (created > 0) return MonbooruOutcome.added;
     if (duplicate > 0) return MonbooruOutcome.duplicate;
-    if (status == 'failed' || status == 'canceled' ||
-        status == 'interrupted' || failed > 0) {
+    if (status == 'failed' ||
+        status == 'canceled' ||
+        status == 'interrupted' ||
+        failed > 0) {
       return MonbooruOutcome.failed;
     }
     return MonbooruOutcome.skipped;
@@ -421,12 +434,8 @@ class MonbooruJob {
 /// Result of [MonbooruSender.fetchJob].
 class MonbooruJobLookup {
   const MonbooruJobLookup.found(MonbooruJob this.job) : noRead = false;
-  const MonbooruJobLookup.noReadScope()
-      : job = null,
-        noRead = true;
-  const MonbooruJobLookup.error()
-      : job = null,
-        noRead = false;
+  const MonbooruJobLookup.noReadScope() : job = null, noRead = true;
+  const MonbooruJobLookup.error() : job = null, noRead = false;
 
   final MonbooruJob? job;
   final bool noRead;

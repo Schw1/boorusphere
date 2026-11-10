@@ -61,11 +61,7 @@ VideoPostSource useVideoPostSource(
 }
 
 class _VideoPostHook extends Hook<VideoPostSource> {
-  const _VideoPostHook(
-    this.ref, {
-    required this.post,
-    required this.active,
-  });
+  const _VideoPostHook(this.ref, {required this.post, required this.active});
 
   final WidgetRef ref;
   final Post post;
@@ -83,8 +79,9 @@ class _VideoPostState extends HookState<VideoPostSource, _VideoPostHook> {
   Future<void> createController() async {
     if (!hook.active) return;
 
-    final headers =
-        hook.ref.read(postHeadersFactoryProvider(hook.post, cookies: []));
+    final headers = hook.ref.read(
+      postHeadersFactoryProvider(hook.post, cookies: []),
+    );
 
     final url = hook.post.content.url;
     final player = Player();

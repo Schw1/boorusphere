@@ -10,7 +10,6 @@ import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/shared_storage_handle.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'downloader.g.dart';
@@ -34,8 +33,9 @@ class Downloader {
   }) async {
     final fileUrl = url ?? post.originalFile;
     // sanitize forbidden characters on the file name
-    final fileName = Uri.decodeComponent(fileUrl.fileName)
-        .replaceAll(RegExp(r'([^a-zA-Z0-9\s\.\(\)_]+)'), '_');
+    final fileName = Uri.decodeComponent(
+      fileUrl.fileName,
+    ).replaceAll(RegExp(r'([^a-zA-Z0-9\s\.\(\)_]+)'), '_');
     final sharedStorageHandle = ref.read(sharedStorageHandleProvider);
 
     await sharedStorageHandle.init();
@@ -43,7 +43,7 @@ class Downloader {
     final server = ref
         .read(serverStateProvider)
         .cast<Server?>()
-      .firstWhere((it) => it?.id == post.serverId, orElse: () => null);
+        .firstWhere((it) => it?.id == post.serverId, orElse: () => null);
     final authHeaders = server == null
         ? const <String, String>{}
         : ServerAuthStore.headersFor(server, fileUrl);
@@ -53,11 +53,12 @@ class Downloader {
       savedDir: sharedStorageHandle.path,
       showNotification: true,
       openFileFromNotification: true,
-      headers: HeadersFactory.builder()
-          .setUserAgent(versionRepo.current)
-          .setReferer(createReferer(fileUrl))
-          .build()
-        ..addAll(authHeaders),
+      headers:
+          HeadersFactory.builder()
+              .setUserAgent(versionRepo.current)
+              .setReferer(createReferer(fileUrl))
+              .build()
+            ..addAll(authHeaders),
     );
 
     if (taskId != null) {

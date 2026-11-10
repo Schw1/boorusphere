@@ -46,8 +46,10 @@ class SavedSearch {
   static String keyOf(String serverId, String query) =>
       '$serverId\n${normalize(query)}';
 
-  static final _typedOrder =
-      RegExp(r'(^|\s)-?(order|sort):', caseSensitive: false);
+  static final _typedOrder = RegExp(
+    r'(^|\s)-?(order|sort):',
+    caseSensitive: false,
+  );
 
   /// Whether new posts can be counted: not with an `order:`/`sort:` tag,
   /// which puts something other than the newest posts first.
@@ -80,7 +82,8 @@ class SavedSearch {
     return copyWith(
       latestId: latest,
       newCount: shown,
-      more: newIds.isNotEmpty &&
+      more:
+          newIds.isNotEmpty &&
           newIds.length == all.length &&
           all.length >= fullPage,
       checkedAt: now.millisecondsSinceEpoch,
@@ -105,28 +108,27 @@ class SavedSearch {
     int? newCount,
     bool? more,
     int? checkedAt,
-  }) =>
-      SavedSearch(
-        serverId: serverId,
-        query: query,
-        seenId: seenId ?? this.seenId,
-        latestId: latestId ?? this.latestId,
-        newCount: newCount ?? this.newCount,
-        more: more ?? this.more,
-        checkedAt: checkedAt ?? this.checkedAt,
-        createdAt: createdAt,
-      );
+  }) => SavedSearch(
+    serverId: serverId,
+    query: query,
+    seenId: seenId ?? this.seenId,
+    latestId: latestId ?? this.latestId,
+    newCount: newCount ?? this.newCount,
+    more: more ?? this.more,
+    checkedAt: checkedAt ?? this.checkedAt,
+    createdAt: createdAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'serverId': serverId,
-        'query': query,
-        'seenId': seenId,
-        'latestId': latestId,
-        'newCount': newCount,
-        'more': more,
-        'checkedAt': checkedAt,
-        'createdAt': createdAt,
-      };
+    'serverId': serverId,
+    'query': query,
+    'seenId': seenId,
+    'latestId': latestId,
+    'newCount': newCount,
+    'more': more,
+    'checkedAt': checkedAt,
+    'createdAt': createdAt,
+  };
 
   static SavedSearch? fromJson(Object? json) {
     if (json is! Map) return null;
@@ -177,8 +179,9 @@ class SavedSearchStore {
       (await open()).put(search.key, jsonEncode(search.toJson()));
 
   /// For backups: all searches as JSON.
-  static List<Map<String, dynamic>> export() =>
-      [for (final it in all()) it.toJson()];
+  static List<Map<String, dynamic>> export() => [
+    for (final it in all()) it.toJson(),
+  ];
 
   /// Restores [export]ed searches. Ones already here keep their state.
   static Future<void> import(Object? data) async {

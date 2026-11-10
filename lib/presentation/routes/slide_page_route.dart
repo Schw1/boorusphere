@@ -55,10 +55,7 @@ class SlidePageRoute<T> extends PageRoute<T> {
     );
 
     final fade = FadeTransition(
-      opacity: Tween(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(nextAnimation),
+      opacity: Tween(begin: 0.0, end: 1.0).animate(nextAnimation),
       child: child,
     );
 

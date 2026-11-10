@@ -32,7 +32,7 @@ class _ExtendedPageControllerHook extends Hook<ExtendedPageController> {
 
   @override
   HookState<ExtendedPageController, Hook<ExtendedPageController>>
-      createState() => _ExtendedPageControllerHookState();
+  createState() => _ExtendedPageControllerHookState();
 }
 
 class _ExtendedPageControllerHookState

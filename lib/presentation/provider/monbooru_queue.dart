@@ -102,12 +102,13 @@ class MonbooruBatchReport {
 
 /// Keeps a send in the history ([MonbooruHistory]); `report` null = sent,
 /// result pending.
-typedef MonbooruRecorder = Future<void> Function(
-  Post post,
-  MonbooruSendReport? report,
-  int jobId, {
-  bool isResult,
-});
+typedef MonbooruRecorder =
+    Future<void> Function(
+      Post post,
+      MonbooruSendReport? report,
+      int jobId, {
+      bool isResult,
+    });
 
 /// Sends posts to monloader, follows the jobs and checks for duplicates.
 ///
@@ -121,13 +122,13 @@ class MonbooruQueue {
     String Function(String serverId)? tokenOf,
     Dio? client,
     MonbooruRecorder? recorder,
-  })  : _pollInterval = pollInterval,
-        _record = recorder ?? MonbooruHistory.recordSafely,
-        _tokenOf = tokenOf ?? ServerAuthStore.tokenOf,
-        _pollTimeout = pollTimeout,
-        _send = sender ?? MonbooruSender.send,
-        _fetchJob = jobFetcher ?? MonbooruSender.fetchJob,
-        _client = client;
+  }) : _pollInterval = pollInterval,
+       _record = recorder ?? MonbooruHistory.recordSafely,
+       _tokenOf = tokenOf ?? ServerAuthStore.tokenOf,
+       _pollTimeout = pollTimeout,
+       _send = sender ?? MonbooruSender.send,
+       _fetchJob = jobFetcher ?? MonbooruSender.fetchJob,
+       _client = client;
 
   static final instance = MonbooruQueue();
 
@@ -187,7 +188,7 @@ class MonbooruQueue {
   Future<bool?> check(Post post, Iterable<Server> servers) async {
     final md5 = post.fileMd5;
     if (md5.isEmpty) return null;
-    if (_present[md5] == true) {
+    if (_present[md5] ?? false) {
       _markPresent(post);
       return true;
     }
@@ -200,7 +201,7 @@ class MonbooruQueue {
 
     final found = await (_checking[md5] ??= _query(server, md5));
     _checking.remove(md5);
-    if (found == true) {
+    if (found ?? false) {
       _present[md5] = true;
       _markPresent(post);
     } else if (found == false) {
@@ -221,27 +222,30 @@ class MonbooruQueue {
     final gallery = galleryOf(server);
     final url = '$api/api/v1/images/search';
     try {
-      final res = await (_client ??= Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
-        validateStatus: (_) => true,
-      )))
-          .get(
-        url,
-        queryParameters: {
-          'q': 'md5:$md5',
-          'limit': 1,
-          if (gallery != null) 'gallery': gallery,
-        },
-        options: Options(headers: {
-          'Accept': 'application/json',
-          // The app strips Dart's default User-Agent; some proxies in front
-          // of Monbooru reject requests without one.
-          'User-Agent': 'Boorusphere/${displayVersion('dev')}',
-          ...ServerAuthStore.headersFor(server, url,
-              token: _tokenOf(server.id)),
-        }),
-      );
+      final res =
+          await (_client ??= Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 15),
+              validateStatus: (_) => true,
+            ),
+          )).get(
+            url,
+            queryParameters: {'q': 'md5:$md5', 'limit': 1, 'gallery': ?gallery},
+            options: Options(
+              headers: {
+                'Accept': 'application/json',
+                // The app strips Dart's default User-Agent; some proxies in front
+                // of Monbooru reject requests without one.
+                'User-Agent': 'Boorusphere/${displayVersion('dev')}',
+                ...ServerAuthStore.headersFor(
+                  server,
+                  url,
+                  token: _tokenOf(server.id),
+                ),
+              },
+            ),
+          );
       final data = res.data;
       if (res.statusCode != 200 || data is! Map) return null;
       final total = data['total'];
@@ -273,10 +277,12 @@ class MonbooruQueue {
     _set(post, const MonbooruPostState(MonbooruPostStatus.queued));
     final jobId = result.jobId ?? 0;
     unawaited(_record(post, null, jobId));
-    unawaited(_follow(post, jobId).then((report) {
-      unawaited(_record(post, report, jobId, isResult: true));
-      onReport?.call(report);
-    }));
+    unawaited(
+      _follow(post, jobId).then((report) {
+        unawaited(_record(post, report, jobId, isResult: true));
+        onReport?.call(report);
+      }),
+    );
     return null;
   }
 
@@ -338,7 +344,7 @@ class MonbooruQueue {
         alreadyThere++;
         continue;
       }
-      if (await check(post, servers) == true) {
+      if (await check(post, servers) ?? false) {
         alreadyThere++;
       } else {
         toSend.add(post);
@@ -369,8 +375,8 @@ class MonbooruQueue {
       added: count((r) => r.outcome == MonbooruOutcome.added),
       duplicate: count((r) => r.outcome == MonbooruOutcome.duplicate),
       skipped: count((r) => r.outcome == MonbooruOutcome.skipped),
-      failed: count((r) =>
-          r.error != null || r.outcome == MonbooruOutcome.failed) +
+      failed:
+          count((r) => r.error != null || r.outcome == MonbooruOutcome.failed) +
           (toSend.length - done.length),
       unconfirmed: count((r) => r.unconfirmed),
       alreadyThere: alreadyThere,

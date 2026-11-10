@@ -54,8 +54,9 @@ class PostNotes {
       // archives (CBZ covers) aren't.
       if (post.pageCount > 0) return null;
       final gallery = _galleryOf(server);
-      final query =
-          gallery == null ? '' : '?gallery=${Uri.encodeQueryComponent(gallery)}';
+      final query = gallery == null
+          ? ''
+          : '?gallery=${Uri.encodeQueryComponent(gallery)}';
       return '$api/api/v1/images/${post.id}$query';
     }
     if (!mayHaveNotes(post)) return null;
@@ -122,8 +123,10 @@ class PostNotes {
         .replaceAll(RegExp(r'</(p|div)>', caseSensitive: false), '\n')
         .replaceAll(RegExp(r'<[^>]*>'), '');
     _entities.forEach((entity, char) => text = text.replaceAll(entity, char));
-    text = text.replaceAllMapped(RegExp(r'&#(\d+);'),
-        (m) => String.fromCharCode(int.tryParse(m.group(1)!) ?? 32));
+    text = text.replaceAllMapped(
+      RegExp(r'&#(\d+);'),
+      (m) => String.fromCharCode(int.tryParse(m.group(1)!) ?? 32),
+    );
     return text
         .split('\n')
         .map((it) => it.trim())

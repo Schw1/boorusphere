@@ -21,8 +21,7 @@ class PostNotesOverlay extends HookConsumerWidget {
         ? size.width / imageWidth
         : size.height / imageHeight;
     final w = imageWidth * scale, h = imageHeight * scale;
-    return Rect.fromLTWH(
-        (size.width - w) / 2, (size.height - h) / 2, w, h);
+    return Rect.fromLTWH((size.width - w) / 2, (size.height - h) / 2, w, h);
   }
 
   @override
@@ -35,48 +34,55 @@ class PostNotesOverlay extends HookConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final size = constraints.biggest;
-      final image =
-          imageRect(size, post.width.toDouble(), post.height.toDouble());
-      final scale = image.width / post.width;
-      Rect boxOf(PostNote note) => Rect.fromLTWH(
-            image.left + note.x * scale,
-            image.top + note.y * scale,
-            note.width * scale,
-            note.height * scale,
-          );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final image = imageRect(
+          size,
+          post.width.toDouble(),
+          post.height.toDouble(),
+        );
+        final scale = image.width / post.width;
+        Rect boxOf(PostNote note) => Rect.fromLTWH(
+          image.left + note.x * scale,
+          image.top + note.y * scale,
+          note.width * scale,
+          note.height * scale,
+        );
 
-      final index = selected.value;
-      return Stack(
-        children: [
-          for (var i = 0; i < notes.length; i++)
-            Positioned.fromRect(
-              rect: boxOf(notes[i]),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => selected.value = selected.value == i ? null : i,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.yellow.withValues(alpha: 0.12),
-                    border: Border.all(
-                      color: i == index ? Colors.yellowAccent : Colors.black54,
-                      width: i == index ? 2 : 1,
+        final index = selected.value;
+        return Stack(
+          children: [
+            for (var i = 0; i < notes.length; i++)
+              Positioned.fromRect(
+                rect: boxOf(notes[i]),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => selected.value = selected.value == i ? null : i,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.yellow.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: i == index
+                            ? Colors.yellowAccent
+                            : Colors.black54,
+                        width: i == index ? 2 : 1,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          if (index != null && index < notes.length)
-            _Bubble(
-              text: notes[index].text,
-              box: boxOf(notes[index]),
-              area: size,
-              onTap: () => selected.value = null,
-            ),
-        ],
-      );
-    });
+            if (index != null && index < notes.length)
+              _Bubble(
+                text: notes[index].text,
+                box: boxOf(notes[index]),
+                area: size,
+                onTap: () => selected.value = null,
+              ),
+          ],
+        );
+      },
+    );
   }
 }
 

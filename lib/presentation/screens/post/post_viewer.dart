@@ -23,11 +23,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class PostViewer extends HookConsumerWidget {
-  const PostViewer({
-    super.key,
-    required this.initial,
-    required this.posts,
-  });
+  const PostViewer({super.key, required this.initial, required this.posts});
 
   final int initial;
   final Iterable<Post> posts;
@@ -56,17 +52,20 @@ class PostViewer extends HookConsumerWidget {
     final timelineController = ref.watch(timelineControllerProvider);
     const loadMoreThreshold = 90;
     final currentPage = useState(initial);
-    final pageController =
-        useExtendedPageController(initialPage: currentPage.value);
+    final pageController = useExtendedPageController(
+      initialPage: currentPage.value,
+    );
     final fullscreen = ref.watch(fullscreenStateProvider);
 
-    final post =
-        posts.isEmpty ? Post.empty : posts.elementAt(currentPage.value);
+    final post = posts.isEmpty
+        ? Post.empty
+        : posts.elementAt(currentPage.value);
     final showAppbar = useState(true);
     final isLoadingMore = useState(false);
     final loadMore = timelineController.onLoadMore;
-    final loadOriginal =
-        ref.watch(contentSettingStateProvider.select((it) => it.loadOriginal));
+    final loadOriginal = ref.watch(
+      contentSettingStateProvider.select((it) => it.loadOriginal),
+    );
     final precachePosts = usePrecachePosts(ref, posts);
 
     useEffect(() {
@@ -181,10 +180,7 @@ class PostViewer extends HookConsumerWidget {
 }
 
 class _PostAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _PostAppBar({
-    required this.title,
-    required this.subtitle,
-  });
+  const _PostAppBar({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -212,10 +208,7 @@ class _PostAppBar extends StatelessWidget implements PreferredSizeWidget {
                 style: const TextStyle(fontWeight: FontWeight.w300),
               ),
             ),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 11),
-            ),
+            Text(subtitle, style: const TextStyle(fontSize: 11)),
           ],
         ),
       ),

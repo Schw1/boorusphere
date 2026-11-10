@@ -1,11 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-enum HidingDirection {
-  toStart,
-  toTop,
-  toEnd,
-  toBottom;
-}
+enum HidingDirection { toStart, toTop, toEnd, toBottom }
 
 class SlideFadeVisibility extends StatelessWidget {
   const SlideFadeVisibility({
@@ -31,8 +26,6 @@ class SlideFadeVisibility extends StatelessWidget {
         return const Offset(-1, 0);
       case HidingDirection.toEnd:
         return const Offset(1, 0);
-      default:
-        return Offset.zero;
     }
   }
 

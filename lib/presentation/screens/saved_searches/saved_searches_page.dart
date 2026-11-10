@@ -35,9 +35,11 @@ class SavedSearchesPage extends HookConsumerWidget {
     final current = session;
     // getById: the home page's session may still have no server id (then
     // it shows the first server).
-    final currentServer =
-        current == null ? Server.empty : servers.getById(current.serverId);
-    final canSaveCurrent = current != null &&
+    final currentServer = current == null
+        ? Server.empty
+        : servers.getById(current.serverId);
+    final canSaveCurrent =
+        current != null &&
         currentServer != Server.empty &&
         !notifier.contains(currentServer.id, current.query);
 
@@ -48,9 +50,13 @@ class SavedSearchesPage extends HookConsumerWidget {
               onPressed: () async {
                 await notifier.add(currentServer.id, current.query);
                 if (!context.mounted) return;
-                context.scaffoldMessenger.showSnackBar(SnackBar(
-                  content: Text(t.saved(query: _label(context, current.query))),
-                ));
+                context.scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      t.saved(query: _label(context, current.query)),
+                    ),
+                  ),
+                );
               },
               icon: const Icon(Icons.bookmark_add_outlined),
               label: Text(t.saveCurrent),
@@ -110,8 +116,8 @@ class _Tile extends ConsumerWidget {
     final subtitle = serverName == null
         ? t.serverMissing
         : search.canCount
-            ? serverName!
-            : '${serverName!} · ${t.noCount}';
+        ? serverName!
+        : '${serverName!} · ${t.noCount}';
 
     return ListTile(
       leading: Favicon(url: homepage, shape: BoxShape.circle, iconSize: 21),
@@ -140,10 +146,14 @@ class _Tile extends ConsumerWidget {
       ),
       enabled: serverName != null,
       onTap: () {
-        context.router.push(HomeRoute(
-          session: SearchSession(
-              serverId: search.serverId, query: search.query),
-        ));
+        context.router.push(
+          HomeRoute(
+            session: SearchSession(
+              serverId: search.serverId,
+              query: search.query,
+            ),
+          ),
+        );
       },
     );
   }

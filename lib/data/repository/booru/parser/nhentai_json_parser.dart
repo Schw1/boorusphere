@@ -93,15 +93,16 @@ class NhentaiJsonParser extends BooruParser {
   /// is one word.
   static final _words = RegExp(r'-?[^\s"]*"[^"]*"?|\S+');
 
-  static ({String query, String sort, bool hadOrder}) splitQuery(
-      String tags) {
+  static ({String query, String sort, bool hadOrder}) splitQuery(String tags) {
     var sort = '';
     var hadOrder = false;
     final words = <String>[];
     for (final word in _words.allMatches(tags).map((it) => it.group(0)!)) {
       if (word.isEmpty || word == '*' || word.startsWith('rating:')) continue;
-      final m = RegExp(r'^(?:order|sort):(.+)$', caseSensitive: false)
-          .firstMatch(word);
+      final m = RegExp(
+        r'^(?:order|sort):(.+)$',
+        caseSensitive: false,
+      ).firstMatch(word);
       if (m != null) {
         final alias = sortAliases[m.group(1)!.toLowerCase()];
         if (alias != null) {
@@ -139,9 +140,9 @@ class NhentaiJsonParser extends BooruParser {
 
   @override
   Iterable<Post> parsePage(Server server, Response res) => postsOf(
-        server,
-        res.data['result'] is List ? res.data['result'] as List : const [],
-      );
+    server,
+    res.data['result'] is List ? res.data['result'] as List : const [],
+  );
 
   /// Posts of a list of galleries, in the shape of search results. Also
   /// takes the shape of a full gallery (thumbnail as `{path, width,
@@ -160,7 +161,8 @@ class NhentaiJsonParser extends BooruParser {
   static Post? postOf(Server server, Map<String, dynamic> post) {
     if (pick(post, 'blacklisted').asBoolOrFalse()) return null;
     final id = pick(post, 'id').asIntOrNull() ?? -1;
-    final pages = pick(post, 'num_pages').asIntOrNull() ??
+    final pages =
+        pick(post, 'num_pages').asIntOrNull() ??
         (post['pages'] is List ? (post['pages'] as List).length : 0);
     final thumbData = post['thumbnail'];
     final thumbPath = thumbData is Map ? thumbData['path'] : thumbData;
@@ -205,7 +207,8 @@ class NhentaiJsonParser extends BooruParser {
       title: title,
       // tag ids -> search tokens, once the tag list is loaded
       tags: NhentaiTags.instance.tokensOf(
-          pick(post, 'tag_ids').asListOrEmpty((it) => it.asIntOrNull() ?? -1)),
+        pick(post, 'tag_ids').asListOrEmpty((it) => it.asIntOrNull() ?? -1),
+      ),
     );
   }
 
@@ -214,8 +217,8 @@ class NhentaiJsonParser extends BooruParser {
     final list = data is List
         ? data
         : data is Map && data['result'] is List
-            ? data['result'] as List
-            : const [];
+        ? data['result'] as List
+        : const [];
     return postsOf(server, list);
   }
 }
@@ -238,13 +241,16 @@ class NhentaiGallery {
     final pretty = text(title['english']).isNotEmpty
         ? text(title['english'])
         : text(title['pretty']).isNotEmpty
-            ? text(title['pretty'])
-            : text(title['japanese']);
+        ? text(title['pretty'])
+        : text(title['japanese']);
 
     final pages = <String>[];
     for (final page in data['pages'] as List) {
       final url = page is Map
-          ? NhentaiJsonParser.mediaUrl(NhentaiJsonParser.imageHost, page['path'])
+          ? NhentaiJsonParser.mediaUrl(
+              NhentaiJsonParser.imageHost,
+              page['path'],
+            )
           : '';
       if (url.isNotEmpty) pages.add(url);
     }
@@ -262,7 +268,9 @@ class NhentaiGallery {
 
     final cover = data['cover'] is Map ? (data['cover'] as Map)['path'] : null;
     return NhentaiGallery(
-      id: data['id'] is int ? data['id'] as int : int.tryParse('${data['id']}') ?? -1,
+      id: data['id'] is int
+          ? data['id'] as int
+          : int.tryParse('${data['id']}') ?? -1,
       title: pretty,
       cover: NhentaiJsonParser.mediaUrl(NhentaiJsonParser.thumbHost, cover),
       pages: pages,

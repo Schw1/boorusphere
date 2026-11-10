@@ -40,11 +40,11 @@ class MonbooruHistoryEntry {
       jobId > 0 && (report == null || (report?.unconfirmed ?? false));
 
   Map<String, dynamic> toJson() => {
-        'post': post.toJson(),
-        'time': time.millisecondsSinceEpoch,
-        'jobId': jobId,
-        if (report case final report?) 'report': reportToJson(report),
-      };
+    'post': post.toJson(),
+    'time': time.millisecondsSinceEpoch,
+    'jobId': jobId,
+    if (report case final report?) 'report': reportToJson(report),
+  };
 
   static MonbooruHistoryEntry? fromJson(Object? json) {
     if (json is! Map || json['post'] is! Map) return null;
@@ -52,7 +52,8 @@ class MonbooruHistoryEntry {
       return MonbooruHistoryEntry(
         post: Post.fromJson(Map<String, dynamic>.from(json['post'])),
         time: DateTime.fromMillisecondsSinceEpoch(
-            json['time'] is int ? json['time'] as int : 0),
+          json['time'] is int ? json['time'] as int : 0,
+        ),
         jobId: json['jobId'] is int ? json['jobId'] as int : 0,
         report: reportFromJson(json['report']),
       );
@@ -62,14 +63,14 @@ class MonbooruHistoryEntry {
   }
 
   static Map<String, dynamic> reportToJson(MonbooruSendReport report) => {
-        if (report.outcome case final outcome?) 'outcome': outcome.name,
-        if (report.error case final error?) ...{
-          'error': error.kind.name,
-          'detail': error.detail,
-        },
-        if (report.jobError.isNotEmpty) 'jobError': report.jobError,
-        if (report.unconfirmed) 'unconfirmed': true,
-      };
+    if (report.outcome case final outcome?) 'outcome': outcome.name,
+    if (report.error case final error?) ...{
+      'error': error.kind.name,
+      'detail': error.detail,
+    },
+    if (report.jobError.isNotEmpty) 'jobError': report.jobError,
+    if (report.unconfirmed) 'unconfirmed': true,
+  };
 
   static MonbooruSendReport? reportFromJson(Object? json) {
     if (json is! Map) return null;
@@ -153,7 +154,11 @@ class MonbooruHistory {
       }
     }
     final entry = MonbooruHistoryEntry(
-        post: post, time: time, jobId: id, report: report);
+      post: post,
+      time: time,
+      jobId: id,
+      report: report,
+    );
     await box.put(key, jsonEncode(entry.toJson()));
     if (box.length > limit) {
       final oldest = _entries(box).skip(limit).map((it) => it.post.viewId);

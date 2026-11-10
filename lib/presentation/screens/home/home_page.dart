@@ -38,8 +38,9 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final savedServerId =
-        ref.read(serverSettingStateProvider.select((it) => it.lastActiveId));
+    final savedServerId = ref.read(
+      serverSettingStateProvider.select((it) => it.lastActiveId),
+    );
     final session = this.session ?? SearchSession(serverId: savedServerId);
     final envRepo = ref.read(envRepoProvider);
     final appStateRepo = ref.read(appStateRepoProvider);
@@ -64,9 +65,7 @@ class HomePage extends HookConsumerWidget {
         child: ProviderScope(
           overrides: [
             searchSessionProvider.overrideWith((ref) => session),
-            pageStateProvider.overrideWith(
-              () => PageState(session: session),
-            ),
+            pageStateProvider.overrideWith(() => PageState(session: session)),
             suggestionStateProvider.overrideWith(
               () => SuggestionState(session: session),
             ),
@@ -112,7 +111,8 @@ class _Home extends HookConsumerWidget {
     }
 
     return PopScope(
-      canPop: (allowPop.value || context.router.canPop()) &&
+      canPop:
+          (allowPop.value || context.router.canPop()) &&
           !drawer.isOpen &&
           !searchBar.isOpen,
       onPopInvokedWithResult: (didPop, _) async {
@@ -129,10 +129,12 @@ class _Home extends HookConsumerWidget {
 
         if (!allowPop.value && !context.router.canPop()) {
           allowPop.value = true;
-          context.scaffoldMessenger.showSnackBar(SnackBar(
-            content: Text(context.t.retryPopBack),
-            duration: maybePopTimeout,
-          ));
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(context.t.retryPopBack),
+              duration: maybePopTimeout,
+            ),
+          );
           maybePopTimer.cancel();
           maybePopTimer.reset();
         }
@@ -164,8 +166,9 @@ class _SlidableContainer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final animator =
-        useAnimationController(duration: const Duration(milliseconds: 300));
+    final animator = useAnimationController(
+      duration: const Duration(milliseconds: 300),
+    );
     final tween = CurveTween(curve: Curves.easeInOutSine).animate(animator);
     final maxDrawerWidth =
         (context.mediaQuery.size.width).clamp(0.0, 410.0) - 84;
@@ -216,7 +219,8 @@ class _SlidableContainer extends HookConsumerWidget {
         if (animator.isCompleted || animator.isDismissed) return;
 
         if (details.velocity.pixelsPerSecond.dx.abs() >= 365) {
-          final visualVelocity = details.velocity.pixelsPerSecond.dx /
+          final visualVelocity =
+              details.velocity.pixelsPerSecond.dx /
               context.mediaQuery.size.width;
 
           await animator.fling(velocity: visualVelocity);
@@ -239,7 +243,10 @@ class _SlidableContainer extends HookConsumerWidget {
               Transform(
                 transform: Matrix4.identity()
                   ..setTranslationRaw(
-                      (1 - tween.value) * (maxDrawerWidth / 2), 0, 0)
+                    (1 - tween.value) * (maxDrawerWidth / 2),
+                    0,
+                    0,
+                  )
                   ..translate(slide - maxDrawerWidth),
                 alignment: Alignment.centerLeft,
                 child: HomeDrawer(maxWidth: maxDrawerWidth),

@@ -20,10 +20,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class PostImage extends HookConsumerWidget {
-  const PostImage({
-    super.key,
-    required this.post,
-  });
+  const PostImage({super.key, required this.post});
 
   final Post post;
 
@@ -34,8 +31,9 @@ class PostImage extends HookConsumerWidget {
         contentSetting.blurExplicit && !contentSetting.blurTimelineOnly;
     final headers = ref.watch(postHeadersFactoryProvider(post));
     final isBlur = useState(post.rating.isExplicit && shouldBlurExplicit);
-    final zoomAnimator =
-        useAnimationController(duration: const Duration(milliseconds: 150));
+    final zoomAnimator = useAnimationController(
+      duration: const Duration(milliseconds: 150),
+    );
     final imageLoadState = useStreamController<ExtendedImageState>();
     // Notes are only drawn while the image isn't zoomed.
     final zoomed = useMemoized(() => ValueNotifier(false));
@@ -122,7 +120,9 @@ class PostImage extends HookConsumerWidget {
 
                 void onAnimating() {
                   state.handleDoubleTap(
-                      scale: animation.value, doubleTapPosition: downOffset);
+                    scale: animation.value,
+                    doubleTapPosition: downOffset,
+                  );
                 }
 
                 if (zoomAnimator.isCompleted) {
@@ -171,9 +171,7 @@ class PostImage extends HookConsumerWidget {
 }
 
 class _PostImageStatus extends StatelessWidget {
-  const _PostImageStatus({
-    required this.state,
-  });
+  const _PostImageStatus({required this.state});
 
   final ExtendedImageState state;
 
@@ -194,8 +192,9 @@ class _PostImageStatus extends StatelessWidget {
             )
           : QuickBar.progress(
               title: loadPercent > 1 ? Text('$loadPercent%') : null,
-              progress:
-                  state.isCompleted ? 1 : state.loadingProgress?.progressRatio,
+              progress: state.isCompleted
+                  ? 1
+                  : state.loadingProgress?.progressRatio,
             ),
     );
   }

@@ -118,7 +118,8 @@ class UserServerRepo implements ServerRepo {
         (withCredentials
                 ? server
                 : server.copyWith(
-                    urlSuffix: UrlSuffixCredentials.strip(server.urlSuffix)))
+                    urlSuffix: UrlSuffixCredentials.strip(server.urlSuffix),
+                  ))
             .toJson(),
     ]);
   }

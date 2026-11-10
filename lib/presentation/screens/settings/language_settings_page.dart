@@ -55,7 +55,7 @@ class _Content extends ConsumerWidget {
               updateLocale(locale);
             },
           );
-        })
+        }),
       ],
     );
   }

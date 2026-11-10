@@ -1,8 +1,6 @@
 import 'package:boorusphere/data/repository/booru/entity/booru_error.dart';
-import 'package:boorusphere/data/repository/booru/parser/booruonrails_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
-import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/provider/booru/entity/fetch_result.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -12,10 +10,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'suggestion_state.g.dart';
 
 class Suggestion {
+  const Suggestion(this.name, this.count);
   final String name;
   final int count;
-
-  const Suggestion(this.name, this.count);
 }
 
 @riverpod
@@ -56,8 +53,9 @@ class SuggestionState extends _$SuggestionState {
     state = FetchResult.loading(state.data);
     _lastWord = word;
     try {
-      final res =
-          await ref.read(imageboardRepoProvider(server)).getSuggestion(word);
+      final res = await ref
+          .read(imageboardRepoProvider(server))
+          .getSuggestion(word);
       // Riverpod 3: using ref/state after the provider was disposed throws.
       if (!ref.mounted) return;
       // Blocked everywhere or on this server, as in the timeline.

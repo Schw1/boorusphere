@@ -35,8 +35,7 @@ void main() async {
       expect(state().length, 3);
     });
 
-    test('a favorite is recognized after its score and tags changed',
-        () async {
+    test('a favorite is recognized after its score and tags changed', () async {
       // what the server returns for the same post some days later
       final later = posts.first.copyWith(
         score: posts.first.score + 25,

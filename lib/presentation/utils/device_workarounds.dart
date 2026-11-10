@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:boorusphere/utils/logger.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 class DeviceWorkarounds {
@@ -25,13 +24,13 @@ class DeviceWorkarounds {
     }
   }
 
-  static isOppo(Map<String, String> props) {
+  static bool isOppo(Map<String, String> props) {
     final brand = [
       'ro.product.brand',
       'ro.product.system.brand',
       'ro.product.system_ext.brand',
       'ro.product.vendor.brand',
-    ].map((x) => props[x]?.toLowerCase()).whereNotNull();
+    ].map((x) => props[x]?.toLowerCase()).nonNulls;
     final oppo = ['oppo', 'oplus', 'oneplus', 'realme']; // same shit
 
     return oppo.any(brand.contains);

@@ -33,10 +33,9 @@ class MonbooruHistoryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useValueListenable(MonbooruHistory.changes);
-    final entries = useFuture(useMemoized(
-      MonbooruHistory.all,
-      [MonbooruHistory.changes.value],
-    ));
+    final entries = useFuture(
+      useMemoized(MonbooruHistory.all, [MonbooruHistory.changes.value]),
+    );
     // Swiped away: hidden at once, before the store has caught up (a
     // dismissed item must leave the list in the same frame).
     final removed = useState(<String>{});
@@ -53,10 +52,12 @@ class MonbooruHistoryPage extends HookConsumerWidget {
 
     return ProviderScope(
       overrides: [
-        searchSessionProvider
-            .overrideWith((ref) => session ?? const SearchSession()),
+        searchSessionProvider.overrideWith(
+          (ref) => session ?? const SearchSession(),
+        ),
         timelineControllerProvider.overrideWith(
-            (ref) => TimelineController(scrollController: scrollController)),
+          (ref) => TimelineController(scrollController: scrollController),
+        ),
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -106,8 +107,10 @@ class MonbooruHistoryPage extends HookConsumerWidget {
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         color: context.colorScheme.error,
-                        child: Icon(Icons.delete_outline,
-                            color: context.colorScheme.onError),
+                        child: Icon(
+                          Icons.delete_outline,
+                          color: context.colorScheme.onError,
+                        ),
                       ),
                       onDismissed: (_) {
                         final post = list[index].post;
@@ -116,9 +119,11 @@ class MonbooruHistoryPage extends HookConsumerWidget {
                       },
                       child: _Tile(
                         entry: list[index],
-                        onTap: () => PostViewer.open(context,
-                            index: index,
-                            posts: [for (final it in list) it.post]),
+                        onTap: () => PostViewer.open(
+                          context,
+                          index: index,
+                          posts: [for (final it in list) it.post],
+                        ),
                       ),
                     ),
                   ),
@@ -163,25 +168,28 @@ class _Tile extends HookConsumerWidget {
     final post = entry.post;
     final server = ref.watch(serverStateProvider).findById(post.serverId);
     final headers = ref.watch(postHeadersFactoryProvider(post));
-    final blur =
-        ref.watch(contentSettingStateProvider.select((it) => it.blurExplicit));
+    final blur = ref.watch(
+      contentSettingStateProvider.select((it) => it.blurExplicit),
+    );
     final states = useValueListenable(MonbooruQueue.instance.states);
     final busy = states[post.viewId]?.isBusy ?? false;
     final report = entry.report;
 
     final (icon, color) = switch (entry) {
       _ when busy || entry.isPending => (
-          Icons.hourglass_top,
-          context.colorScheme.onSurfaceVariant
-        ),
+        Icons.hourglass_top,
+        context.colorScheme.onSurfaceVariant,
+      ),
       _ when entry.isFailed => (Icons.error_outline, Colors.redAccent),
       _ when (report?.unconfirmed ?? false) => (
-          Icons.help_outline,
-          context.colorScheme.onSurfaceVariant
-        ),
+        Icons.help_outline,
+        context.colorScheme.onSurfaceVariant,
+      ),
       _ => (Icons.cloud_done, Colors.lightGreen),
     };
-    final status = busy || report == null ? t.pending : report.describe(context);
+    final status = busy || report == null
+        ? t.pending
+        : report.describe(context);
     final time = DateFormat.yMd().add_Hm().format(entry.time);
     final title = post.title.isNotEmpty ? post.title : '#${post.id}';
 
@@ -241,17 +249,21 @@ class _Tile extends HookConsumerWidget {
       case _Action.resend:
         final messenger = ScaffoldMessenger.of(context);
         final sent = context.t.monbooru.sent;
-        final error = await MonbooruQueue.instance.send(entry.post,
-            onReport: (report) {
-          showRootSnackBar((c) => report.describe(c));
-        });
+        final error = await MonbooruQueue.instance.send(
+          entry.post,
+          onReport: (report) {
+            showRootSnackBar((c) => report.describe(c));
+          },
+        );
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(
-            content: Builder(
-              builder: (c) => Text(error?.describe(c) ?? sent),
+          ..showSnackBar(
+            SnackBar(
+              content: Builder(
+                builder: (c) => Text(error?.describe(c) ?? sent),
+              ),
             ),
-          ));
+          );
       case _Action.remove:
         await MonbooruHistory.remove(entry.post);
     }

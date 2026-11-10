@@ -19,7 +19,7 @@ class ServerPins {
     final box = await _box();
     pinned.value = {
       for (final key in box.keys)
-        if (key is String && box.get(key) == true) key,
+        if (key is String && (box.get(key) ?? false)) key,
     };
   }
 
@@ -32,7 +32,10 @@ class ServerPins {
   static Future<void> import(Object? data) async {
     if (data is! List) return;
     final box = await _box();
-    final ids = {for (final id in data) if (id is String && id.isNotEmpty) id};
+    final ids = {
+      for (final id in data)
+        if (id is String && id.isNotEmpty) id,
+    };
     for (final id in ids) {
       await box.put(id, true);
     }

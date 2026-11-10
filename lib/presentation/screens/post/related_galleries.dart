@@ -19,7 +19,11 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 /// it in the viewer, where the others can be swiped through. Nothing is
 /// shown while loading or when there are none.
 class RelatedGalleries extends HookConsumerWidget {
-  const RelatedGalleries({super.key, required this.post, required this.session});
+  const RelatedGalleries({
+    super.key,
+    required this.post,
+    required this.session,
+  });
 
   final Post post;
   final SearchSession session;
@@ -39,7 +43,8 @@ class RelatedGalleries extends HookConsumerWidget {
       overrides: [
         searchSessionProvider.overrideWith((ref) => session),
         timelineControllerProvider.overrideWith(
-            (ref) => TimelineController(scrollController: scrollController)),
+          (ref) => TimelineController(scrollController: scrollController),
+        ),
       ],
       child: ListTile(
         title: Text(context.t.gallery.related),
@@ -81,8 +86,9 @@ class _Item extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final headers = ref.watch(postHeadersFactoryProvider(post));
-    final blur =
-        ref.watch(contentSettingStateProvider.select((it) => it.blurExplicit));
+    final blur = ref.watch(
+      contentSettingStateProvider.select((it) => it.blurExplicit),
+    );
     Widget image = ExtendedImage.network(
       post.previewFile,
       headers: headers,
@@ -120,7 +126,9 @@ class _Item extends ConsumerWidget {
                       top: 4,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black54,
                           borderRadius: BorderRadius.circular(6),
@@ -128,7 +136,9 @@ class _Item extends ConsumerWidget {
                         child: Text(
                           '${post.pageCount}',
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 11),
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ),

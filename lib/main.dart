@@ -30,8 +30,8 @@ import 'package:boorusphere/presentation/utils/device_workarounds.dart';
 import 'package:boorusphere/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:media_kit/media_kit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 
 void main() async {
   setupLogger();
@@ -76,8 +76,9 @@ void main() async {
       // behavior (errors surface right away, e.g. a booru being offline).
       retry: (retryCount, error) => null,
       overrides: [
-        sharedStorageHandleProvider
-            .overrideWithValue(await provideSharedStorageHandle()),
+        sharedStorageHandleProvider.overrideWithValue(
+          await provideSharedStorageHandle(),
+        ),
         cookieJarProvider.overrideWithValue(await provideCookieJar()),
         defaultServersProvider.overrideWithValue(await provideDefaultServers()),
         envRepoProvider.overrideWithValue(await provideEnvRepo()),

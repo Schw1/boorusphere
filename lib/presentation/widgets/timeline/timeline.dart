@@ -30,11 +30,15 @@ class Timeline extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final grid = ref.watch(uiSettingStateProvider.select((ui) => ui.grid));
     final screenWidth = context.mediaQuery.size.width;
-    final flexibleGrid = ((screenWidth / 200).round() + grid).clamp(1, 12).toInt();
-    final scrollController = ref
-        .watch(timelineControllerProvider.select((it) => it.scrollController));
-    final blurExplicit =
-        ref.watch(contentSettingStateProvider.select((it) => it.blurExplicit));
+    final flexibleGrid = ((screenWidth / 200).round() + grid)
+        .clamp(1, 12)
+        .toInt();
+    final scrollController = ref.watch(
+      timelineControllerProvider.select((it) => it.scrollController),
+    );
+    final blurExplicit = ref.watch(
+      contentSettingStateProvider.select((it) => it.blurExplicit),
+    );
     final selection = PostSelection.of(context);
 
     return SliverMasonryGrid.count(
@@ -109,27 +113,38 @@ class _ThumbnailCard extends HookConsumerWidget {
             selected: selected,
             post: post,
             child: Hero(
-            tag: post.viewId,
-            flightShuttleBuilder: (flightContext, animation, flightDirection,
-                fromHeroContext, toHeroContext) {
-              final Hero toHero = toHeroContext.widget as Hero;
-              final isLong = post.aspectRatio < 0.5;
-              final isPop = flightDirection == HeroFlightDirection.pop;
+              tag: post.viewId,
+              flightShuttleBuilder:
+                  (
+                    flightContext,
+                    animation,
+                    flightDirection,
+                    fromHeroContext,
+                    toHeroContext,
+                  ) {
+                    final Hero toHero = toHeroContext.widget as Hero;
+                    final isLong = post.aspectRatio < 0.5;
+                    final isPop = flightDirection == HeroFlightDirection.pop;
 
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  AspectRatio(
-                    aspectRatio: isPop && isLong ? 0.5 : post.aspectRatio,
-                    // clip incoming child to avoid overflow that might be
-                    // caused by blurExplicit enabled
-                    child: isPop ? ClipRect(child: toHero.child) : toHero.child,
-                  ),
-                ],
-              );
-            },
-            child: _ThumbnailImage(
-                post: post, blurExplicit: blurExplicit, gridSize: gridSize),
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        AspectRatio(
+                          aspectRatio: isPop && isLong ? 0.5 : post.aspectRatio,
+                          // clip incoming child to avoid overflow that might be
+                          // caused by blurExplicit enabled
+                          child: isPop
+                              ? ClipRect(child: toHero.child)
+                              : toHero.child,
+                        ),
+                      ],
+                    );
+                  },
+              child: _ThumbnailImage(
+                post: post,
+                blurExplicit: blurExplicit,
+                gridSize: gridSize,
+              ),
             ),
           ),
         ),
@@ -195,10 +210,7 @@ class _ThumbnailImage extends ConsumerWidget {
               return Stack(
                 alignment: Alignment.center,
                 fit: StackFit.passthrough,
-                children: [
-                  ...previousChildren,
-                  if (currentChild != null) currentChild,
-                ],
+                children: [...previousChildren, ?currentChild],
               );
             },
           );
@@ -209,10 +221,7 @@ class _ThumbnailImage extends ConsumerWidget {
     return isLong
         ? Stack(
             alignment: Alignment.bottomCenter,
-            children: [
-              image,
-              const _LongThumbnailIndicator(),
-            ],
+            children: [image, const _LongThumbnailIndicator()],
           )
         : image;
   }
@@ -224,7 +233,7 @@ class _LongThumbnailIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: context.colorScheme.surface.withOpacity(0.8),
+      color: context.colorScheme.surface.withValues(alpha: 0.8),
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: const RoundedRectangleBorder(
@@ -242,9 +251,7 @@ class _LongThumbnailIndicator extends StatelessWidget {
 }
 
 class _Placeholder extends StatelessWidget {
-  const _Placeholder({
-    this.isFailed = false,
-  });
+  const _Placeholder({this.isFailed = false});
 
   final bool isFailed;
 
@@ -270,15 +277,12 @@ class _Placeholder extends StatelessWidget {
           baseColor,
           highlightColor,
           baseColor,
-          baseColor
+          baseColor,
         ],
         stops: const <double>[0.0, 0.35, 0.5, 0.65, 1.0],
       ),
       period: const Duration(milliseconds: 700),
-      child: Container(
-        color: Colors.black,
-        child: const SizedBox.expand(),
-      ),
+      child: Container(color: Colors.black, child: const SizedBox.expand()),
     );
   }
 }
@@ -314,8 +318,7 @@ class _SelectionMark extends StatelessWidget {
             bottom: 6,
             child: IgnorePointer(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(6),
@@ -323,17 +326,24 @@ class _SelectionMark extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.menu_book_outlined,
-                        size: 12, color: Colors.white),
+                    const Icon(
+                      Icons.menu_book_outlined,
+                      size: 12,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 3),
                     ValueListenableBuilder(
                       valueListenable: ReadingProgress.changes,
-                      builder: (context, _, __) {
+                      builder: (context, _, _) {
                         final read = ReadingProgress.pageOfSync(post);
                         return Text(
-                          read != null && read > 0 ? '${read + 1}/$pages' : '$pages',
+                          read != null && read > 0
+                              ? '${read + 1}/$pages'
+                              : '$pages',
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 11),
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
                         );
                       },
                     ),
@@ -343,28 +353,28 @@ class _SelectionMark extends StatelessWidget {
             ),
           ),
         if (selected) ...[
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: scheme.primary.withAlpha(70),
-                border: Border.all(color: scheme.primary, width: 3),
-                borderRadius: BorderRadius.circular(5),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: scheme.primary.withAlpha(70),
+                  border: Border.all(color: scheme.primary, width: 3),
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          top: 6,
-          right: 6,
-          child: IgnorePointer(
-            child: CircleAvatar(
-              radius: 12,
-              backgroundColor: scheme.primary,
-              child: Icon(Icons.check, size: 16, color: scheme.onPrimary),
+          Positioned(
+            top: 6,
+            right: 6,
+            child: IgnorePointer(
+              child: CircleAvatar(
+                radius: 12,
+                backgroundColor: scheme.primary,
+                child: Icon(Icons.check, size: 16, color: scheme.onPrimary),
+              ),
             ),
           ),
-        ),
         ],
       ],
     );

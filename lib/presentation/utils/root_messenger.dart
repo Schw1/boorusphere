@@ -6,8 +6,10 @@ final rootMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 /// Shows [text] with the app-wide messenger. [build] gets a context below
 /// the app's translations.
-void showRootSnackBar(String Function(BuildContext context) build,
-    {Duration duration = const Duration(seconds: 4)}) {
+void showRootSnackBar(
+  String Function(BuildContext context) build, {
+  Duration duration = const Duration(seconds: 4),
+}) {
   final state = rootMessengerKey.currentState;
   final context = rootMessengerKey.currentContext;
   if (state == null || context == null) return;

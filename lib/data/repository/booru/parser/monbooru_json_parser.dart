@@ -38,9 +38,9 @@ class MonbooruJsonParser extends BooruParser {
 
   @override
   List<BooruParserType> get type => [
-        BooruParserType.search,
-        BooruParserType.suggestion,
-      ];
+    BooruParserType.search,
+    BooruParserType.suggestion,
+  ];
 
   /// Page [n] (1-based) of an archive. The `name` gives the viewer an image
   /// extension; Monbooru serves the page in its own format.
@@ -90,11 +90,11 @@ class MonbooruJsonParser extends BooruParser {
   static const _needsStill = {'avif', 'jxl'};
 
   static String _rateValue(String rating) => switch (rating) {
-        'general' => 's',
-        'sensitive' => 'sensitive',
-        'explicit' => 'e',
-        _ => 'q',
-      };
+    'general' => 's',
+    'sensitive' => 'sensitive',
+    'explicit' => 'e',
+    _ => 'q',
+  };
 
   @override
   List<Post> parsePage(Server server, Response res) {
@@ -110,12 +110,14 @@ class MonbooruJsonParser extends BooruParser {
       final ext = _extByType[fileType];
       if (ext == null) continue;
       final isArchive = fileType == 'cbz';
-      final pageCount =
-          isArchive ? (pick(post, 'page_count').asIntOrNull() ?? 0) : 0;
+      final pageCount = isArchive
+          ? (pick(post, 'page_count').asIntOrNull() ?? 0)
+          : 0;
       // An archive without pages can't be shown.
       if (isArchive && pageCount <= 0) continue;
 
-      final hash = pick(post, 'md5').asStringOrNull() ??
+      final hash =
+          pick(post, 'md5').asStringOrNull() ??
           pick(post, 'sha256').asStringOrNull() ??
           '$id';
       final name = Uri.encodeQueryComponent('$hash.$ext');
@@ -125,8 +127,8 @@ class MonbooruJsonParser extends BooruParser {
           // The cover; the reader loads the other pages the same way.
           ? pageUrl(api, id, 1, hash)
           : _needsStill.contains(fileType)
-              ? '$base/still?name=${Uri.encodeQueryComponent('$hash.webp')}'
-              : original;
+          ? '$base/still?name=${Uri.encodeQueryComponent('$hash.webp')}'
+          : original;
       final preview =
           '$base/thumbnail?name=${Uri.encodeQueryComponent('$hash.jpg')}';
 
@@ -143,7 +145,10 @@ class MonbooruJsonParser extends BooruParser {
       final meta = <String>[];
       final general = <String>[];
       var rating = '';
-      for (final tag in pick(post, 'tags').asListOrEmpty((p) => p.asMapOrEmpty())) {
+      for (final tag in pick(
+        post,
+        'tags',
+      ).asListOrEmpty((p) => p.asMapOrEmpty())) {
         final tagName = '${tag['name'] ?? ''}'.trim();
         if (tagName.isEmpty) continue;
         switch ('${tag['category'] ?? ''}') {
@@ -163,7 +168,8 @@ class MonbooruJsonParser extends BooruParser {
       }
 
       final sourceUrl = pick(post, 'url').asStringOrNull() ?? '';
-      final originalSource = pick(post, 'original_source').asStringOrNull() ?? '';
+      final originalSource =
+          pick(post, 'original_source').asStringOrNull() ?? '';
 
       result.add(
         Post(
