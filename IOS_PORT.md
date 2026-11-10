@@ -6,6 +6,7 @@ This fork builds an **unsigned IPA** and **signed Android APKs** with GitHub Act
 
 - Every push to `main` runs **Build iOS (unsigned IPA)** and uploads the artifact `boorusphere-unsigned-ipa`.
 - To publish a release: Actions → **Build iOS (unsigned IPA)** → *Run workflow*, and enter a tag such as `v1.5.4-ios.2`. The workflow builds the app, creates the tag and attaches `boorusphere-unsigned.ipa` and the APKs to the release, using `RELEASE_NOTES_IOS.md` as the release text. Runs on other branches than `main` create a pre-release (test build).
+- **Release notes:** changes are written once, as `- ` entries under `## New` in `RELEASE_NOTES_IOS.md`; `CHANGELOG.md` is not edited by hand for them. The release job (`tool/release_notes.py`) heads that section `## New in <version>` for the release text, and after a real release moves the entries under `## In <version>`, adds them as plain text to the `CHANGELOG.md` section of the base version (in-app changelog) and pushes that to `main`. A real release with an empty `## New` fails before publishing.
 - The tag is passed to both apps (`--dart-define=APP_RELEASE=…`); it is the version shown in the app and the one the update check compares (`1.5.4-ios.12` is newer than `1.5.4-ios.11`).
 
 The workflow runs on `macos-15-intel`. That only affects the build machine; the app itself is built for iPhone (arm64). The arm64 macOS runner pool frequently cancels jobs for lack of capacity.
@@ -103,6 +104,10 @@ Sideloaded apps carry `embedded.mobileprovision`; its `ExpirationDate` is read a
 - **Files:** `boorusphere-<abi>.apk` (`arm64-v8a`, `armeabi-v7a`, `x86_64`) and `boorusphere-universal.apk`.
 - **Updates:** the in-app updater asks `api.github.com/repos/Schw1/boorusphere-ios/releases/latest` and downloads the APK for the device's ABI from that release. On iOS the same check shows a link to the release page.
 - **Plain HTTP** is allowed (`usesCleartextTraffic`), see Security notes.
+
+## Dependency updates
+
+Dependabot opens one grouped PR per week for the GitHub Actions and one per month for the Dart packages (`.github/dependabot.yml`). The Dart PR only changes `pubspec.lock` within the ranges of `pubspec.yaml`, so deliberate pins and major versions stay; those are updated by hand with the Flutter SDK. CI runs on these PRs like on any other, with the Flutter version the app is built with.
 
 ## Upstream changes
 

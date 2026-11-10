@@ -34,6 +34,11 @@ jobs:
       - name: Get dependencies
         run: flutter pub get --enforce-lockfile
 
+      # RELEASE_NOTES_IOS.md must keep the "## New" section the release
+      # job builds the release text from.
+      - name: Check release notes
+        run: python3 tool/release_notes.py body v0.0.0 "$RUNNER_TEMP/notes.md" --allow-empty
+
       # Before code generation, so only committed files are checked.
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart')
