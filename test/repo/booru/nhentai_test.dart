@@ -143,7 +143,7 @@ void main() {
 
     test('page and quoted tags', () {
       final u = server.searchUrlOf(
-          PageOption(query: 'tag:"school uniform"'), page: 3);
+          const PageOption(query: 'tag:"school uniform"'), page: 3);
       expect(u, startsWith('https://nhentai.net/api/v2/search?query='));
       expect(Uri.parse(u).queryParameters['query'], 'tag:"school uniform"');
       expect(Uri.parse(u).queryParameters['page'], '3');

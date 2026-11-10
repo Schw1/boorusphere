@@ -15,10 +15,6 @@ abstract class AppVersion with _$AppVersion {
     @Default(0) int patch,
     @Default(0) int release,
   }) = _AppVersion;
-  const AppVersion._();
-
-  static final _pattern =
-      RegExp(r'^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-ios\.(\d+))?');
 
   /// Parses `1.5.4`, `1.5.4+53`, `v1.5.4-ios.12` and `1.5.4-ios.12-test.1`
   /// (the suffix after the release number is ignored).
@@ -33,6 +29,10 @@ abstract class AppVersion with _$AppVersion {
       release: at(4),
     );
   }
+  const AppVersion._();
+
+  static final _pattern =
+      RegExp(r'^v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-ios\.(\d+))?');
 
   @override
   String toString() =>

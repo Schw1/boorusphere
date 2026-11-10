@@ -73,7 +73,7 @@ class HomeSearchBar extends HookConsumerWidget {
         blur: isBlurAllowed,
         child: Container(
           decoration: BoxDecoration(
-            color: context.theme.scaffoldBackgroundColor.withOpacity(
+            color: context.theme.scaffoldBackgroundColor.withValues(alpha: 
               context.isLightThemed
                   ? isBlurAllowed
                       ? 0.7
@@ -96,7 +96,7 @@ class HomeSearchBar extends HookConsumerWidget {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(collapsed ? 0 : 0.2),
+                    color: Colors.grey.withValues(alpha: collapsed ? 0 : 0.2),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
                   margin: collapsed

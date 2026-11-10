@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:mocktail/mocktail.dart';
 
-setupMocktailFallbacks() {
+void setupMocktailFallbacks() {
   registerFallbackValue(RequestOptions());
 }

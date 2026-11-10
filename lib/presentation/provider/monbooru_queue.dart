@@ -187,7 +187,7 @@ class MonbooruQueue {
   Future<bool?> check(Post post, Iterable<Server> servers) async {
     final md5 = post.fileMd5;
     if (md5.isEmpty) return null;
-    if (_present[md5] == true) {
+    if (_present[md5] ?? false) {
       _markPresent(post);
       return true;
     }
@@ -200,7 +200,7 @@ class MonbooruQueue {
 
     final found = await (_checking[md5] ??= _query(server, md5));
     _checking.remove(md5);
-    if (found == true) {
+    if (found ?? false) {
       _present[md5] = true;
       _markPresent(post);
     } else if (found == false) {
@@ -231,7 +231,7 @@ class MonbooruQueue {
         queryParameters: {
           'q': 'md5:$md5',
           'limit': 1,
-          if (gallery != null) 'gallery': gallery,
+          'gallery': ?gallery,
         },
         options: Options(headers: {
           'Accept': 'application/json',
@@ -338,7 +338,7 @@ class MonbooruQueue {
         alreadyThere++;
         continue;
       }
-      if (await check(post, servers) == true) {
+      if (await check(post, servers) ?? false) {
         alreadyThere++;
       } else {
         toSend.add(post);

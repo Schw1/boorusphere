@@ -19,7 +19,7 @@ class ServerPins {
     final box = await _box();
     pinned.value = {
       for (final key in box.keys)
-        if (key is String && box.get(key) == true) key,
+        if (key is String && (box.get(key) ?? false)) key,
     };
   }
 

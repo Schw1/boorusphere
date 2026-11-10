@@ -40,7 +40,7 @@ class SearchBarController extends ChangeNotifier {
     );
   }
 
-  _fetch() {
+  void _fetch() {
     if (!isOpen) return;
     if (_textTimer?.isActive ?? false) _textTimer?.cancel();
     _textTimer = Timer(const Duration(milliseconds: 300), () {

@@ -197,7 +197,7 @@ class _ThumbnailImage extends ConsumerWidget {
                 fit: StackFit.passthrough,
                 children: [
                   ...previousChildren,
-                  if (currentChild != null) currentChild,
+                  ?currentChild,
                 ],
               );
             },
@@ -224,7 +224,7 @@ class _LongThumbnailIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: context.colorScheme.surface.withOpacity(0.8),
+      color: context.colorScheme.surface.withValues(alpha: 0.8),
       elevation: 0,
       margin: EdgeInsets.zero,
       shape: const RoundedRectangleBorder(
@@ -328,7 +328,7 @@ class _SelectionMark extends StatelessWidget {
                     const SizedBox(width: 3),
                     ValueListenableBuilder(
                       valueListenable: ReadingProgress.changes,
-                      builder: (context, _, __) {
+                      builder: (context, _, _) {
                         final read = ReadingProgress.pageOfSync(post);
                         return Text(
                           read != null && read > 0 ? '${read + 1}/$pages' : '$pages',

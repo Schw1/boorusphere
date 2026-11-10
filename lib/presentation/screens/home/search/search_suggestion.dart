@@ -25,7 +25,7 @@ class SearchSuggestion extends HookConsumerWidget {
         ref.watch(uiSettingStateProvider.select((ui) => ui.blur));
 
     return Container(
-      color: context.theme.scaffoldBackgroundColor.withOpacity(
+      color: context.theme.scaffoldBackgroundColor.withValues(alpha: 
         context.isLightThemed
             ? isBlurAllowed
                 ? 0.9

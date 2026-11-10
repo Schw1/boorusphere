@@ -5,8 +5,8 @@ import 'package:boorusphere/presentation/provider/booru/page_state.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/home_status.dart';
 import 'package:boorusphere/presentation/screens/home/search/search_screen.dart';
-import 'package:boorusphere/presentation/screens/home/signature_banner.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
+import 'package:boorusphere/presentation/screens/home/signature_banner.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/presentation/widgets/timeline/post_selection.dart';
 import 'package:boorusphere/presentation/widgets/timeline/timeline.dart';
@@ -41,7 +41,9 @@ class HomeContent extends HookConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients ||
           pageState is DataFetchResult ||
-          pageState is LoadingFetchResult) return;
+          pageState is LoadingFetchResult) {
+        return;
+      }
 
       if (scrollController.position.extentAfter < 300) {
         scrollController.animateTo(
@@ -121,8 +123,8 @@ class _EdgeShadow extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomLeft,
                 colors: [
-                  tint.withOpacity(0.8),
-                  tint.withOpacity(0),
+                  tint.withValues(alpha: 0.8),
+                  tint.withValues(alpha: 0),
                 ],
               ),
             ),

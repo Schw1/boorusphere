@@ -1,8 +1,6 @@
 import 'package:boorusphere/data/repository/booru/entity/booru_error.dart';
-import 'package:boorusphere/data/repository/booru/parser/booruonrails_json_parser.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
-import 'package:boorusphere/presentation/i18n/helper.dart';
 import 'package:boorusphere/presentation/provider/booru/entity/fetch_result.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -12,10 +10,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'suggestion_state.g.dart';
 
 class Suggestion {
-  final String name;
-  final int count;
 
   const Suggestion(this.name, this.count);
+  final String name;
+  final int count;
 }
 
 @riverpod

@@ -106,7 +106,7 @@ class DownloadEntryView extends ConsumerWidget {
         child: Wrap(
           children: [
             SeparatedRow(
-              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (progress.status.isDownloading ||

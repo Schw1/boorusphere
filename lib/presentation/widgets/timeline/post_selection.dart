@@ -153,7 +153,7 @@ class _SelectionBar extends HookConsumerWidget {
         progress.value = null;
         selection.clear();
       }
-      showRootSnackBar((c) => report.describe(c),
+      showRootSnackBar(report.describe,
           duration: const Duration(seconds: 6));
     }
 

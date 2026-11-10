@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/data/repository/server/server_auth_store.dart';
+import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/utils/extensions/buildcontext.dart';
 import 'package:boorusphere/utils/extensions/string.dart';
 import 'package:dio/dio.dart';
@@ -63,7 +62,7 @@ class Favicon extends ConsumerWidget {
                     height: iconSize,
                     fit: BoxFit.contain,
                     gaplessPlayback: true,
-                    errorBuilder: (_, __, ___) => fallbackWidget,
+                    errorBuilder: (_, _, _) => fallbackWidget,
                   );
                   return shape == BoxShape.circle
                       ? ClipOval(child: image)

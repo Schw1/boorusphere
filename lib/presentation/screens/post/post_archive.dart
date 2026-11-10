@@ -78,13 +78,13 @@ class PostArchive extends HookConsumerWidget {
                 ),
               FilledButton.icon(
                 onPressed: () => ArchiveReaderPage.open(context, post,
-                    startPage: resume ? saved! : 0),
+                    startPage: resume ? saved : 0),
                 icon: Icon(resume
                     ? Icons.auto_stories_outlined
                     : Icons.menu_book_outlined),
                 label: Text(resume
                     ? context.t.archive
-                        .resume(page: saved! + 1, n: post.pageCount)
+                        .resume(page: saved + 1, n: post.pageCount)
                     : finished
                         ? context.t.archive.readAgain(n: post.pageCount)
                         : context.t.archive.read(n: post.pageCount)),
@@ -236,7 +236,7 @@ class ArchiveReaderPage extends HookConsumerWidget {
                     child: _PageSlider(
                       page: page.value,
                       total: urls.length,
-                      onChanged: (i) => controller.jumpToPage(i),
+                      onChanged: controller.jumpToPage,
                     ),
                   ),
               ],

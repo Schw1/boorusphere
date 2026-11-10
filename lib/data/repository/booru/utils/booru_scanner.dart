@@ -67,11 +67,11 @@ class BooruScanner {
   ValueListenable<List<String>> get logs => _uiLogs;
   ValueListenable<bool> get isScanning => _isScanning;
 
-  _uilog([String msg = '']) {
+  void _uilog([String msg = '']) {
     _uiLogs.value = [..._uiLogs.value, msg];
   }
 
-  _clearUiLog() {
+  void _clearUiLog() {
     _uiLogs.value = [];
   }
 

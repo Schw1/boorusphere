@@ -5,10 +5,10 @@ import 'package:grinder/grinder.dart';
 import 'grind_util.dart' as grutil;
 import 'me.dart' as me;
 
-main(args) => grind(args);
+Future<void> main(args) => grind(args);
 
 @DefaultTask()
-listTasks() => grutil.tasks();
+Future<void> listTasks() => grutil.tasks();
 
 @Task('Generate code')
 Future<void> gencode() async {
