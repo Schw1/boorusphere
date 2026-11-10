@@ -172,7 +172,11 @@
       "label": "API token (optional)",
       "desc": "Needed for servers like Monbooru (token with read scope). Stored only on this device in the system keychain, in backups only with \"Include login data\", and only sent to this server.",
       "insecure": "Warning: this address uses plain HTTP outside your local network, so the token would be sent unencrypted. Use HTTPS."
-    }
+    },
+    "all": "All servers (${n})",
+    "pin": "Pin to the menu",
+    "unpin": "Unpin",
+    "pin_hint": "Pin favorites with the pin or a long press"
   },
   "server_query": {
     "title": "Query",

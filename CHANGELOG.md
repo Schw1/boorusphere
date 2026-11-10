@@ -21,6 +21,7 @@
 * nhentai tag suggestions while typing; reading progress for galleries and Monbooru archives
 * Continue reading list; saved searches with a count of new posts; reader preloads the next pages; nhentai related galleries
 * Monbooru send history with results and resend; backups include reading progress and saved searches
+* Menu: pinned servers, the others in a collapsible list
 * "For you" feed from favorites and Monbooru sends; translation notes over Danbooru/Moebooru images
 * Fix: posts with more than 64 tags were rejected by monloader
 * nhentai: tags typed like on Danbooru (`big_breasts`), converted to nhentai's search syntax; Continue reading: select entries to remove
