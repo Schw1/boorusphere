@@ -33,6 +33,16 @@ jobs:
         with:
           persist-credentials: false
 
+      # The app shows CHANGELOG.md in its changelog: for a release, add the
+      # entries of this release ("## New" in RELEASE_NOTES_IOS.md) to the
+      # copy that is built in. After a real release the release job commits
+      # the same lines to main.
+      - name: Changelog for this release
+        if: inputs.release_tag != '' || startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: python3 tool/release_notes.py changelog "$RELEASE_TAG"
+
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           flutter-version: '3.41.x' # pubspec: >=3.41.0 <3.42.0
@@ -106,6 +116,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # The app shows CHANGELOG.md in its changelog: for a release, add the
+      # entries of this release ("## New" in RELEASE_NOTES_IOS.md) to the
+      # copy that is built in. After a real release the release job commits
+      # the same lines to main.
+      - name: Changelog for this release
+        if: inputs.release_tag != '' || startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: python3 tool/release_notes.py changelog "$RELEASE_TAG"
 
       - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
