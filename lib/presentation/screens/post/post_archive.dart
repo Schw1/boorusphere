@@ -171,7 +171,7 @@ class ArchiveReaderPage extends HookConsumerWidget {
     // Remember the page (also the first one, so a started archive shows up
     // as such).
     useEffect(() {
-      ReadingProgress.save(post, page.value);
+      ref.read(readingProgressStoreProvider).save(post, page.value);
       return null;
     }, [page.value]);
     // Load the next pages in the background, so turning the page doesn't

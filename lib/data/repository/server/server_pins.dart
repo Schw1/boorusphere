@@ -4,32 +4,34 @@ import 'package:hive_ce/hive.dart';
 /// Servers pinned to the menu (by id); the others are in its "All servers"
 /// list. Kept on this device in a Hive box.
 class ServerPins {
-  ServerPins._();
+  ServerPins(this._pins)
+    : pinned = ValueNotifier({
+        for (final key in _pins.keys)
+          if (key is String && (_pins.get(key) ?? false)) key,
+      });
+
+  /// The store on the box opened by [openBox].
+  factory ServerPins.fromOpenBox() => ServerPins(Hive.box<bool>(boxName));
 
   static const boxName = 'server_pins';
 
+  final Box<bool> _pins;
+
   /// Pinned ids; changes update the menu.
-  static final pinned = ValueNotifier<Set<String>>(const {});
+  final ValueNotifier<Set<String>> pinned;
 
-  static Future<Box<bool>> _box() async => Hive.isBoxOpen(boxName)
-      ? Hive.box<bool>(boxName)
-      : await Hive.openBox<bool>(boxName);
+  /// Opens the box; call once at startup, before [fromOpenBox].
+  static Future<void> openBox() => Hive.openBox<bool>(boxName);
 
-  static Future<void> open() async {
-    final box = await _box();
-    pinned.value = {
-      for (final key in box.keys)
-        if (key is String && (box.get(key) ?? false)) key,
-    };
-  }
+  Future<Box<bool>> _box() async => _pins;
 
   /// Backup entry (`server_pins.json`), with the server list.
   static const backupKey = 'server_pins';
 
-  static List<String> export() => pinned.value.toList()..sort();
+  List<String> export() => pinned.value.toList()..sort();
 
   /// Restores [export]ed pins (added to the ones here).
-  static Future<void> import(Object? data) async {
+  Future<void> import(Object? data) async {
     if (data is! List) return;
     final box = await _box();
     final ids = {
@@ -42,9 +44,9 @@ class ServerPins {
     pinned.value = {...pinned.value, ...ids};
   }
 
-  static bool isPinned(String id) => pinned.value.contains(id);
+  bool isPinned(String id) => pinned.value.contains(id);
 
-  static Future<void> toggle(String id) async {
+  Future<void> toggle(String id) async {
     final box = await _box();
     if (isPinned(id)) {
       await box.delete(id);

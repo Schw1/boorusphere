@@ -123,14 +123,20 @@ class MonbooruQueue {
     Dio? client,
     MonbooruRecorder? recorder,
   }) : _pollInterval = pollInterval,
-       _record = recorder ?? MonbooruHistory.recordSafely,
+       _record = recorder ?? _noRecord,
        _tokenOf = tokenOf ?? ServerAuthStore.tokenOf,
        _pollTimeout = pollTimeout,
        _send = sender ?? MonbooruSender.send,
        _fetchJob = jobFetcher ?? MonbooruSender.fetchJob,
        _client = client;
 
-  static final instance = MonbooruQueue();
+  /// Without a recorder (tests), sends are not kept in a history.
+  static Future<void> _noRecord(
+    Post post,
+    MonbooruSendReport? report,
+    int jobId, {
+    bool isResult = false,
+  }) async {}
 
   final Duration _pollInterval;
   final Duration _pollTimeout;

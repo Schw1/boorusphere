@@ -10,9 +10,9 @@ import 'package:boorusphere/data/repository/server/entity/server.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/favorite_post_state.dart';
-import 'package:boorusphere/presentation/provider/monbooru_history.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/routes/app_router.gr.dart';
 import 'package:boorusphere/presentation/screens/home/search_session.dart';
@@ -88,7 +88,7 @@ class ForYouPage extends HookConsumerWidget {
         .toSet();
 
     Future<List<Post>> source() async {
-      final history = await MonbooruHistory.all();
+      final history = await ref.read(monbooruHistoryStoreProvider).all();
       return [
         ...ref.read(favoritePostStateProvider),
         for (final entry in history) entry.post,

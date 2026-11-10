@@ -96,7 +96,16 @@ class MonbooruHistoryEntry {
 /// Posts sent to Monbooru on this device, newest first, one entry per post
 /// (sending again updates it). Kept in a Hive box of JSON strings.
 class MonbooruHistory {
-  MonbooruHistory._();
+  MonbooruHistory(this._history);
+
+  /// The store on the box opened by [openBox].
+  factory MonbooruHistory.fromOpenBox() =>
+      MonbooruHistory(Hive.box<String>(boxName));
+
+  final Box<String> _history;
+
+  /// Opens the box; call once at startup, before [fromOpenBox].
+  static Future<void> openBox() => Hive.openBox<String>(boxName);
 
   static const boxName = 'monbooru_history';
 
@@ -104,14 +113,11 @@ class MonbooruHistory {
   static const limit = 300;
 
   /// Changes whenever the history does, so open screens can update.
-  static final changes = ValueNotifier(0);
+  final changes = ValueNotifier(0);
 
-  static Future<Box<String>> open() async => Hive.isBoxOpen(boxName)
-      ? Hive.box<String>(boxName)
-      : await Hive.openBox<String>(boxName);
+  Future<Box<String>> open() async => _history;
 
-  static bool get isEmpty =>
-      !Hive.isBoxOpen(boxName) || Hive.box<String>(boxName).isEmpty;
+  bool get isEmpty => _history.isEmpty;
 
   static List<MonbooruHistoryEntry> _entries(Box<String> box) {
     final result = <MonbooruHistoryEntry>[];
@@ -127,12 +133,11 @@ class MonbooruHistory {
     return result;
   }
 
-  static Future<List<MonbooruHistoryEntry>> all() async =>
-      _entries(await open());
+  Future<List<MonbooruHistoryEntry>> all() async => _entries(await open());
 
   /// Records a send of [post]. A new send ([report] null, or failed right
   /// away) starts at [now]; a result for a running send keeps its time.
-  static Future<void> record(
+  Future<void> record(
     Post post, {
     MonbooruSendReport? report,
     int jobId = 0,
@@ -168,7 +173,7 @@ class MonbooruHistory {
   }
 
   /// For [MonbooruQueue]: records and never throws (history is a bonus).
-  static Future<void> recordSafely(
+  Future<void> recordSafely(
     Post post,
     MonbooruSendReport? report,
     int jobId, {
@@ -182,7 +187,7 @@ class MonbooruHistory {
   }
 
   /// Asks monloader again for the result of sends that have none yet.
-  static Future<void> lookUpPending({
+  Future<void> lookUpPending({
     Future<MonbooruJobLookup> Function(int id)? fetchJob,
   }) async {
     final fetch = fetchJob ?? MonbooruSender.fetchJob;
@@ -201,14 +206,14 @@ class MonbooruHistory {
     }
   }
 
-  static Future<void> remove(Post post) async {
+  Future<void> remove(Post post) async {
     await (await open()).delete(post.viewId);
     changes.value++;
   }
 
   /// Removes the entries that ended well; failed, pending and unknown
   /// ones stay.
-  static Future<void> removeSuccessful() async {
+  Future<void> removeSuccessful() async {
     final box = await open();
     final keys = [
       for (final entry in _entries(box))
@@ -218,7 +223,7 @@ class MonbooruHistory {
     changes.value++;
   }
 
-  static Future<void> clear() async {
+  Future<void> clear() async {
     await (await open()).clear();
     changes.value++;
   }

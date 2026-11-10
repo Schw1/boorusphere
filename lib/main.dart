@@ -61,10 +61,10 @@ void main() async {
     UserSettingsRepo.prepare(),
     UserDownloadsRepo.prepare(),
     CurrentAppStateRepo.prepare(),
-    ReadingProgress.open(),
-    SavedSearchStore.open(),
-    MonbooruHistory.open(),
-    ServerPins.open(),
+    ReadingProgress.openBoxes(),
+    SavedSearchStore.openBox(),
+    MonbooruHistory.openBox(),
+    ServerPins.openBox(),
   ]);
 
   // Moves a monloader token from older versions out of Hive into the Keychain.

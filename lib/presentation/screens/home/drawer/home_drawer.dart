@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:boorusphere/constant/app.dart';
 import 'package:boorusphere/data/repository/server/entity/server.dart';
-import 'package:boorusphere/data/repository/server/server_pins.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/i18n/strings.g.dart';
 import 'package:boorusphere/presentation/provider/app_updater.dart';
@@ -335,7 +334,8 @@ class _ServerSelection extends HookConsumerWidget {
                       : Icons.push_pin_outlined,
                   size: 18,
                 ),
-                onPressed: () => ServerPins.toggle(it.id),
+                onPressed: () =>
+                    ref.read(serverPinsStoreProvider).toggle(it.id),
               )
             : null,
         shape: const RoundedRectangleBorder(
@@ -348,7 +348,7 @@ class _ServerSelection extends HookConsumerWidget {
         selectedTileColor: context.colorScheme.primary.withAlpha(
           context.isLightThemed ? 50 : 25,
         ),
-        onLongPress: () => ServerPins.toggle(it.id),
+        onLongPress: () => ref.read(serverPinsStoreProvider).toggle(it.id),
         onTap: () {
           ref.read(homeDrawerControllerProvider).close().then((value) {
             if (!context.mounted) return;

@@ -151,19 +151,25 @@ class SavedSearch {
 
 /// Saved searches on this device (Hive box of JSON strings).
 class SavedSearchStore {
-  SavedSearchStore._();
+  SavedSearchStore(this._box);
+
+  /// The store on the box opened by [openBox].
+  factory SavedSearchStore.fromOpenBox() =>
+      SavedSearchStore(Hive.box<String>(boxName));
 
   static const boxName = 'saved_searches';
 
-  static Future<Box<String>> open() async => Hive.isBoxOpen(boxName)
-      ? Hive.box<String>(boxName)
-      : await Hive.openBox<String>(boxName);
+  final Box<String> _box;
+
+  /// Opens the box; call once at startup, before [fromOpenBox].
+  static Future<void> openBox() => Hive.openBox<String>(boxName);
+
+  Future<Box<String>> open() async => _box;
 
   /// All saved searches, oldest first (the order they were saved in).
-  static List<SavedSearch> all() {
-    if (!Hive.isBoxOpen(boxName)) return const [];
+  List<SavedSearch> all() {
     final result = <SavedSearch>[];
-    for (final raw in Hive.box<String>(boxName).values) {
+    for (final raw in _box.values) {
       try {
         final search = SavedSearch.fromJson(jsonDecode(raw));
         if (search != null) result.add(search);
@@ -175,16 +181,14 @@ class SavedSearchStore {
     return result;
   }
 
-  static Future<void> put(SavedSearch search) async =>
+  Future<void> put(SavedSearch search) async =>
       (await open()).put(search.key, jsonEncode(search.toJson()));
 
   /// For backups: all searches as JSON.
-  static List<Map<String, dynamic>> export() => [
-    for (final it in all()) it.toJson(),
-  ];
+  List<Map<String, dynamic>> export() => [for (final it in all()) it.toJson()];
 
   /// Restores [export]ed searches. Ones already here keep their state.
-  static Future<void> import(Object? data) async {
+  Future<void> import(Object? data) async {
     if (data is! List) return;
     final box = await open();
     for (final json in data) {
@@ -194,6 +198,6 @@ class SavedSearchStore {
     }
   }
 
-  static Future<void> remove(SavedSearch search) async =>
+  Future<void> remove(SavedSearch search) async =>
       (await open()).delete(search.key);
 }

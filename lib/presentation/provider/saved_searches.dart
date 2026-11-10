@@ -3,6 +3,7 @@ import 'package:boorusphere/data/repository/saved_search.dart';
 import 'package:boorusphere/domain/provider.dart';
 import 'package:boorusphere/presentation/provider/server_data_state.dart';
 import 'package:boorusphere/presentation/provider/settings/server_setting_state.dart';
+import 'package:boorusphere/presentation/provider/stores.dart';
 import 'package:boorusphere/presentation/provider/tags_blocker_state.dart';
 import 'package:boorusphere/presentation/utils/extensions/post.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -20,7 +21,9 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
   bool _checking = false;
 
   @override
-  List<SavedSearch> build() => SavedSearchStore.all();
+  List<SavedSearch> build() => _store.all();
+
+  SavedSearchStore get _store => ref.read(savedSearchStoreProvider);
 
   SavedSearch? find(String serverId, String query) {
     final key = SavedSearch.keyOf(serverId, query);
@@ -36,7 +39,7 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
   int get totalNew => state.fold(0, (sum, it) => sum + it.newCount);
 
   Future<void> _put(SavedSearch search) async {
-    await SavedSearchStore.put(search);
+    await _store.put(search);
     if (!ref.mounted) return;
     state = [
       for (final it in state)
@@ -59,7 +62,7 @@ class SavedSearches extends Notifier<List<SavedSearch>> {
   }
 
   Future<void> remove(SavedSearch search) async {
-    await SavedSearchStore.remove(search);
+    await _store.remove(search);
     if (!ref.mounted) return;
     state = state.where((it) => it.key != search.key).toList();
   }

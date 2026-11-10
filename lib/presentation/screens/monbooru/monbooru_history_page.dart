@@ -42,7 +42,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
     final scrollController = useMemoized(AutoScrollController.new);
     useEffect(() => scrollController.dispose, [scrollController]);
     useEffect(() {
-      MonbooruHistory.lookUpPending();
+      ref.read(monbooruHistoryStoreProvider).lookUpPending();
       return null;
     }, []);
     final t = context.t.monbooru.history;
@@ -64,18 +64,20 @@ class MonbooruHistoryPage extends HookConsumerWidget {
               IconButton(
                 tooltip: t.removeSuccessful,
                 icon: const Icon(Icons.done_all),
-                onPressed: MonbooruHistory.removeSuccessful,
+                onPressed: ref
+                    .read(monbooruHistoryStoreProvider)
+                    .removeSuccessful,
               ),
             if (list.isNotEmpty)
               IconButton(
                 tooltip: t.clear,
                 icon: const Icon(Icons.delete_sweep_outlined),
-                onPressed: () => _confirmClear(context),
+                onPressed: () => _confirmClear(context, ref),
               ),
           ],
         ),
         body: RefreshIndicator(
-          onRefresh: MonbooruHistory.lookUpPending,
+          onRefresh: ref.read(monbooruHistoryStoreProvider).lookUpPending,
           child: list.isEmpty
               ? ListView(
                   children: [
@@ -112,7 +114,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
                       onDismissed: (_) {
                         final post = list[index].post;
                         removed.value = {...removed.value, post.viewId};
-                        MonbooruHistory.remove(post);
+                        ref.read(monbooruHistoryStoreProvider).remove(post);
                       },
                       child: _Tile(
                         entry: list[index],
@@ -130,7 +132,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
     );
   }
 
-  Future<void> _confirmClear(BuildContext context) async {
+  Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
     final t = context.t.monbooru.history;
     final ok = await showDialog<bool>(
       context: context,
@@ -149,7 +151,7 @@ class MonbooruHistoryPage extends HookConsumerWidget {
         ],
       ),
     );
-    if (ok ?? false) await MonbooruHistory.clear();
+    if (ok ?? false) await ref.read(monbooruHistoryStoreProvider).clear();
   }
 }
 
@@ -268,7 +270,7 @@ class _Tile extends HookConsumerWidget {
             ),
           );
       case _Action.remove:
-        await MonbooruHistory.remove(entry.post);
+        await ref.read(monbooruHistoryStoreProvider).remove(entry.post);
     }
   }
 }

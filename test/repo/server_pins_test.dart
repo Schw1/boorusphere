@@ -5,28 +5,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 
 void main() {
-  setUpAll(() {
+  late ServerPins pins;
+
+  setUpAll(() async {
     Hive.init(Directory.systemTemp.createTempSync('pins').path);
+    await ServerPins.openBox();
+    pins = ServerPins.fromOpenBox();
   });
 
   test('pin, unpin, kept across opening', () async {
-    await ServerPins.open();
-    expect(ServerPins.pinned.value, isEmpty);
-    await ServerPins.toggle('Danbooru');
-    await ServerPins.toggle('Monbooru');
-    await ServerPins.toggle('Danbooru');
-    expect(ServerPins.pinned.value, {'Monbooru'});
-    ServerPins.pinned.value = const {};
-    await ServerPins.open();
-    expect(ServerPins.isPinned('Monbooru'), isTrue);
+    expect(pins.pinned.value, isEmpty);
+    await pins.toggle('Danbooru');
+    await pins.toggle('Monbooru');
+    await pins.toggle('Danbooru');
+    expect(pins.pinned.value, {'Monbooru'});
+    // a new store on the same box (the next app start)
+    pins = ServerPins.fromOpenBox();
+    expect(pins.isPinned('Monbooru'), isTrue);
   });
 
   test('backup round trip adds pins', () async {
-    final exported = ServerPins.export();
-    await ServerPins.import(['Gelbooru', 3, '', ...exported]);
-    expect(ServerPins.pinned.value, containsAll(['Gelbooru', 'Monbooru']));
-    expect(ServerPins.export(), ['Gelbooru', 'Monbooru']);
-    await ServerPins.import('broken');
-    expect(ServerPins.export(), hasLength(2));
+    final exported = pins.export();
+    await pins.import(['Gelbooru', 3, '', ...exported]);
+    expect(pins.pinned.value, containsAll(['Gelbooru', 'Monbooru']));
+    expect(pins.export(), ['Gelbooru', 'Monbooru']);
+    await pins.import('broken');
+    expect(pins.export(), hasLength(2));
   });
 }

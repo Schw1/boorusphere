@@ -10,15 +10,21 @@ class ReadingBackup {
 
   static const backupKey = 'reading';
 
-  static Future<MapEntry<String, Object>> export() async {
-    await SavedSearchStore.open();
+  static Future<MapEntry<String, Object>> export(
+    ReadingProgress progress,
+    SavedSearchStore searches,
+  ) async {
     return MapEntry(backupKey, {
-      'progress': await ReadingProgress.export(),
-      'savedSearches': SavedSearchStore.export(),
+      'progress': await progress.export(),
+      'savedSearches': searches.export(),
     });
   }
 
-  static Future<void> import(String src) async {
+  static Future<void> import(
+    String src,
+    ReadingProgress progress,
+    SavedSearchStore searches,
+  ) async {
     final Object? data;
     try {
       data = jsonDecode(src);
@@ -26,7 +32,7 @@ class ReadingBackup {
       return;
     }
     if (data is! Map) return;
-    await ReadingProgress.import(data['progress']);
-    await SavedSearchStore.import(data['savedSearches']);
+    await progress.import(data['progress']);
+    await searches.import(data['savedSearches']);
   }
 }
