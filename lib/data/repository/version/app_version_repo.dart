@@ -33,7 +33,7 @@ class AppVersionRepo implements VersionRepo {
     return AppVersion.zero;
   }
 
-  static const repo = 'Schw1/boorusphere-ios';
+  static const repo = 'Schw1/boorusphere';
   static const gitUrl = 'https://github.com/$repo';
   static const latestReleaseUrl =
       'https://api.github.com/repos/$repo/releases/latest';

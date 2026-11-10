@@ -99,7 +99,7 @@ class NhentaiTags {
   static final instance = NhentaiTags();
 
   static const url =
-      'https://raw.githubusercontent.com/Schw1/boorusphere-ios/data/nhentai-tags.json';
+      'https://raw.githubusercontent.com/Schw1/boorusphere/data/nhentai-tags.json';
   static const maxAge = Duration(days: 7);
   static const _fileName = 'nhentai-tags.json';
 

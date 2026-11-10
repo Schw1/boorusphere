@@ -1,4 +1,4 @@
-Unofficial iOS port of Boorusphere 1.5.4: unsigned IPA for sideloading (Sideloadly, AltStore) and, new, Android APKs with the same features.
+Unofficial fork of Boorusphere 1.5.4 for iOS and Android: an unsigned IPA for sideloading (Sideloadly, AltStore) and signed Android APKs with the same features.
 
 ## New
 <!-- Changes for the next release go here, one '- ' entry each. -->

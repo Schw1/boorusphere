@@ -1,6 +1,6 @@
-# Boorusphere iOS port
+# Boorusphere for iOS and Android: build and platform notes
 
-This fork builds an **unsigned IPA** and **signed Android APKs** with GitHub Actions, so no Mac is needed. A release always ships both.
+The repository was called `boorusphere-ios` until it got its Android build; GitHub redirects the old name, so apps installed before the rename still find their updates. This fork builds an **unsigned IPA** and **signed Android APKs** with GitHub Actions, so no Mac is needed. A release always ships both.
 
 ## Building
 
@@ -102,7 +102,7 @@ Sideloaded apps carry `embedded.mobileprovision`; its `ExpirationDate` is read a
 - **App ID** `io.github.schw1.boorusphere`, so the APK installs next to the original Boorusphere (Kotlin namespace unchanged). Data moves over with Backup and Restore.
 - **Signing:** release APKs are signed with this fork's own key from the repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. A release fails without them. The key is written to the runner's temp folder only for the build and deleted afterwards; it is never in the repository or an artifact. Builds without secrets (e.g. forks) use the debug key and are test builds.
 - **Files:** `boorusphere-<abi>.apk` (`arm64-v8a`, `armeabi-v7a`, `x86_64`) and `boorusphere-universal.apk`.
-- **Updates:** the in-app updater asks `api.github.com/repos/Schw1/boorusphere-ios/releases/latest` and downloads the APK for the device's ABI from that release. On iOS the same check shows a link to the release page.
+- **Updates:** the in-app updater asks `api.github.com/repos/Schw1/boorusphere/releases/latest` and downloads the APK for the device's ABI from that release. On iOS the same check shows a link to the release page.
 - **Plain HTTP** is allowed (`usesCleartextTraffic`), see Security notes.
 
 ## Dependency updates

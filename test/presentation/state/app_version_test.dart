@@ -52,7 +52,7 @@ void main() async {
       expect(
         versions?.latest.apkUrl,
         allOf(
-          contains('Schw1/boorusphere-ios/releases/download/$edgeTag/'),
+          contains('Schw1/boorusphere/releases/download/$edgeTag/'),
           endsWith('.apk'),
         ),
       );
