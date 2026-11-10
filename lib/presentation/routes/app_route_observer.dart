@@ -14,7 +14,10 @@ class AppRouteObserver extends AutoRouterObserver {
     dynamic args = route?.settings.arguments;
     try {
       return args.session;
-    } catch (_) {}
+    } catch (_) {
+      // Not every route's arguments have a session; that is expected.
+      return null;
+    }
   }
 
   void _setLastActiveServer(String id) {
